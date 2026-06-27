@@ -203,7 +203,7 @@
   /* Кнопки экспорта */
   .export-btn {
     background: #FFFFFF !important; color: #0D1935 !important;
-    border-radius: 14px; border: none; cursor: pointer;
+    border-radius: 12px; border: none; cursor: pointer;
     padding: 0.85rem 2rem; font-size: 1.25rem; letter-spacing: 0.02em;
     text-transform: uppercase; font-weight: 700;
   }
@@ -1581,128 +1581,6 @@ window.startExportDocx = async function() {
   }
 };
 
-
-
-<script>
-// ── Исправленный расчёт питания после кнопки «Перейти к расчёту» ─────────────
-(function(){
-  function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
-  function num(id){ const x=parseFloat(val(id).replace(',', '.')); return Number.isFinite(x) ? x : 0; }
-  function esc(x){ return String(x ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-
-  window.showFoodPage = function(event) {
-    if (event) { event.preventDefault(); event.stopPropagation(); }
-    if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
-    const data = (typeof currentData !== 'undefined' ? currentData : window.currentData);
-    if (!data) {
-      alert('Сначала рассчитайте натальную карту.');
-      return;
-    }
-
-    const gender = val('genderSelect2');
-    const weight = num('weightInput2');
-    const height = num('heightInput2');
-    const age = parseInt(val('ageInput2'), 10) || 0;
-    const err = document.getElementById('foodDataErr');
-    if (!gender || !weight || !height || !age) {
-      if (err) err.textContent = 'Заполните пол, вес, рост и возраст.';
-      return;
-    }
-    if (err) err.textContent = '';
-    if (typeof selectedGender !== 'undefined') selectedGender = gender;
-
-    const calc = calcElements(data.planets || [], data.asc, data.mc);
-    const rational = calc.racionalnost || 0;
-    const emotional = calc.emotsionalnost || 0;
-    const cold = calc.holod || 0;
-    const wet = calc.vlazhnost || 0;
-    const dry = calc.suhost || 0;
-    const controlCold = gender === 'Мужской' ? cold : (cold + wet) / 2;
-
-    let meals = 'На усмотрение';
-    let formulaText = 'Показатели равны или близки';
-    if (rational > emotional + controlCold) {
-      meals = '4 приема еды';
-      formulaText = 'Рациональность > Эмоциональность + контрольный показатель';
-    } else if ((rational > controlCold && rational > emotional) || (emotional > rational && emotional > controlCold)) {
-      meals = '3 приема еды';
-      formulaText = 'Рациональность или Эмоциональность сильнее контрольного показателя';
-    } else if (controlCold > rational || controlCold > emotional) {
-      meals = '2 приема еды';
-      formulaText = 'Контрольный показатель сильнее Рациональности или Эмоциональности';
-    }
-
-    const breakfastTime = wet > dry
-      ? ['Ранний завтрак', 'В течение часа после пробуждения. Формула: Влажность > Сухость']
-      : dry > wet
-        ? ['Поздний завтрак', 'Через несколько часов после пробуждения. Формула: Сухость > Влажность']
-        : ['На усмотрение', 'Формула: Сухость = Влажность'];
-
-    const breakfastVolume = rational > 11
-      ? ['Символический завтрак', '10% суточного рациона. Формула: Рациональность > 11 баллов']
-      : (rational > 7 && rational < 11)
-        ? ['Средний завтрак', '40% суточного рациона. Формула: Рациональность > 7 и < 11 баллов']
-        : ['Полноценный завтрак', '50% суточного рациона. Формула: Рациональность ≤ 7 баллов'];
-
-    const lunchVolume = emotional > 11
-      ? ['Символический обед', '10% суточного рациона. Формула: Эмоциональность > 11 баллов']
-      : (emotional > 6 && emotional < 11)
-        ? ['Средний обед', '40% суточного рациона. Формула: Эмоциональность > 6 и < 11 баллов']
-        : ['Полноценный обед', '50% суточного рациона. Формула: Эмоциональность ≤ 6 баллов'];
-
-    const indicator3Name = gender === 'Мужской' ? 'Холод' : '(Холод + Влажность) / 2';
-    const dinnerVolume = controlCold < 6
-      ? ['Полноценный ужин', `50% суточного рациона. Формула: показатель 3 < 6 баллов. Показатель 3 = ${indicator3Name}`]
-      : controlCold > 6
-        ? ['Ограниченный ужин', `Количество не должно превышать завтрак и обед. Формула: показатель 3 > 6 баллов. Показатель 3 = ${indicator3Name}`]
-        : ['Ужин на усмотрение', `Формула: показатель 3 = 6 баллов. Показатель 3 = ${indicator3Name}`];
-
-    const sun = (data.planets || []).find(p => p.sym === 'n' || /солн/i.test(p.name || ''));
-    const sunSign = sun ? (SIGN_PLAIN[sun.signChar] || sun.sign || '') : '';
-    const energySavingSigns = ['Близнецы', 'Рак', 'Весы', 'Скорпион', 'Водолей', 'Рыбы'];
-    const energyIntensiveSigns = ['Овен', 'Телец', 'Лев', 'Дева', 'Стрелец', 'Козерог'];
-    const metabolism = energySavingSigns.includes(sunSign)
-      ? ['Энергосберегающий', `Физическая активность после приёма еды. Организм необходимо разогревать после еды. Формула: Солнце в знаке ${sunSign}.`]
-      : energyIntensiveSigns.includes(sunSign)
-        ? ['Энергоёмкий', `Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи. Формула: Солнце в знаке ${sunSign}.`]
-        : ['Метаболизм не определён', 'Не удалось определить знак Солнца.'];
-
-    const card = (title, text) => `
-      <div class="energy-card" style="padding:1rem; margin-bottom:0.8rem;">
-        <div class="energy-label">${esc(title)}</div>
-        <div class="energy-formula" style="margin-top:0.35rem;">${esc(text)}</div>
-      </div>`;
-
-    const formula = document.getElementById('foodFormula');
-    const count = document.getElementById('foodCount');
-    const mealsGrid = document.getElementById('mealsGrid');
-    const saltGrid = document.getElementById('saltGrid');
-    const foodPage = document.getElementById('foodPage');
-    const foodDataBlock = document.getElementById('foodDataBlock');
-
-    if (formula) formula.textContent = formulaText;
-    if (count) count.textContent = meals;
-    if (mealsGrid) {
-      mealsGrid.innerHTML =
-        card(breakfastTime[0], breakfastTime[1]) +
-        card(breakfastVolume[0], breakfastVolume[1]) +
-        card(lunchVolume[0], lunchVolume[1]) +
-        card(dinnerVolume[0], dinnerVolume[1]) +
-        card(metabolism[0], metabolism[1]);
-    }
-    if (saltGrid) {
-      saltGrid.innerHTML = card('Исходные данные', `Пол: ${gender}; вес: ${weight} кг; рост: ${height} см; возраст: ${age} лет.`);
-    }
-
-    if (foodDataBlock) foodDataBlock.style.display = 'none';
-    if (foodPage) {
-      foodPage.style.display = 'block';
-      foodPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-})();
-</script>
-<script>
 // ── Telegram WebApp ───────────────────────────────────────────────────────────
 (function() {
   const tg = window.Telegram?.WebApp;
