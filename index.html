@@ -8,33 +8,14 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 <style>
-  @font-face {
-    font-family: 'Bebas Neue Cyrillic';
-    src:
-      local('Bebas Neue Cyrillic'),
-      local('BebasNeueCyrillic'),
-      url('BebasNeueCyrillic.woff2') format('woff2'),
-      url('BebasNeueCyrillic.ttf') format('truetype');
-    font-weight: 400 700;
-    font-style: normal;
-    font-display: swap;
-  }
-
-  @font-face {
-    font-family: 'AProf';
-    src:
-      local('AProf'),
-      url('AProf.woff2') format('woff2'),
-      url('AProf.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
 
   html, body, button, input, select, textarea, label, option, div, span, p, a, li, h1, h2, h3 {
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   }
 
   *, *::before, *::after {
@@ -120,7 +101,7 @@
     padding: 0.75rem 2rem !important;
     font-size: 1.15rem !important;
     letter-spacing: 0.04em !important;
-    font-family: 'Bebas Neue Cyrillic','Bebas Neue',Arial,sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
     color: #0D1935 !important;
     border: none !important;
     cursor: pointer !important;
@@ -147,8 +128,8 @@
 
   /* Главная кнопка расчёта */
   .calc-btn {
-    background: #FC9FBC !important; color: #0D1935 !important;
-    border: none; border-radius: 12px; width: 100%; padding: 1rem;
+    background: #FFFFFF !important; color: #0D1935 !important;
+    border: none; border-radius: 14px; width: 100%; padding: 0.75rem 2rem;
     font-size: 1.35rem; letter-spacing: 0.02em; text-transform: uppercase;
     font-weight: 700; cursor: pointer; transition: background 0.2s;
   }
@@ -176,7 +157,7 @@
   /* Планеты */
   .planet-name { color: #FC9FBC !important; }
   .planet-pos, .planet-sign { color: #FFFFFF !important; }
-  .planet-symbol { color: #FFFFFF !important; font-family: 'AProf' !important; font-size: 2rem; line-height: 1; }
+  .planet-symbol { color: #FFFFFF !important; font-family: 'Segoe UI Symbol','Apple Symbols','Noto Sans Symbols 2','Noto Sans Symbols','Arial Unicode MS',sans-serif !important; font-size: 2rem; line-height: 1; }
   .retrograde { color: #FC9FBC !important; margin-left:0.35rem; }
 
   /* Аспекты */
@@ -203,8 +184,8 @@
   /* Кнопки экспорта */
   .export-btn {
     background: #FFFFFF !important; color: #0D1935 !important;
-    border-radius: 12px; border: none; cursor: pointer;
-    padding: 0.85rem 2rem; font-size: 1.25rem; letter-spacing: 0.02em;
+    border-radius: 14px; border: none; cursor: pointer;
+    padding: 0.75rem 2rem; font-size: 1.15rem; letter-spacing: 0.02em;
     text-transform: uppercase; font-weight: 700;
   }
   .export-btn * { color: #0D1935 !important; }
@@ -228,7 +209,7 @@
   #step2Block { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); text-align:left; }
   #step2Block .step-label { text-align:left; }
   .ready-now-btn { margin-top:0.5rem; background:transparent; border:none; color:#FC9FBC !important; font-family:inherit; font-size:1rem; letter-spacing:0.04em; cursor:pointer; text-decoration:underline; }
-  .continue-btn { background:#FFFFFF !important; color:#0D1935 !important; border:none !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; letter-spacing:0.04em !important; text-transform:uppercase; font-weight:700; cursor:pointer; margin:2rem auto; display:block; max-width:400px; font-family:'Bebas Neue Cyrillic','Bebas Neue',Arial,sans-serif !important; }
+  .continue-btn { background:#FFFFFF !important; color:#0D1935 !important; border:none !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; letter-spacing:0.04em !important; text-transform:uppercase; font-weight:700; cursor:pointer; margin:2rem auto; display:block; max-width:400px; font-family:"Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif; }
   .continue-btn * { color:#0D1935 !important; }
   .food-data-card .h1-style, .food-step-label { color:#FC9FBC !important; font-size:1.08rem !important; letter-spacing:0.02em !important; text-transform:uppercase !important; text-align:center !important; margin-bottom:1.2rem !important; display:block !important; }
   #foodCalcBtn.sotis-btn-style { background:#FFFFFF !important; color:#0D1935 !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; width:auto !important; max-width:none !important; display:inline-block !important; }
@@ -257,32 +238,34 @@
   /* Мобильные WebView иногда подмешивают системные шрифты — фиксируем явно. */
   #uploadZone, #result, #productsPage,
   #uploadZone *, #result *:not(.planet-symbol), #productsPage * {
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   }
   .planet-symbol, .planet-symbol * {
-    font-family: 'AProf' !important;
+    font-family: 'Segoe UI Symbol','Apple Symbols','Noto Sans Symbols 2','Noto Sans Symbols','Arial Unicode MS',sans-serif !important;
   }
 
-
-  /* Финальные правки: единый шрифт и единый стиль кнопок */
+  /* Итоговый шрифт: Roboto Condensed по всему интерфейсу */
   html, body,
   body *:not(.planet-symbol):not(.planet-symbol *) {
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   }
   button, input, select, textarea, option, label, a {
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   }
+
+  /* Символы планет — Unicode, без AProf и без зависимости от кастомного шрифта */
   .planet-symbol, .planet-symbol * {
-    font-family: 'AProf' !important;
+    font-family: 'Segoe UI Symbol','Apple Symbols','Noto Sans Symbols 2','Noto Sans Symbols','Arial Unicode MS',sans-serif !important;
     font-weight: 400 !important;
     text-transform: none !important;
   }
+
+  /* Единый белый стиль кнопок */
   .sotis-link,
   .sotis-btn-style,
   .calc-btn,
   .continue-btn,
   .export-btn,
-  .reset-btn,
   #foodCalcBtn.sotis-btn-style {
     background: #FFFFFF !important;
     color: #0D1935 !important;
@@ -299,24 +282,23 @@
     text-transform: uppercase !important;
     font-weight: 700 !important;
     cursor: pointer !important;
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   }
   .sotis-link *,
   .sotis-btn-style *,
   .calc-btn *,
   .continue-btn *,
-  .export-btn *,
-  .reset-btn * {
+  .export-btn * {
     color: #0D1935 !important;
   }
   .sotis-link:hover,
   .sotis-btn-style:hover,
   .calc-btn:hover,
   .continue-btn:hover,
-  .export-btn:hover,
-  .reset-btn:hover {
+  .export-btn:hover {
     background: #FEDCD1 !important;
   }
+
   .privacy-note {
     display: block !important;
     width: 100% !important;
@@ -440,7 +422,6 @@
       <button type="button" class="export-btn" id="exportDocxBtn" onclick="startExportDocx()">
         ✦ Скачать Word-файл
       </button>
-      <button type="button" class="reset-btn" onclick="resetPage()">✦ Новый расчёт</button>
     </div>
   </div>
 
@@ -490,7 +471,6 @@
   <div id="productsBox"></div>
   <div class="bottom-btns" style="margin-top:2rem;">
     <button type="button" class="export-btn" onclick="startExportDocx()">✦ Скачать Word-файл</button>
-    <button type="button" class="reset-btn" onclick="backToFoodPage(event)">✦ Назад</button>
   </div>
   <div style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem" id="productsMeta"></div>
 </div>
@@ -501,17 +481,17 @@
 // ── Словари ───────────────────────────────────────────────────────────────────
 
 const PLANET_SYMBOLS = {
-  n:'M', // Солнце
-  o:'N', // Луна
-  p:'O', // Меркурий
-  q:'P', // Венера
-  r:'Q', // Марс
-  s:'R', // Юпитер
-  t:'S', // Сатурн
-  u:'T', // Уран
-  v:'U', // Нептун
-  w:'V', // Плутон
-  '|':'X', // Хирон
+  n:'☉', // Солнце
+  o:'☽', // Луна
+  p:'☿', // Меркурий
+  q:'♀', // Венера
+  r:'♂', // Марс
+  s:'♃', // Юпитер
+  t:'♄', // Сатурн
+  u:'♅', // Уран
+  v:'♆', // Нептун
+  w:'♇', // Плутон
+  '|':'⚷', // Хирон
 };
 
 const PLANET_NAMES = {
@@ -922,8 +902,8 @@ function render() {
     if (!name || !symbol) return; // пропускаем Раху/Кету
     pg.appendChild(makePlanetCard(symbol, name, p.pos, p.signChar, p.isRetro));
   });
-  if (d.asc) pg.appendChild(makePlanetCard('w', 'ASC', d.asc.pos, d.asc.signChar, false));
-  if (d.mc)  pg.appendChild(makePlanetCard('t', 'MC',  d.mc.pos,  d.mc.signChar,  false));
+  if (d.asc) pg.appendChild(makePlanetCard('ASC', 'ASC', d.asc.pos, d.asc.signChar, false));
+  if (d.mc)  pg.appendChild(makePlanetCard('MC', 'MC',  d.mc.pos,  d.mc.signChar,  false));
 
   // Аспекты — фильтруем по орбисам
   const al = document.getElementById('aspectList');
@@ -941,9 +921,9 @@ function render() {
     const row = document.createElement('div');
     row.className = 'aspect-row';
     row.innerHTML = `
-      <span class="asp-type ${info.cls}">${info.name || a.typeName} ${a.type}°</span>
+      <span class="asp-type ${info.cls}">${info.name || a.typeName}</span>
       <span class="asp-planets">${a.p1} — ${a.p2}</span>
-      <span class="asp-orb" title="лимит: ${limitStr}">${a.orb}</span>`;
+      <span class="asp-orb">Орбис: ${a.orb}</span>`;
     al.appendChild(row);
   });
   if (filtered.length === 0)
@@ -1192,7 +1172,7 @@ async function exportDocx() {
       const aColor = aspColors[info.name] || '444444';
       return new TableRow({ children: [
         new TableCell({ borders, width:{size:1800,type:WidthType.DXA}, margins:{top:60,bottom:60,left:120,right:120},
-          children:[new Paragraph({children:[new TextRun({text:`${info.name||a.typeName} ${a.type}°`,size:18,font:'Arial',color:aColor,bold:true})]})] }),
+          children:[new Paragraph({children:[new TextRun({text:`${info.name||a.typeName}`,size:18,font:'Arial',color:aColor,bold:true})]})] }),
         cell(a.p1, 2200), cell(a.p2, 2200), cell(a.orb, 1000),
       ]});
     });
@@ -1499,10 +1479,23 @@ function showFoodPage(event) {
 
   const foodDataBlock = document.getElementById('foodDataBlock');
   if (foodDataBlock) foodDataBlock.style.display = 'none';
+
+  const continueBtn = document.getElementById('continueBtn');
+  if (continueBtn) continueBtn.remove();
+
+  ['.chart-title', '.planets-grid', '.aspects-section', '#indicatorsSection'].forEach(sel => {
+    document.querySelectorAll(sel).forEach(el => el.style.display = 'none');
+  });
+  document.querySelectorAll('#result > .section-title').forEach(el => el.style.display = 'none');
+
   const foodPage = document.getElementById('foodPage');
   if (foodPage) {
+    foodPage.innerHTML = `
+      <div class="sotis-link-wrap" style="margin-top:2rem">
+        <button type="button" class="export-btn sotis-btn-style" id="exportDocxBtn" onclick="startExportDocx(event)">✦ Скачать Word-файл</button>
+      </div>`;
     foodPage.style.display = 'block';
-    foodPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    foodPage.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 
@@ -1712,6 +1705,102 @@ window.startExportDocx = async function() {
     alert('Ошибка генерации файла: ' + e.message);
   } finally {
     overlay.classList.remove('active');
+  }
+};
+
+
+
+// ── Надёжный экспорт Word без внешних библиотек ───────────────────────────────
+function escapeHtmlSafe(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function makeWordHtml() {
+  if (!currentData) throw new Error('Нет данных для экспорта');
+  const d = currentData;
+  const calc = calcElements(d.planets, d.asc, d.mc);
+  const el = calc.elements;
+  const total = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
+  const food = window.foodResult || {};
+  const filtered = d.aspects.filter(a => shouldShowAspect(a.p1, a.p2, a.orb));
+
+  const rows = (items) => items.map(([a,b]) => `<tr><td>${escapeHtmlSafe(a)}</td><td>${escapeHtmlSafe(b)}</td></tr>`).join('');
+  const planets = d.planets
+    .filter(p => PLANET_NAMES[p.sym] && PLANET_SYMBOLS[p.sym])
+    .map(p => [PLANET_SYMBOLS[p.sym] + ' ' + PLANET_NAMES[p.sym] + (p.isRetro ? ' R' : ''), `${p.pos} ${signLabel(p.signChar)}`]);
+  if (d.asc) planets.push(['ASC', `${d.asc.pos} ${signLabel(d.asc.signChar)}`]);
+  if (d.mc) planets.push(['MC', `${d.mc.pos} ${signLabel(d.mc.signChar)}`]);
+
+  const aspectRows = filtered.length
+    ? filtered.map(a => {
+        const info = ASPECT_NAMES[a.type] || { name: a.typeName };
+        return `<tr><td>${escapeHtmlSafe(info.name || a.typeName)}</td><td>${escapeHtmlSafe(a.p1)}</td><td>${escapeHtmlSafe(a.p2)}</td><td>${escapeHtmlSafe(a.orb)}</td></tr>`;
+      }).join('')
+    : '<tr><td colspan="4">Аспекты в заданных орбисах не найдены</td></tr>';
+
+  const elementRows = ['Огонь','Земля','Воздух','Вода'].map(k => {
+    const sc = el[k] || 0;
+    const pct = total ? Math.round(sc / total * 100) : 0;
+    return `<tr><td>${k}</td><td>${sc}</td><td>${pct}%</td></tr>`;
+  }).join('');
+
+  const energyRows = rows([
+    ['Тепло', calc.teplo], ['Холод', calc.holod], ['Сухость', calc.suhost], ['Влажность', calc.vlazhnost],
+    ['Рациональность', calc.racionalnost], ['Эмоциональность', calc.emotsionalnost]
+  ]);
+
+  const foodRows = rows([
+    ['Пол', food.gender || selectedGender || '—'], ['Вес', food.weight ? food.weight + ' кг' : '—'],
+    ['Рост', food.height ? food.height + ' см' : '—'], ['Возраст', food.age ? food.age + ' лет' : '—'],
+    ['КБЖУ', food.bmr ? 'Базовый обмен: ' + Number(food.bmr).toLocaleString('ru-RU') + ' ккал в день' : '—'],
+    ['Количество приемов еды', food.meals || '—'], ['Завтрак', food.breakfast || '—'],
+    ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
+  ]);
+
+  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:11pt;line-height:1.35}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:12pt}th,td{border:1pt solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Расчёт питания по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Данные питания</h2><table>${foodRows}</table></div></body></html>`;
+}
+
+async function exportDocx() {
+  const wordHtml = makeWordHtml();
+  const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+  const name = (currentData && currentData.chartName ? currentData.chartName : 'karta')
+    .replace(/[^a-zA-Zа-яА-ЯёЁ0-9_\- ]/g,'')
+    .trim() || 'karta';
+  const date = (currentData && currentData.chartDate ? currentData.chartDate : '').replace(/[.: ]/g,'-');
+  const fn = `pitanie_${name}${date ? '_' + date : ''}.doc`;
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fn;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.style.position = 'fixed';
+  link.style.left = '-9999px';
+  link.style.top = '0';
+  document.body.appendChild(link);
+
+  // Для мобильных WebView важно, чтобы клик был по элементу в DOM.
+  link.click();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    if (link.parentNode) link.parentNode.removeChild(link);
+  }, 6000);
+}
+
+window.startExportDocx = async function(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingTxt = document.getElementById('loadingText');
+  if (overlay) overlay.classList.add('active');
+  if (loadingTxt) loadingTxt.textContent = 'Генерируем Word-файл...';
+  try {
+    await exportDocx();
+  } catch(e) {
+    alert('Ошибка генерации файла: ' + e.message);
+  } finally {
+    if (overlay) overlay.classList.remove('active');
   }
 };
 
