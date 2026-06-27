@@ -263,6 +263,69 @@
     font-family: 'AProf' !important;
   }
 
+
+  /* Финальные правки: единый шрифт и единый стиль кнопок */
+  html, body,
+  body *:not(.planet-symbol):not(.planet-symbol *) {
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+  }
+  button, input, select, textarea, option, label, a {
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+  }
+  .planet-symbol, .planet-symbol * {
+    font-family: 'AProf' !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+  }
+  .sotis-link,
+  .sotis-btn-style,
+  .calc-btn,
+  .continue-btn,
+  .export-btn,
+  .reset-btn,
+  #foodCalcBtn.sotis-btn-style {
+    background: #FFFFFF !important;
+    color: #0D1935 !important;
+    border: none !important;
+    border-radius: 14px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0.75rem 2rem !important;
+    font-size: 1.15rem !important;
+    letter-spacing: 0.04em !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+  }
+  .sotis-link *,
+  .sotis-btn-style *,
+  .calc-btn *,
+  .continue-btn *,
+  .export-btn *,
+  .reset-btn * {
+    color: #0D1935 !important;
+  }
+  .sotis-link:hover,
+  .sotis-btn-style:hover,
+  .calc-btn:hover,
+  .continue-btn:hover,
+  .export-btn:hover,
+  .reset-btn:hover {
+    background: #FEDCD1 !important;
+  }
+  .privacy-note {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-top: 0.65rem !important;
+    color: rgba(255,255,255,0.4) !important;
+  }
+  .element-detail { display: none !important; }
+
 </style>
 
 
@@ -302,7 +365,7 @@
         </ol>
       </div>
 
-      <div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank" onclick="showStep2()">
+      <div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank" onclick="openSotisAndShowStep2(event)">
         ✦ Перейти на сайт Сотис
       </a></div>
     </div>
@@ -413,7 +476,7 @@
         </div>
         <div class="food-data-actions">
           <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту →</button></div>
-          <div class="privacy-note">Данные читаются прямо в браузере — ничего не отправляется на сторонние серверы</div>
+          <div class="privacy-note">Данные рассчитываются прямо в браузере — ничего не отправляется на сторонние серверы</div>
         </div>
       </div>
     </div>
@@ -937,14 +1000,14 @@ function renderIndicators(d) {
   elDefs.forEach(({ key, cls, emoji }) => {
     const score = el[key] || 0;
     const pct = total > 0 ? Math.round(score / total * 100) : 0;
-    const detail = breakdown[key].length ? breakdown[key].join(', ') : '—';
+    const detail = '';
     const card = document.createElement('div');
     card.className = `element-card ${cls}`;
     card.innerHTML = `
       <div class="element-name">${emoji} ${key}</div>
       <div class="element-score">${score}</div>
       <div style="font-size:1.2rem;color:var(--muted);margin-top:0.25rem">${pct}%</div>
-      <div class="element-detail">${detail}</div>`;
+      <div class="element-detail"></div>`;
     elGrid.appendChild(card);
   });
   elBlock.appendChild(elGrid);
@@ -1145,7 +1208,7 @@ async function exportDocx() {
       { key:'Вода',   color:'154360', signs:'' },
     ];
     const headerRow = new TableRow({
-      children: [['Стихия',1400],['Знаки',3000],['Баллы',800],['%',600],['Состав',2400]].map(([t,w])=>
+      children: [['Стихия',3000],['Баллы',1600],['%',1600]].map(([t,w])=>
         new TableCell({borders,width:{size:w,type:WidthType.DXA},shading:{fill:'0B1957',type:ShadingType.CLEAR},
           margins:{top:80,bottom:80,left:120,right:120},
           children:[new Paragraph({children:[new TextRun({text:t,bold:true,color:gold,size:18,font:'Arial'})]})]})
@@ -1169,13 +1232,13 @@ async function exportDocx() {
       const pct = total>0 ? Math.round(sc/total*100) : 0;
       const det = breakdown[key].join(', ')||'—';
       return new TableRow({ children: [
-        new TableCell({borders,width:{size:1400,type:WidthType.DXA},margins:{top:60,bottom:60,left:120,right:120},
+        new TableCell({borders,width:{size:3000,type:WidthType.DXA},margins:{top:60,bottom:60,left:120,right:120},
           children:[new Paragraph({children:[new TextRun({text:key,bold:true,color,size:18,font:'Arial'})]})]
         }),
-        cell(signs,3000), cell(String(sc),800), cell(pct+'%',600), cell(det,2400),
+        cell(String(sc),1600), cell(pct+'%',1600),
       ]});
     });
-    return new Table({width:{size:8200,type:WidthType.DXA},columnWidths:[1400,3000,800,600,2400],rows:[headerRow,...rows]});
+    return new Table({width:{size:6200,type:WidthType.DXA},columnWidths:[3000,1600,1600],rows:[headerRow,...rows]});
   }
 
   // Таблица энергий
@@ -1228,6 +1291,19 @@ async function exportDocx() {
     new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 160 } }),
     subheading('Энергии'),
     energiesTable(),
+    divider(),
+    heading('Данные питания'),
+    bodyRow('Пол', (window.foodResult && window.foodResult.gender) || gender),
+    bodyRow('Вес', window.foodResult ? String(window.foodResult.weight) + ' кг' : '—'),
+    bodyRow('Рост', window.foodResult ? String(window.foodResult.height) + ' см' : '—'),
+    bodyRow('Возраст', window.foodResult ? String(window.foodResult.age) + ' лет' : '—'),
+    bodyRow('КБЖУ', window.foodResult ? 'Базовый обмен: ' + window.foodResult.bmr.toLocaleString('ru-RU') + ' ккал в день' : '—'),
+    bodyRow('Количество приемов еды', window.foodResult ? window.foodResult.meals : '—'),
+    bodyRow('Завтрак', window.foodResult ? window.foodResult.breakfast : '—'),
+    bodyRow('Обед', window.foodResult ? window.foodResult.lunch : '—'),
+    bodyRow('Ужин', window.foodResult ? window.foodResult.dinner : '—'),
+    bodyRow('Метаболизм', window.foodResult ? window.foodResult.metabolism : '—'),
+
   ];
 
   const document = new Document({
@@ -1253,8 +1329,31 @@ async function exportDocx() {
 
 
 // ── Прием пищи и завтрак ─────────────────────────────────────────────────────
-function showFoodPage() {
+function showFoodPage(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
   if (!currentData) return;
+
+  const err = document.getElementById('foodDataErr');
+  if (err) err.textContent = '';
+
+  const genderEl = document.getElementById('genderSelect2');
+  const weightEl = document.getElementById('weightInput2');
+  const heightEl = document.getElementById('heightInput2');
+  const ageEl    = document.getElementById('ageInput2');
+
+  const gender = genderEl ? genderEl.value : '';
+  const weight = weightEl ? parseFloat(weightEl.value) : 0;
+  const height = heightEl ? parseFloat(heightEl.value) : 0;
+  const age    = ageEl ? parseInt(ageEl.value, 10) : 0;
+
+  if (!gender || !weight || !height || !age) {
+    if (err) err.textContent = 'Заполните пол, вес, рост и возраст';
+    return;
+  }
+
+  selectedGender = gender;
+  const badge = document.getElementById('genderBadge');
+  if (badge) badge.textContent = selectedGender;
 
   const calc = calcElements(currentData.planets, currentData.asc, currentData.mc);
 
@@ -1271,142 +1370,177 @@ function showFoodPage() {
   let meals = '';
   let formulaText = '';
 
-  // 4 приема еды: сначала проверяем самое сильное условие
   if (rational > emotional + controlCold) {
-    meals = '4 приема еды';
-    formulaText = 'Формула: Рациональность > Эмоциональность + контрольный показатель';
-  }
-  // 3 приема еды
-  else if (
+    meals = '4 приема';
+    formulaText = 'Рациональность > Эмоциональность + контрольный показатель';
+  } else if (
     (rational > controlCold && rational > emotional) ||
     (emotional > rational && emotional > controlCold)
   ) {
-    meals = '3 приема еды';
-    formulaText = 'Формула: Рациональность или Эмоциональность сильнее контрольного показателя';
-  }
-  // 2 приема еды
-  else if (controlCold > rational || controlCold > emotional) {
-    meals = '2 приема еды';
-    formulaText = 'Формула: контрольный показатель сильнее Рациональности или Эмоциональности';
-  }
-  else {
+    meals = '3 приема';
+    formulaText = 'Рациональность или Эмоциональность сильнее контрольного показателя';
+  } else if (controlCold > rational || controlCold > emotional) {
+    meals = '2 приема';
+    formulaText = 'Контрольный показатель сильнее Рациональности или Эмоциональности';
+  } else {
     meals = 'На усмотрение';
     formulaText = 'Показатели равны или близки';
   }
 
-  document.getElementById('foodMeals').textContent = meals;
-  document.getElementById('foodFormula').textContent = formulaText;
+  const foodCount = document.getElementById('foodCount');
+  const foodFormula = document.getElementById('foodFormula');
+  if (foodCount) foodCount.textContent = meals;
+  if (foodFormula) foodFormula.textContent = formulaText;
 
-  // Завтрак: время
+  function mealCard(title, text) {
+    return `<div class="energy-card">
+      <div class="energy-label">${title}</div>
+      <div class="energy-formula">${text}</div>
+    </div>`;
+  }
+
+  let breakfastTimeTitle, breakfastTimeText;
   if (wet > dry) {
-    document.getElementById('breakfastTimeTitle').textContent = 'Ранний завтрак';
-    document.getElementById('breakfastTimeText').textContent =
-      'В течение часа после пробуждения. Формула: Влажность > Сухость';
+    breakfastTimeTitle = 'Ранний завтрак';
+    breakfastTimeText = 'В течение часа после пробуждения';
   } else if (dry > wet) {
-    document.getElementById('breakfastTimeTitle').textContent = 'Поздний завтрак';
-    document.getElementById('breakfastTimeText').textContent =
-      'Через несколько часов после пробуждения. Формула: Сухость > Влажность';
+    breakfastTimeTitle = 'Поздний завтрак';
+    breakfastTimeText = 'Через несколько часов после пробуждения';
   } else {
-    document.getElementById('breakfastTimeTitle').textContent = 'На усмотрение';
-    document.getElementById('breakfastTimeText').textContent =
-      'Формула: Сухость = Влажность';
+    breakfastTimeTitle = 'Завтрак на усмотрение';
+    breakfastTimeText = 'Сухость = Влажность';
   }
 
-  // Завтрак: объем
+  let breakfastVolumeTitle, breakfastVolumeText;
   if (rational > 11) {
-    document.getElementById('breakfastVolumeTitle').textContent = 'Символический завтрак';
-    document.getElementById('breakfastVolumeText').textContent =
-      '10% суточного рациона. Формула: Рациональность > 11 баллов';
+    breakfastVolumeTitle = 'Символический завтрак';
+    breakfastVolumeText = '10% суточного рациона';
   } else if (rational > 7 && rational < 11) {
-    document.getElementById('breakfastVolumeTitle').textContent = 'Средний завтрак';
-    document.getElementById('breakfastVolumeText').textContent =
-      '40% суточного рациона. Формула: Рациональность > 7 и < 11 баллов';
+    breakfastVolumeTitle = 'Средний завтрак';
+    breakfastVolumeText = '40% суточного рациона';
   } else {
-    document.getElementById('breakfastVolumeTitle').textContent = 'Полноценный завтрак';
-    document.getElementById('breakfastVolumeText').textContent =
-      '50% суточного рациона. Формула: Рациональность ≤ 7 баллов';
+    breakfastVolumeTitle = 'Полноценный завтрак';
+    breakfastVolumeText = '50% суточного рациона';
   }
 
-  // Обед: объем по эмоциональности
+  let lunchVolumeTitle, lunchVolumeText;
   if (emotional > 11) {
-    document.getElementById('lunchVolumeTitle').textContent = 'Символический обед';
-    document.getElementById('lunchVolumeText').textContent =
-      '10% суточного рациона. Формула: Эмоциональность > 11 баллов';
+    lunchVolumeTitle = 'Символический обед';
+    lunchVolumeText = '10% суточного рациона';
   } else if (emotional > 6 && emotional < 11) {
-    document.getElementById('lunchVolumeTitle').textContent = 'Средний обед';
-    document.getElementById('lunchVolumeText').textContent =
-      '40% суточного рациона. Формула: Эмоциональность > 6 и < 11 баллов';
+    lunchVolumeTitle = 'Средний обед';
+    lunchVolumeText = '40% суточного рациона';
   } else {
-    document.getElementById('lunchVolumeTitle').textContent = 'Полноценный обед';
-    document.getElementById('lunchVolumeText').textContent =
-      '50% суточного рациона. Формула: Эмоциональность ≤ 6 баллов';
+    lunchVolumeTitle = 'Полноценный обед';
+    lunchVolumeText = '50% суточного рациона';
   }
 
-  // Ужин: показатель 3
-  const indicator3 = controlCold;
-  const indicator3Name = selectedGender === 'Мужской'
-    ? 'Холод'
-    : '(Холод + Влажность) / 2';
-
-  if (indicator3 < 6) {
-    document.getElementById('dinnerVolumeTitle').textContent = 'Полноценный ужин';
-    document.getElementById('dinnerVolumeText').textContent =
-      `50% суточного рациона. Формула: показатель 3 < 6 баллов. Показатель 3 = ${indicator3Name}`;
-  } else if (indicator3 > 6) {
-    document.getElementById('dinnerVolumeTitle').textContent = 'Ограниченный ужин';
-    document.getElementById('dinnerVolumeText').textContent =
-      `Количество не должно превышать завтрак и обед. Формула: показатель 3 > 6 баллов. Показатель 3 = ${indicator3Name}`;
+  let dinnerVolumeTitle, dinnerVolumeText;
+  if (controlCold < 6) {
+    dinnerVolumeTitle = 'Полноценный ужин';
+    dinnerVolumeText = '50% суточного рациона';
+  } else if (controlCold > 6) {
+    dinnerVolumeTitle = 'Ограниченный ужин';
+    dinnerVolumeText = 'Количество не должно превышать завтрак и обед';
   } else {
-    document.getElementById('dinnerVolumeTitle').textContent = 'Ужин на усмотрение';
-    document.getElementById('dinnerVolumeText').textContent =
-      `Формула: показатель 3 = 6 баллов. Показатель 3 = ${indicator3Name}`;
+    dinnerVolumeTitle = 'Ужин на усмотрение';
+    dinnerVolumeText = 'Показатель равен 6 баллам';
   }
 
-  // Метаболизм по положению Солнца
   const sun = currentData.planets.find(p => p.sym === 'n');
   const sunSign = sun ? SIGN_PLAIN[sun.signChar] : '';
   const energySavingSigns = ['Близнецы', 'Рак', 'Весы', 'Скорпион', 'Водолей', 'Рыбы'];
   const energyIntensiveSigns = ['Овен', 'Телец', 'Лев', 'Дева', 'Стрелец', 'Козерог'];
 
+  let metabolismTitle = 'Метаболизм не определён';
+  let metabolismText = 'Не удалось определить знак Солнца.';
   if (energySavingSigns.includes(sunSign)) {
-    document.getElementById('metabolismTitle').textContent = 'Энергосберегающий';
-    document.getElementById('metabolismText').textContent =
-      `Физическая активность после приёма еды. Организм необходимо разогревать после еды. Формула: Солнце в знаке ${sunSign}.`;
+    metabolismTitle = 'Энергосберегающий';
+    metabolismText = 'Физическая активность после приёма еды. Организм необходимо разогревать после еды.';
   } else if (energyIntensiveSigns.includes(sunSign)) {
-    document.getElementById('metabolismTitle').textContent = 'Энергоёмкий';
-    document.getElementById('metabolismText').textContent =
-      `Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи. Формула: Солнце в знаке ${sunSign}.`;
-  } else {
-    document.getElementById('metabolismTitle').textContent = 'Метаболизм не определён';
-    document.getElementById('metabolismText').textContent = 'Не удалось определить знак Солнца.';
+    metabolismTitle = 'Энергоёмкий';
+    metabolismText = 'Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи.';
   }
 
-  document.getElementById('foodPage').style.display = 'block';
-  document.getElementById('foodPage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const bmr = selectedGender === 'Мужской'
+    ? Math.round(10 * weight + 6.25 * height - 5 * age + 5)
+    : Math.round(10 * weight + 6.25 * height - 5 * age - 161);
+
+  const mealsGrid = document.getElementById('mealsGrid');
+  if (mealsGrid) {
+    mealsGrid.innerHTML = [
+      mealCard('КБЖУ', `Базовый обмен: ${bmr.toLocaleString('ru-RU')} ккал в день`),
+      mealCard('Завтрак', `${breakfastVolumeTitle}. ${breakfastVolumeText}. ${breakfastTimeTitle}: ${breakfastTimeText}.`),
+      mealCard('Обед', `${lunchVolumeTitle}. ${lunchVolumeText}.`),
+      mealCard('Ужин', `${dinnerVolumeTitle}. ${dinnerVolumeText}.`),
+      mealCard('Метаболизм', `${metabolismTitle}. ${metabolismText}`)
+    ].join('');
+  }
+
+  const saltGrid = document.getElementById('saltGrid');
+  if (saltGrid) {
+    const water = Math.round(weight * 30);
+    const liquidMin = Math.round(weight * 50);
+    const liquidMax = Math.round(weight * 60);
+    saltGrid.innerHTML = [
+      mealCard('Соль', '5 грамм'),
+      mealCard('Вода', `${water.toLocaleString('ru-RU')} мл в день`),
+      mealCard('Жидкость', `${liquidMin.toLocaleString('ru-RU')}–${liquidMax.toLocaleString('ru-RU')} мл в день`)
+    ].join('');
+  }
+
+  window.foodResult = {
+    gender, weight, height, age, bmr, meals, formulaText,
+    breakfast: `${breakfastVolumeTitle}. ${breakfastVolumeText}. ${breakfastTimeTitle}: ${breakfastTimeText}.`,
+    lunch: `${lunchVolumeTitle}. ${lunchVolumeText}.`,
+    dinner: `${dinnerVolumeTitle}. ${dinnerVolumeText}.`,
+    metabolism: `${metabolismTitle}. ${metabolismText}`
+  };
+
+  const foodDataBlock = document.getElementById('foodDataBlock');
+  if (foodDataBlock) foodDataBlock.style.display = 'none';
+  const foodPage = document.getElementById('foodPage');
+  if (foodPage) {
+    foodPage.style.display = 'block';
+    foodPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ── Сброс ─────────────────────────────────────────────────────────────────────
 function resetPage() {
   currentData = null; selectedFile = null; selectedGender = '';
-  document.getElementById('fileInput').value = '';
-  document.getElementById('fileChosen').textContent = '';
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) fileInput.value = '';
+  const fileChosen = document.getElementById('fileChosen');
+  if (fileChosen) fileChosen.textContent = '';
   const btn = document.getElementById('uploadBtnLabel');
-  btn.style.borderColor = ''; btn.style.color = '';
-  document.getElementById('genderF').classList.remove('active');
-  document.getElementById('genderM').classList.remove('active');
-  document.getElementById('genderErr').style.display = 'none';
+  if (btn) { btn.style.borderColor = ''; btn.style.color = ''; }
+  const gf = document.getElementById('genderF');
+  const gm = document.getElementById('genderM');
+  const ge = document.getElementById('genderErr');
+  if (gf) gf.classList.remove('active');
+  if (gm) gm.classList.remove('active');
+  if (ge) ge.style.display = 'none';
   const foodPage = document.getElementById('foodPage');
   if (foodPage) foodPage.style.display = 'none';
-  document.getElementById('uploadZone').style.display = 'flex';
+  const foodDataBlock = document.getElementById('foodDataBlock');
+  if (foodDataBlock) foodDataBlock.style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('result').style.display = 'none';
   window.scrollTo(0, 0);
 }
+
 
 </script>
 
 <script>
 // ── Таймер Шага 2 ────────────────────────────────────────────────────────────
 let step2Timer = null;
+
+function openSotisAndShowStep2(event) {
+  showStep2();
+  // Ссылка при этом открывается штатно через href/target="_blank".
+}
 
 function startStep2Timer() {
   // Оставлено для совместимости: теперь шаг 2 открывается сразу.
