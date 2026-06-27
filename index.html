@@ -66,7 +66,8 @@
 
   /* Шаги */
   .step { display: flex; flex-direction: column; gap: 0.5rem; width:100%; }
-  .step-label { color: #FC9FBC !important; font-size: 1.08rem; letter-spacing: 0.02em; text-transform: uppercase; text-align:center; }
+  .step-label { color: #FC9FBC !important; font-size: 1.08rem; letter-spacing: 0.02em; text-transform: uppercase; text-align:left; }
+  #step1Block .step-label { text-align:left !important; }
   #step1Block .step-label { text-align:left !important; width:100%; }
 
   /* Блок инструкции */
@@ -255,14 +256,14 @@
 
     <!-- ШАГ 1 -->
     <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-      <div class="step-label">Шаг 1 — создайте натальную карту на Сотисе</div>
+      <div class="step-label">Шаг 1 — создайте карту на Сотисе</div>
 
       <div class="instruction-box">
         <p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
-          В меню нажмите «Гороскоп» → «Создать новый» → «Одинарная карта»
+          В меню нажмите «Гороскоп» → «Создать новый» → выберите нужный тип карты
         </p>
         <ol style="color:#FFFFFF">
-          <li style="color:#FFFFFF !important">Укажите тип карты — «Натал»</li>
+          <li style="color:#FFFFFF !important">Укажите нужный тип карты</li>
           <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
           <li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
           <li style="color:#FFFFFF !important">Перейдите в меню «Гороскоп» → «Поделиться»</li>
@@ -1472,7 +1473,7 @@ async function fetchViaProxy(url) {
     }
   }
 
-  throw new Error('Не удалось загрузить карту. Проверьте ссылку и попробуйте снова.');
+  throw new Error('Не удалось загрузить карту через браузер. Проверьте, что ссылка открывается, или попробуйте скопировать ссылку заново.');
 }
 
 // ── Главная функция — загрузить карту по ссылке ───────────────────────────────
