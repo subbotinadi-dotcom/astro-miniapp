@@ -527,6 +527,30 @@
     margin-right: auto !important;
   }
 
+
+  /* Финальные правки Telegram/мобайл */
+  #foodDataBlock .food-data-form,
+  #foodDataBlock .form-field,
+  #foodDataBlock .form-field select,
+  #foodDataBlock .form-field input,
+  #foodDataBlock .input-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #foodDataBlock .input-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.8rem !important;
+  }
+  #foodDataBlock .form-field[style] { grid-column: auto !important; }
+  .aspect-row .asp-planets,
+  .aspect-row .asp-orb {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
 </style>
 
 
@@ -1822,9 +1846,22 @@ function extractSotisUrl(value) {
   raw = raw.replace(/&amp;/g, '&').trim();
   if (raw.startsWith('//')) raw = 'https:' + raw;
   if (raw.startsWith('sotis-online.ru')) raw = 'https://' + raw;
+
+  // Сотис иногда отдаёт пустую/неполную страницу, если в chr нет ct.
+  // Не проверяем тип карты (натал/транзит), но для ссылок без ct добавляем безопасный ct:1,
+  // чтобы ссылка вида ?chr=dt:...;sx:...;cid:... читалась так же, как рабочая ?chr=ct:1;dt:...
+  try {
+    const u = new URL(raw);
+    if (u.hostname.toLowerCase().includes('sotis-online.ru')) {
+      const chr = u.searchParams.get('chr');
+      if (chr && !/(^|;)ct\s*:/i.test(chr)) {
+        u.searchParams.set('chr', 'ct:1;' + chr.replace(/^;+/, ''));
+        raw = u.toString();
+      }
+    }
+  } catch (_) {}
   return raw;
 }
-
 function looksLikeSotisChartHtml(html) {
   const text = String(html || '');
   return text.includes('table') && (text.includes('coord') || text.includes('g.asp') || text.includes('vsbl'));
@@ -1880,7 +1917,7 @@ async function fetchViaProxy(url) {
     }
   }
 
-  throw new Error('Не удалось прочитать ссылку Сотиса. Откройте ссылку в браузере, убедитесь, что карта построена, затем скопируйте ссылку из поля «Разместить карту на АстроПро» ещё раз. Последняя ошибка: ' + lastError);
+  throw new Error('Не удалось прочитать ссылку Сотиса. Откройте ссылку в браузере, убедитесь, что карта построена, затем скопируйте ссылку из адресной строки и вставьте её в поле Шага 2 ещё раз. Последняя ошибка: ' + lastError);
 }
 
 // ── Главная функция — загрузить карту по ссылке ───────────────────────────────
@@ -1932,7 +1969,7 @@ async function calculateFromUrl(event) {
     }
     currentData = parseHTML(html);
     if (!currentData || !currentData.planets || currentData.planets.length === 0) {
-      throw new Error('Ссылка прочитана, но координаты планет не найдены. Скопируйте именно ссылку из поля «Разместить карту на АстроПро».');
+      throw new Error('Ссылка прочитана, но координаты планет не найдены. Скопируйте ссылку в браузере и вставьте её в поле Шага 2.');
     }
     render();
 
@@ -2339,25 +2376,40 @@ window.startExportDocx = async function(event) {
     try{
       if (typeof window.runProductCalculations === 'function') window.runProductCalculations();
       var html = buildStandaloneResultHtml();
-      var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-      var url = URL.createObjectURL(blob);
-      var opened = window.open(url, '_blank');
-      var box = document.getElementById('foodPage') || document.getElementById('result') || document.body;
-      if (!opened) {
-        box.style.display = 'block';
-        box.innerHTML = '<div class="sotis-link-wrap" style="margin-top:2rem"><a class="export-btn sotis-btn-style" href="'+url+'" target="_blank" download="pitanie_result.html">✦ Открыть результат</a></div>';
-      } else {
-        var note = document.getElementById('resultOpenNote');
-        if (!note) {
-          note = document.createElement('div');
-          note.id = 'resultOpenNote';
-          note.className = 'sotis-link-wrap';
-          note.style.marginTop = '2rem';
-          box.parentNode ? box.parentNode.insertBefore(note, box.nextSibling) : document.body.appendChild(note);
+      var opened = null;
+
+      // 1) Самый совместимый вариант для Telegram/мобайла: открыть пустую вкладку и записать HTML напрямую.
+      // Так не появляется blob:https://..., который Telegram часто не умеет открывать как обычную ссылку.
+      try {
+        opened = window.open('', '_blank');
+        if (opened && opened.document) {
+          opened.document.open();
+          opened.document.write(html);
+          opened.document.close();
+          try { opened.focus(); } catch(_) {}
         }
-        note.innerHTML = '<a class="export-btn sotis-btn-style" href="'+url+'" target="_blank" download="pitanie_result.html">✦ Открыть результат ещё раз</a>';
+      } catch(_) { opened = null; }
+
+      // 2) Если всплывающее окно заблокировано, открываем результат в текущем окне Telegram/браузера.
+      if (!opened || !opened.document) {
+        document.open();
+        document.write(html);
+        document.close();
+        return;
       }
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 10 * 60 * 1000);
+
+      // 3) Дополнительная кнопка для повторного открытия в текущем окне, если вкладка не показалась.
+      var box = document.getElementById('foodPage') || document.getElementById('result') || document.body;
+      var note = document.getElementById('resultOpenNote');
+      if (!note) {
+        note = document.createElement('div');
+        note.id = 'resultOpenNote';
+        note.className = 'sotis-link-wrap';
+        note.style.marginTop = '2rem';
+        box.parentNode ? box.parentNode.insertBefore(note, box.nextSibling) : document.body.appendChild(note);
+      }
+      note.innerHTML = '<button type="button" class="export-btn sotis-btn-style" onclick="document.open();document.write(window.__lastResultHtml);document.close();">✦ Открыть результат здесь</button>';
+      window.__lastResultHtml = html;
     }catch(e){ alert('Не удалось создать итоговый HTML: ' + (e && e.message ? e.message : e)); }
   };
   window.showFoodPage = function(event){
