@@ -486,6 +486,47 @@
   .continue-btn { display:block !important; margin-left:auto !important; margin-right:auto !important; text-align:center !important; }
   #foodCalcBtn.sotis-btn-style { width:min(100%, 560px) !important; max-width:560px !important; display:block !important; margin:1rem auto 0 !important; padding-left:3rem !important; padding-right:3rem !important; box-sizing:border-box !important; }
   .privacy-note:empty { display:none !important; }
+
+  /* Финал: поля Шага 3 одной ширины, женский пол по умолчанию, результат отдельным HTML */
+  #foodDataBlock .food-data-form,
+  #foodDataBlock .form-field,
+  #foodDataBlock .input-grid,
+  #foodDataBlock select,
+  #foodDataBlock input {
+    width: 100% !important;
+    max-width: 560px !important;
+    box-sizing: border-box !important;
+  }
+  #foodDataBlock .input-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #foodDataBlock .form-field {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    grid-column: auto !important;
+  }
+  #foodDataBlock .food-data-form {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #foodCalcBtn.sotis-btn-style {
+    width: min(100%, 560px) !important;
+    max-width: 560px !important;
+    display: block !important;
+    margin: 1rem auto 0 !important;
+  }
+  .aspect-row .asp-planets,
+  .aspect-row .asp-orb {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
 </style>
 
 
@@ -520,8 +561,7 @@
           <li style="color:#FFFFFF !important">Укажите нужный тип карты</li>
           <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
           <li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
-          <li style="color:#FFFFFF !important">Перейдите в меню «Гороскоп» → «Поделиться»</li>
-          <li style="color:#FFFFFF !important">Скопируйте ссылку из поля «Разместить карту на АстроПро»</li>
+          <li style="color:#FFFFFF !important">Скопируй ссылку в браузере и вставь в поле Шага 2.</li>
         </ol>
       </div>
 
@@ -602,8 +642,7 @@
         <div class="form-field" style="margin-bottom:0.8rem">
           <label for="genderSelect2">Пол</label>
           <select id="genderSelect2">
-            <option value="">Выберите</option>
-            <option value="Женский">Женский</option>
+            <option value="Женский" selected>Женский</option>
             <option value="Мужской">Мужской</option>
           </select>
         </div>
@@ -2303,12 +2342,22 @@ window.startExportDocx = async function(event) {
       var blob = new Blob([html], {type:'text/html;charset=utf-8'});
       var url = URL.createObjectURL(blob);
       var opened = window.open(url, '_blank');
+      var box = document.getElementById('foodPage') || document.getElementById('result') || document.body;
       if (!opened) {
-        var box = document.getElementById('foodPage') || document.body;
         box.style.display = 'block';
         box.innerHTML = '<div class="sotis-link-wrap" style="margin-top:2rem"><a class="export-btn sotis-btn-style" href="'+url+'" target="_blank" download="pitanie_result.html">✦ Открыть результат</a></div>';
+      } else {
+        var note = document.getElementById('resultOpenNote');
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'resultOpenNote';
+          note.className = 'sotis-link-wrap';
+          note.style.marginTop = '2rem';
+          box.parentNode ? box.parentNode.insertBefore(note, box.nextSibling) : document.body.appendChild(note);
+        }
+        note.innerHTML = '<a class="export-btn sotis-btn-style" href="'+url+'" target="_blank" download="pitanie_result.html">✦ Открыть результат ещё раз</a>';
       }
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 10 * 60 * 1000);
     }catch(e){ alert('Не удалось создать итоговый HTML: ' + (e && e.message ? e.message : e)); }
   };
   window.showFoodPage = function(event){
@@ -2345,6 +2394,15 @@ window.startExportDocx = async function(event) {
     window.foodResult={gender:gender,weight:weight,height:height,age:age,bmr:bmr,meals:meals,formulaText:formulaText,breakfast:breakfastVolumeTitle+'. '+breakfastVolumeText+'. '+breakfastTimeTitle+': '+breakfastTimeText+'.',lunch:lunchVolumeTitle+'. '+lunchVolumeText+'.',dinner:dinnerVolumeTitle+'. '+dinnerVolumeText+'.',metabolism:metabolismTitle+'. '+metabolismText};
     window.openStandaloneResultFile();
   };
+})();
+</script>
+
+<script>
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var gender = document.getElementById('genderSelect2');
+    if (gender && !gender.value) gender.value = 'Женский';
+  });
 })();
 </script>
 
