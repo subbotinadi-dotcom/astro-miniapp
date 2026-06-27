@@ -1750,46 +1750,88 @@ function showStep3() {
   }
 }
 
-// ── CORS-прокси список (пробуем по очереди) ──────────────────────────────────
+// ── Чтение ссылки Сотиса ───────────────────────────────────────────────────
+// В Telegram WebView прямой fetch к sotis-online.ru часто блокируется CORS.
+// Поэтому пробуем несколько рабочих способов и принимаем только HTML, где есть таблицы карты.
 const PROXIES = [
+  url => url,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
   url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  url => `https://cors.isomorphic-git.org/${url}`,
 ];
 
-async function fetchViaProxy(url) {
-  const normalizedUrl = url.trim();
+function extractSotisUrl(value) {
+  let raw = String(value || '').trim();
+  const iframeMatch = raw.match(/src=["']([^"']*sotis-online\.ru[^"']+)["']/i);
+  if (iframeMatch) raw = iframeMatch[1];
+  const plainMatch = raw.match(/https?:\/\/sotis-online\.ru\/[^\s"'<>]+/i);
+  if (plainMatch) raw = plainMatch[0];
+  raw = raw.replace(/&amp;/g, '&').trim();
+  if (raw.startsWith('//')) raw = 'https:' + raw;
+  if (raw.startsWith('sotis-online.ru')) raw = 'https://' + raw;
+  return raw;
+}
 
-  // Важно: некоторые прокси возвращают JSON, а некоторые — обычный HTML.
-  // Поэтому сначала читаем ответ как текст, а уже потом пробуем разобрать JSON.
-  // Так не ломается corsproxy.io в Telegram WebView.
+function looksLikeSotisChartHtml(html) {
+  const text = String(html || '');
+  return text.includes('table') && (text.includes('coord') || text.includes('g.asp') || text.includes('vsbl'));
+}
+
+async function readProxyResponse(resp) {
+  const raw = await resp.text();
+  if (!raw) return '';
+
+  // allorigins / похожие прокси возвращают JSON { contents: "..." }
+  try {
+    const data = JSON.parse(raw);
+    if (data && typeof data.contents === 'string') return data.contents;
+    if (data && typeof data.body === 'string') return data.body;
+  } catch (_) {}
+
+  return raw;
+}
+
+async function fetchViaProxy(url) {
+  const normalizedUrl = extractSotisUrl(url);
+  let lastError = '';
+
   for (let i = 0; i < PROXIES.length; i++) {
     try {
       const proxyUrl = PROXIES[i](normalizedUrl);
       const resp = await fetch(proxyUrl, {
         method: 'GET',
         cache: 'no-store',
-        signal: AbortSignal.timeout(15000)
+        headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
+        signal: AbortSignal.timeout(20000)
       });
-      if (!resp.ok) continue;
-
-      const raw = await resp.text();
-      if (!raw) continue;
-
-      try {
-        const data = JSON.parse(raw);
-        if (data && data.contents && data.contents.length > 100) return data.contents;
-      } catch (_) {
-        // Это не JSON, значит, возможно, это уже HTML страницы.
+      if (!resp.ok) {
+        lastError = `HTTP ${resp.status}`;
+        continue;
       }
 
-      if (raw.length > 100) return raw;
+      let html = await readProxyResponse(resp);
+      if (!html || html.length < 200) {
+        lastError = 'пустой ответ';
+        continue;
+      }
+
+      html = html.replace(/\\u003C/g, '<').replace(/\\u003E/g, '>').replace(/\\u0026/g, '&');
+
+      // Возвращаем только реальную страницу карты, а не страницу ошибки/заглушку прокси.
+      if (looksLikeSotisChartHtml(html)) return html;
+
+      lastError = 'координаты карты не найдены в ответе';
     } catch(e) {
-      console.warn('Proxy', i, 'failed:', e && e.message ? e.message : e);
+      lastError = e && e.message ? e.message : String(e);
+      console.warn('Sotis loader', i, 'failed:', lastError);
     }
   }
 
-  throw new Error('Не удалось загрузить карту через браузер. Проверьте, что ссылка открывается, или попробуйте скопировать ссылку заново.');
+  throw new Error('Не удалось прочитать ссылку Сотиса. Откройте ссылку в браузере, убедитесь, что карта построена, затем скопируйте ссылку из поля «Разместить карту на АстроПро» ещё раз. Последняя ошибка: ' + lastError);
 }
 
 // ── Главная функция — загрузить карту по ссылке ───────────────────────────────
@@ -1798,7 +1840,7 @@ async function calculateFromUrl(event) {
 
   const urlInput = document.getElementById('sotisUrlInput');
   const urlErr   = document.getElementById('urlErr');
-  const urlVal   = urlInput.value.trim();
+  const urlVal   = extractSotisUrl(urlInput.value);
 
   // Валидация ссылки
   urlErr.style.display = 'none';
@@ -1813,7 +1855,7 @@ async function calculateFromUrl(event) {
   const overlay   = document.getElementById('loadingOverlay');
   const loadingTxt = document.getElementById('loadingText');
   overlay.classList.add('active');
-  loadingTxt.textContent = 'Загружаем карту с Сотиса...';
+  loadingTxt.textContent = 'Читаем ссылку Сотиса...';
 
   try {
     const html = await fetchViaProxy(urlVal);
@@ -1840,6 +1882,9 @@ async function calculateFromUrl(event) {
       throw new Error('Логика расчёта не загрузилась. Обновите файл полностью и попробуйте снова.');
     }
     currentData = parseHTML(html);
+    if (!currentData || !currentData.planets || currentData.planets.length === 0) {
+      throw new Error('Ссылка прочитана, но координаты планет не найдены. Скопируйте именно ссылку из поля «Разместить карту на АстроПро».');
+    }
     render();
 
     overlay.classList.remove('active');
