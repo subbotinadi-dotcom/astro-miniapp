@@ -476,6 +476,16 @@
 
   .privacy-note { display: none !important; }
 
+
+
+  /* Правки: аспекты по центру, кнопки по центру и шире */
+  .aspect-row { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; text-align:center !important; gap:0.35rem !important; padding:0.85rem 1rem !important; }
+  .aspect-row .asp-type, .aspect-row .asp-planets, .aspect-row .asp-orb { display:block !important; width:100% !important; margin-left:0 !important; margin-right:0 !important; text-align:center !important; white-space:normal !important; }
+  .aspect-row .asp-orb { color:rgba(255,255,255,0.78) !important; font-size:0.98rem !important; }
+  .sotis-link-wrap, .food-data-actions, .bottom-btns { text-align:center !important; justify-content:center !important; align-items:center !important; }
+  .continue-btn { display:block !important; margin-left:auto !important; margin-right:auto !important; text-align:center !important; }
+  #foodCalcBtn.sotis-btn-style { width:min(100%, 560px) !important; max-width:560px !important; display:block !important; margin:1rem auto 0 !important; padding-left:3rem !important; padding-right:3rem !important; box-sizing:border-box !important; }
+  .privacy-note:empty { display:none !important; }
 </style>
 
 
@@ -615,7 +625,7 @@
           <div style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem" id="foodDataErr"></div>
         </div>
         <div class="food-data-actions">
-          <div class="sotis-link-wrap" id="foodCalcBtnWrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту</button></div>
+          <div class="sotis-link-wrap" id="foodCalcBtnWrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Рассчитать</button></div>
         </div>
       </div>
     </div>
@@ -2265,5 +2275,78 @@ window.startExportDocx = async function(event) {
   }
 })();
 </script>
+
+<script>
+(function(){
+  function buildStandaloneResultHtml(){
+    var content = (typeof window.buildPdfHtml === 'function') ? window.buildPdfHtml() : '<div class="pdf-export-root"><h1>Расчёт питания</h1><p>Данные расчёта не найдены.</p></div>';
+    var title = 'Расчёт питания по натальной карте';
+    return '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+title+'</title>'+
+      '<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></scr'+'ipt>'+
+      '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">'+
+      '<style>'+resultPageCss()+'</style></head><body><div class="wrap">'+
+      '<div class="page-header"><h2>Расчёт питания</h2><div class="page-meta">Итоговый файл</div><div class="page-sub">Результаты расчёта сформированы автоматически</div></div>'+
+      '<div id="pdfContent">'+content+'</div>'+
+      '<div class="download-zone"><button class="btn bp" onclick="downloadPdf()">✦ Скачать PDF</button></div>'+
+      '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
+  }
+  function resultPageCss(){
+    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#111933;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FAF3EB;--white:#fff;--card:rgba(250,243,235,.055);--border-soft:rgba(254,220,209,.34);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28)}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.rec,.forb{font-weight:700}.rec{color:#00B5A6}.forb{color:#FF99BE}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}}';
+  }
+  function downloadScript(){
+    return 'function downloadPdf(){var el=document.getElementById("pdfContent");var opt={margin:8,filename:"pitanie_result.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["avoid-all","css","legacy"]}};if(typeof html2pdf!=="undefined"){html2pdf().set(opt).from(el).save();}else{window.print();}}';
+  }
+  window.openStandaloneResultFile = function(){
+    try{
+      if (typeof window.runProductCalculations === 'function') window.runProductCalculations();
+      var html = buildStandaloneResultHtml();
+      var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var opened = window.open(url, '_blank');
+      if (!opened) {
+        var box = document.getElementById('foodPage') || document.body;
+        box.style.display = 'block';
+        box.innerHTML = '<div class="sotis-link-wrap" style="margin-top:2rem"><a class="export-btn sotis-btn-style" href="'+url+'" target="_blank" download="pitanie_result.html">✦ Открыть результат</a></div>';
+      }
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    }catch(e){ alert('Не удалось создать итоговый HTML: ' + (e && e.message ? e.message : e)); }
+  };
+  window.showFoodPage = function(event){
+    if(event){event.preventDefault();event.stopPropagation();}
+    if(!currentData) return alert('Сначала выполните расчёт карты.');
+    var err=document.getElementById('foodDataErr'); if(err) err.textContent='';
+    var genderEl=document.getElementById('genderSelect2'), weightEl=document.getElementById('weightInput2'), heightEl=document.getElementById('heightInput2'), ageEl=document.getElementById('ageInput2');
+    var gender=genderEl?genderEl.value:'', weight=weightEl?parseFloat(weightEl.value):0, height=heightEl?parseFloat(heightEl.value):0, age=ageEl?parseInt(ageEl.value,10):0;
+    if(!gender||!weight||!height||!age){ if(err) err.textContent='Заполните пол, вес, рост и возраст'; return; }
+    selectedGender=gender; var badge=document.getElementById('genderBadge'); if(badge) badge.textContent=selectedGender;
+    var calc=calcElements(currentData.planets,currentData.asc,currentData.mc);
+    var rational=calc.racionalnost, emotional=calc.emotsionalnost, cold=calc.holod, wet=calc.vlazhnost, dry=calc.suhost;
+    var controlCold=selectedGender==='Мужской'?cold:(cold+wet)/2;
+    var meals='', formulaText='';
+    if(rational>emotional+controlCold){meals='4 приема';formulaText='Рациональность > Эмоциональность + контрольный показатель';}
+    else if((rational>controlCold&&rational>emotional)||(emotional>rational&&emotional>controlCold)){meals='3 приема';formulaText='Рациональность или Эмоциональность сильнее контрольного показателя';}
+    else if(controlCold>rational||controlCold>emotional){meals='2 приема';formulaText='Контрольный показатель сильнее Рациональности или Эмоциональности';}
+    else{meals='На усмотрение';formulaText='Показатели равны или близки';}
+    var breakfastTimeTitle=wet>dry?'Ранний завтрак':(dry>wet?'Поздний завтрак':'Завтрак на усмотрение');
+    var breakfastTimeText=wet>dry?'В течение часа после пробуждения':(dry>wet?'Через несколько часов после пробуждения':'Сухость = Влажность');
+    var breakfastVolumeTitle=rational>11?'Символический завтрак':(rational>7&&rational<11?'Средний завтрак':'Полноценный завтрак');
+    var breakfastVolumeText=rational>11?'10% суточного рациона':(rational>7&&rational<11?'40% суточного рациона':'50% суточного рациона');
+    var lunchVolumeTitle=emotional>11?'Символический обед':(emotional>6&&emotional<11?'Средний обед':'Полноценный обед');
+    var lunchVolumeText=emotional>11?'10% суточного рациона':(emotional>6&&emotional<11?'40% суточного рациона':'50% суточного рациона');
+    var dinnerVolumeTitle=controlCold<6?'Полноценный ужин':(controlCold>6?'Ограниченный ужин':'Ужин на усмотрение');
+    var dinnerVolumeText=controlCold<6?'50% суточного рациона':(controlCold>6?'Количество не должно превышать завтрак и обед':'Показатель равен 6 баллам');
+    var sun=currentData.planets.find(function(p){return p.sym==='n';}); var sunSign=sun?SIGN_PLAIN[sun.signChar]:'';
+    var saving=['Близнецы','Рак','Весы','Скорпион','Водолей','Рыбы'], intensive=['Овен','Телец','Лев','Дева','Стрелец','Козерог'];
+    var metabolismTitle='Метаболизм не определён', metabolismText='Не удалось определить знак Солнца.';
+    if(saving.indexOf(sunSign)!==-1){metabolismTitle='Энергосберегающий';metabolismText='Физическая активность после приёма еды. Организм необходимо разогревать после еды.';}
+    else if(intensive.indexOf(sunSign)!==-1){metabolismTitle='Энергоёмкий';metabolismText='Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи.';}
+    var bmr=selectedGender==='Мужской'?Math.round(10*weight+6.25*height-5*age+5):Math.round(10*weight+6.25*height-5*age-161);
+    window.currentData=currentData;
+    window.foodResult={gender:gender,weight:weight,height:height,age:age,bmr:bmr,meals:meals,formulaText:formulaText,breakfast:breakfastVolumeTitle+'. '+breakfastVolumeText+'. '+breakfastTimeTitle+': '+breakfastTimeText+'.',lunch:lunchVolumeTitle+'. '+lunchVolumeText+'.',dinner:dinnerVolumeTitle+'. '+dinnerVolumeText+'.',metabolism:metabolismTitle+'. '+metabolismText};
+    window.openStandaloneResultFile();
+  };
+})();
+</script>
+
 </body>
 </html>
