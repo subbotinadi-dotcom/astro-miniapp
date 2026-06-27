@@ -414,6 +414,68 @@
   .pdf-export-root .rec { background:#d9f5f2 !important; color:#006f66 !important; font-weight:bold !important; }
   .pdf-export-root .forb { background:#ffe0ec !important; color:#b32068 !important; font-weight:bold !important; }
 
+
+
+  /* Финальные исправления: орбисы и центрирование кнопок */
+  .aspect-row {
+    display: grid !important;
+    grid-template-columns: minmax(7rem, 1fr) minmax(10rem, 2fr) auto !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+  }
+  .asp-orb {
+    display: inline-block !important;
+    color: rgba(255,255,255,0.82) !important;
+    font-size: 0.98rem !important;
+    white-space: nowrap !important;
+    text-align: right !important;
+  }
+  @media (max-width: 560px) {
+    .aspect-row {
+      grid-template-columns: 1fr !important;
+      gap: 0.3rem !important;
+    }
+    .asp-orb { text-align: left !important; }
+  }
+
+  .sotis-link-wrap,
+  .food-data-actions,
+  .bottom-btns {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  #step2Block .sotis-btn-style,
+  button[onclick="calculateFromUrl(event)"] {
+    width: min(100%, 420px) !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .continue-btn {
+    display: block !important;
+    margin: 2rem auto !important;
+    text-align: center !important;
+    width: min(100%, 420px) !important;
+  }
+
+  #foodCalcBtn.sotis-btn-style {
+    width: min(100%, 560px) !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 2.4rem !important;
+    padding-right: 2.4rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .privacy-note { display: none !important; }
+
 </style>
 
 
@@ -1016,10 +1078,11 @@ function render() {
       : '';
     const row = document.createElement('div');
     row.className = 'aspect-row';
+    const orbText = (a.orb || '').trim() || '—';
     row.innerHTML = `
       <span class="asp-type ${info.cls}">${info.name || a.typeName}</span>
       <span class="asp-planets">${a.p1} — ${a.p2}</span>
-      <span class="asp-orb">Орбис: ${a.orb}</span>`;
+      <span class="asp-orb">Орбис: ${orbText}</span>`;
     al.appendChild(row);
   });
   if (filtered.length === 0)
