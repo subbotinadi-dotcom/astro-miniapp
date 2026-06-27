@@ -326,69 +326,94 @@
   #foodCalcBtnWrap, #foodCalcBtnWrap .sotis-link-wrap {
     width: 100% !important;
   }
-  .pdf-export-root{background:#fff;color:#111;font-family:Arial,sans-serif;font-size:11pt;line-height:1.35;width:190mm;padding:0;}
-  .pdf-export-root *{color:#111;box-sizing:border-box;}
-  .pdf-export-root h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;line-height:1.15;}
-  .pdf-export-root h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt;page-break-after:avoid;}
-  .pdf-export-root h3{color:#0B1957;font-size:13pt;margin:12pt 0 5pt;border-left:3pt solid #FC9FBC;padding-left:6pt;page-break-after:avoid;}
-  .pdf-export-root .meta{color:#555;margin-bottom:16pt;font-size:10pt;}
-  .pdf-export-root table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:12pt;page-break-inside:auto;}
-  .pdf-export-root tr{page-break-inside:avoid;page-break-after:auto;}
-  .pdf-export-root th,.pdf-export-root td{border:1pt solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top;color:#111;}
-  .pdf-export-root th{background:#f2f2f2;color:#111;font-weight:bold;}
-  .pdf-export-root .status-col{width:28%;min-width:95pt;max-width:95pt;}
-  .pdf-export-root .rec{background:#d9f5f2;color:#006f66;font-weight:bold;}
-  .pdf-export-root .forb{background:#ffe0ec;color:#b32068;font-weight:bold;}
-  #foodCalcBtn.sotis-btn-style{width:100% !important;display:block !important;box-sizing:border-box !important;}
 
 
-
-  /* Финальные правки кнопок и орбисов */
-  #step2Block .sotis-link-wrap,
-  #foodCalcBtnWrap,
-  .food-data-actions .sotis-link-wrap {
-    text-align: center !important;
-    width: 100% !important;
+  /* Финальная чистка интерфейса */
+  #foodDataBlock {
+    margin-top: 2.8rem !important;
   }
-  #step2Block .sotis-btn-style,
-  .calc-btn {
-    display: inline-block !important;
-    width: auto !important;
-    min-width: 220px !important;
+  .energies-grid {
+    margin-bottom: 2.4rem !important;
+  }
+  .continue-btn,
+  .sotis-link-wrap {
+    text-align: center !important;
+  }
+  .continue-btn {
     margin-left: auto !important;
     margin-right: auto !important;
   }
-  .continue-btn {
-    display: block !important;
-    margin: 2rem auto !important;
-    text-align: center !important;
-    width: auto !important;
-    min-width: 220px !important;
-  }
   #foodCalcBtn.sotis-btn-style {
-    display: block !important;
     width: 100% !important;
-    max-width: 460px !important;
-    min-width: 260px !important;
-    box-sizing: border-box !important;
-    margin: 1rem auto 0 !important;
-    padding-left: 2.4rem !important;
-    padding-right: 2.4rem !important;
-  }
-  .privacy-note { display: none !important; }
-  .aspect-row {
-    display: flex !important;
-    gap: 0.75rem !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-  }
-  .asp-orb {
-    display: inline-block !important;
-    color: rgba(255,255,255,0.82) !important;
-    font-size: 0.95rem !important;
+    max-width: 520px !important;
+    display: block !important;
     margin-left: auto !important;
-    white-space: nowrap !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
   }
+  .privacy-note { display:none !important; }
+
+  /* Компактный PDF без лишних пробелов и декоративных разделителей */
+  .pdf-export-root,
+  .pdf-export-root * {
+    color: #111111 !important;
+    font-family: Arial, sans-serif !important;
+    box-sizing: border-box !important;
+  }
+  .pdf-export-root {
+    background: #ffffff !important;
+    font-size: 10.5pt !important;
+    line-height: 1.25 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .pdf-export-root h1 {
+    color: #0B1957 !important;
+    font-size: 20pt !important;
+    margin: 0 0 6pt 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    border: 0 !important;
+  }
+  .pdf-export-root h2 {
+    color: #0B1957 !important;
+    font-size: 14pt !important;
+    margin: 10pt 0 5pt 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .pdf-export-root h3 {
+    color: #0B1957 !important;
+    font-size: 12pt !important;
+    margin: 8pt 0 4pt 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .pdf-export-root .meta {
+    color: #555555 !important;
+    margin: 0 0 8pt 0 !important;
+    padding: 0 !important;
+    font-size: 9.5pt !important;
+    text-align: center !important;
+  }
+  .pdf-export-root table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    margin: 0 0 7pt 0 !important;
+  }
+  .pdf-export-root th,
+  .pdf-export-root td {
+    border: 1pt solid #cccccc !important;
+    padding: 3pt 5pt !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    color: #111111 !important;
+  }
+  .pdf-export-root th { background: #f2f2f2 !important; }
+  .pdf-export-root .rec { background:#d9f5f2 !important; color:#006f66 !important; font-weight:bold !important; }
+  .pdf-export-root .forb { background:#ffe0ec !important; color:#b32068 !important; font-weight:bold !important; }
+
 </style>
 
 
@@ -500,7 +525,7 @@
   <!-- Блок ввода данных питания -->
   <div class="food-data-card energy-card" id="foodDataBlock">
     <div style="width:100%">
-      <span class="food-step-label">Шаг 2 — данные для расчёта питания</span>
+      <span class="food-step-label">Шаг 3 — данные для расчёта питания</span>
       <div class="food-data-form">
         <div class="form-field" style="margin-bottom:0.8rem">
           <label for="genderSelect2">Пол</label>
@@ -529,7 +554,6 @@
         </div>
         <div class="food-data-actions">
           <div class="sotis-link-wrap" id="foodCalcBtnWrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту</button></div>
-          
         </div>
       </div>
     </div>
@@ -1829,61 +1853,7 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
 
-  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:11pt;line-height:1.35}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:12pt}th,td{border:1pt solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Расчёт питания по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Данные питания</h2><table>${foodRows}</table></div>
-<script>
-/* Финальная страховка: орбисы аспектов и кнопки */
-(function(){
-  function safeText(v){ return String(v == null ? '' : v); }
-  function rebuildAspectRowsWithOrbs(){
-    try {
-      var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : null);
-      if (!d || !d.aspects) return;
-      var al = document.getElementById('aspectList');
-      if (!al) return;
-      var list = d.aspects;
-      if (typeof shouldShowAspect === 'function') {
-        list = list.filter(function(a){ return shouldShowAspect(a.p1, a.p2, a.orb); });
-      }
-      al.innerHTML = '';
-      if (!list.length) {
-        al.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:1.15rem;padding:.8rem">Аспекты в заданных орбисах не найдены</div>';
-        return;
-      }
-      list.forEach(function(a){
-        var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || { name: a.typeName || a.type || '', cls: 'asp-other' };
-        var row = document.createElement('div');
-        row.className = 'aspect-row';
-        row.innerHTML =
-          '<span class="asp-type '+(info.cls || 'asp-other')+'">'+safeText(info.name || a.typeName || a.type)+'</span>' +
-          '<span class="asp-planets">'+safeText(a.p1)+' — '+safeText(a.p2)+'</span>' +
-          '<span class="asp-orb">Орбис: '+safeText(a.orb || '—')+'</span>';
-        al.appendChild(row);
-      });
-    } catch(e) { console.warn('aspect orbs render failed', e); }
-  }
-  var oldRender = window.render || (typeof render === 'function' ? render : null);
-  if (oldRender && !oldRender.__orbsPatched) {
-    var patched = function(){
-      var res = oldRender.apply(this, arguments);
-      rebuildAspectRowsWithOrbs();
-      return res;
-    };
-    patched.__orbsPatched = true;
-    window.render = patched;
-    try { render = patched; } catch(e) {}
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var pr = document.querySelectorAll('.privacy-note');
-    pr.forEach(function(el){ el.remove(); });
-    var foodBtn = document.getElementById('foodCalcBtn');
-    if (foodBtn) foodBtn.textContent = '✦ Перейти к расчёту';
-    var cont = document.getElementById('continueBtn');
-    if (cont) cont.textContent = '✦ Продолжить';
-  });
-})();
-</script>
-
-</body></html>`;
+  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Расчёт питания по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Данные питания</h2><table>${foodRows}</table></div></body></html>`;
 }
 
 async function exportDocx() {
@@ -2100,158 +2070,39 @@ window.startExportDocx = async function(event) {
     var calc = typeof calcElements === 'function' ? calcElements(d.planets || [], d.asc, d.mc) : { elements:{} };
     var food = window.foodResult || {};
     var products = window.productResults || window.runProductCalculations();
-    products = Array.isArray(products) ? products : [];
     var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВАНО'; });
     var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО'; });
-    var meta = [d.chartName || '', d.chartDate || ''].filter(Boolean).join(' · ');
+    var allMeaningful = products.filter(function(x){ return x.status !== 'НЕЙТРАЛЬНО'; });
+    var meta = [d.chartName || '', d.chartDate || '', food.gender || selectedGender || ''].filter(Boolean).join(' · ');
     var elements = calc.elements || {};
-    var totalElements = (elements['Огонь']||0)+(elements['Земля']||0)+(elements['Воздух']||0)+(elements['Вода']||0);
     var aspectList = (d.aspects || []).filter(function(a){ try { return shouldShowAspect(a.p1, a.p2, a.orb); } catch(e){ return true; } });
 
-    function statusClass(st){
-      return st === 'РЕКОМЕНДОВАНО' ? 'rec' : (st === 'ЗАПРЕЩЕНО' ? 'forb' : '');
-    }
-    function productRowsSimple(rows, forcedStatus){
-      if (!rows.length) return '<tr><td colspan="2">Нет данных</td></tr>';
-      return rows.map(function(x){
-        var st = forcedStatus || x.status || 'НЕЙТРАЛЬНО';
-        return '<tr><td>' + escapeHtml(x.product || '') + '</td><td class="status-col ' + statusClass(st) + '">' + escapeHtml(st) + '</td></tr>';
-      }).join('');
-    }
-    function groupProductsByCategory(rows){
-      if (!rows.length) return '<p>Нет данных</p>';
-      var by = {};
-      rows.forEach(function(x){
-        var key = x.category || 'Продукты';
-        if (!by[key]) by[key] = [];
-        by[key].push(x);
-      });
-      return Object.keys(by).map(function(cat){
-        var body = by[cat].map(function(x){
-          var st = x.status || 'НЕЙТРАЛЬНО';
-          return '<tr><td>' + escapeHtml(x.product || '') + '</td><td class="status-col ' + statusClass(st) + '">' + escapeHtml(st) + '</td></tr>';
-        }).join('');
-        return '<h3>' + escapeHtml(cat) + '</h3>' +
-          '<table><colgroup><col style="width:72%"><col style="width:28%"></colgroup>' +
-          '<thead><tr><th>Продукт</th><th class="status-col">Статус</th></tr></thead><tbody>' + body + '</tbody></table>';
-      }).join('');
-    }
-    function oneLine(v){ return String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); }
-    function fmtMeals(v){
-      if (v === undefined || v === null || v === '') return '—';
-      var s = String(v);
-      return /при[её]м/i.test(s) ? s : s + ' приема';
-    }
-    function splitBreakfast(str){
-      str = oneLine(str || '');
-      var out = { title:'—', volume:'—', when:'—', time:'—' };
-      if (!str) return out;
-      var parts = str.split(/\.\s*/).filter(Boolean);
-      if (parts[0]) out.title = parts[0];
-      if (parts[1]) out.volume = parts[1];
-      if (parts[2]) {
-        var m = parts[2].split(/:\s*/);
-        out.when = m[0] || parts[2];
-        out.time = m[1] || m[0] || '—';
-      }
-      return out;
-    }
-    function splitTwo(str){
-      str = oneLine(str || '');
-      var p = str.split(/\.\s*/).filter(Boolean);
-      return { title: p[0] || str || '—', text: p[1] || '—' };
-    }
-    var breakfast = splitBreakfast(food.breakfast);
-    var lunch = splitTwo(food.lunch);
-    var dinner = splitTwo(food.dinner);
-    var metabolism = splitTwo(food.metabolism);
-    var weightNum = Number(food.weight || 0);
-    var water = weightNum ? Math.round(weightNum * 30).toLocaleString('ru-RU') + ' мл в день' : '—';
-    var liquid = weightNum ? (Math.round(weightNum * 50).toLocaleString('ru-RU') + '–' + Math.round(weightNum * 60).toLocaleString('ru-RU') + ' мл в день') : '—';
-
-    var planetRows = [];
-    (d.planets || []).forEach(function(p){
-      var name = PLANET_NAMES[p.sym];
-      if (!name) return;
-      planetRows.push([name, p.pos || '', SIGN_PLAIN[p.signChar] || p.signChar || '', p.isRetro ? 'R' : '']);
-    });
-    if (d.asc) planetRows.push(['ASC', d.asc.pos || '', SIGN_PLAIN[d.asc.signChar] || d.asc.signChar || '', '']);
-    if (d.mc) planetRows.push(['MC', d.mc.pos || '', SIGN_PLAIN[d.mc.signChar] || d.mc.signChar || '', '']);
-
-    var aspectRows = aspectList.map(function(a){
-      var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || {name:a.typeName || a.type};
-      return [info.name || a.typeName || '', (a.p1 || '') + ' — ' + (a.p2 || ''), a.orb || ''];
-    });
-
-    var elementRows = ['Огонь','Земля','Воздух','Вода'].map(function(k){
-      var val = elements[k] || 0;
-      var pct = totalElements ? Math.round(val / totalElements * 100) + '%' : '0%';
-      return [k, val, pct];
-    });
-
-    var paramRows = [
-      ['Количество приемов еды', fmtMeals(food.meals)],
-      ['Завтрак', breakfast.title],
-      ['Объем завтрака', breakfast.volume],
-      ['Во сколько', breakfast.when],
-      ['Время завтрака', breakfast.time],
-      ['Обед', lunch.title],
-      ['Объем обеда', lunch.text],
-      ['Ужин', dinner.title],
-      ['Объем ужина', dinner.text],
-      ['Метаболизм', metabolism.title],
-      ['Описание метаболизма', metabolism.text],
-      ['Соль', '5 грамм'],
-      ['Вода', water],
-      ['Жидкость', liquid],
-      ['Запивать ли еду', food.drinkFood || 'Запивать по желанию'],
-      ['Вегетарианство', food.vegetarian || 'Нельзя'],
-      ['Источник белка', food.proteinSource || 'Ограничений и разрешений не найдено'],
-      ['Пропорция жиров', food.fatProportion || 'Ограничений и разрешений не найдено'],
-      ['Накопление жира', food.fatAccumulation || 'Не выражено'],
-      ['Холестерин', food.cholesterol || 'Не выражено'],
-      ['Предрасположенность к полноте', food.fullness || 'Не выражено'],
-      ['Источник жиров/белков', food.fatSource || 'Ограничений и разрешений не найдено'],
-      ['Гиперинсулинемия', food.hyperinsulin || 'Не выражено'],
-      ['Сахара', food.sugarRules || 'Ограничений и разрешений не найдено'],
-      ['Нехватка витаминов', food.vitamins || 'Не выявлено'],
-      ['Нехватка минералов', food.minerals || 'Не выявлено']
-    ];
-
     return '<div class="pdf-export-root">' +
-      '<h1>Расчёт правильного питания</h1>' +
-      '<div class="meta">Дата и время рождения: ' + escapeHtml(d.chartDate || '—') + '</div>' +
-
-      '<h2>Данные расчёта</h2><table><colgroup><col style="width:45%"><col style="width:55%"></colgroup><tbody>' + tableRows([
+      '<h1>Расчёт питания по натальной карте</h1>' +
+      '<div class="meta">' + escapeHtml(meta) + '</div>' +
+      '<h2>Данные для расчёта питания</h2><table><tbody>' + tableRows([
         ['Пол', food.gender || selectedGender || '—'],
-        ['Вес', food.weight || '—'],
-        ['Рост', food.height || '—'],
-        ['Возраст', food.age || '—'],
-        ['КБЖУ', food.bmr ? 'Базовый обмен: ' + Number(food.bmr).toLocaleString('ru-RU') + ' ккал в день' : '—']
+        ['Вес', food.weight ? food.weight + ' кг' : '—'],
+        ['Рост', food.height ? food.height + ' см' : '—'],
+        ['Возраст', food.age ? food.age + ' лет' : '—'],
+        ['КБЖУ', food.bmr ? 'Базовый обмен: ' + Number(food.bmr).toLocaleString('ru-RU') + ' ккал в день' : '—'],
+        ['Количество приёмов еды', food.meals || '—'],
+        ['Завтрак', food.breakfast || '—'],
+        ['Обед', food.lunch || '—'],
+        ['Ужин', food.dinner || '—'],
+        ['Метаболизм', food.metabolism || '—']
       ]) + '</tbody></table>' +
-
-      '<h2>Параметры питания</h2><table><colgroup><col style="width:45%"><col style="width:55%"></colgroup><tbody>' + tableRows(paramRows) + '</tbody></table>' +
-
-      '<h2>Планеты в знаках</h2><table><thead><tr><th>Планета</th><th>Позиция</th><th>Знак</th><th>R</th></tr></thead><tbody>' +
-      planetRows.map(function(r){ return '<tr><td>'+escapeHtml(r[0])+'</td><td>'+escapeHtml(r[1])+'</td><td>'+escapeHtml(r[2])+'</td><td>'+escapeHtml(r[3])+'</td></tr>'; }).join('') +
-      '</tbody></table>' +
-
-      '<h2>Аспекты с орбисами</h2><table><thead><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr></thead><tbody>' +
-      (aspectRows.length ? aspectRows.map(function(r){ return '<tr><td>'+escapeHtml(r[0])+'</td><td>'+escapeHtml(r[1])+'</td><td>'+escapeHtml(r[2])+'</td></tr>'; }).join('') : '<tr><td colspan="3">Аспекты в заданных орбисах не найдены</td></tr>') +
-      '</tbody></table>' +
-
-      '<h2>Стихии</h2><table><thead><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr></thead><tbody>' +
-      elementRows.map(function(r){ return '<tr><td>'+escapeHtml(r[0])+'</td><td>'+escapeHtml(r[1])+'</td><td>'+escapeHtml(r[2])+'</td></tr>'; }).join('') +
-      '</tbody></table>' +
-
       '<h2>Показатели</h2><table><tbody>' + tableRows([
+        ['Огонь', elements['Огонь'] || 0], ['Земля', elements['Земля'] || 0], ['Воздух', elements['Воздух'] || 0], ['Вода', elements['Вода'] || 0],
         ['Тепло', calc.teplo || 0], ['Холод', calc.holod || 0], ['Сухость', calc.suhost || 0], ['Влажность', calc.vlazhnost || 0],
         ['Рациональность', calc.racionalnost || 0], ['Эмоциональность', calc.emotsionalnost || 0]
       ]) + '</tbody></table>' +
-
-      '<h2>Рекомендовано итого</h2><table><colgroup><col style="width:72%"><col style="width:28%"></colgroup><thead><tr><th>Продукт</th><th class="status-col">Статус</th></tr></thead><tbody>' + productRowsSimple(rec, 'РЕКОМЕНДОВАНО') + '</tbody></table>' +
-      '<h2>Запрещено итого</h2><table><colgroup><col style="width:72%"><col style="width:28%"></colgroup><thead><tr><th>Продукт</th><th class="status-col">Статус</th></tr></thead><tbody>' + productRowsSimple(forb, 'ЗАПРЕЩЕНО') + '</tbody></table>' +
-      '<h2>Все продукты</h2>' + groupProductsByCategory(products) +
+      '<h2>Аспекты с орбисами</h2><table><thead><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr></thead><tbody>' +
+      aspectList.map(function(a){ var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || {name:a.typeName || a.type}; return '<tr><td>' + escapeHtml(info.name || a.typeName || '') + '</td><td>' + escapeHtml((a.p1 || '') + ' — ' + (a.p2 || '')) + '</td><td>' + escapeHtml(a.orb || '') + '</td></tr>'; }).join('') +
+      '</tbody></table>' +
+      '<h2>Рекомендовано итого (' + rec.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(rec) + '</tbody></table>' +
+      '<h2>Запрещено итого (' + forb.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(forb) + '</tbody></table>' +
+      '<h2>Все рассчитанные продукты по страницам (' + products.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(allMeaningful.length ? allMeaningful : products) + '</tbody></table>' +
       '</div>';
   };
 
@@ -2281,61 +2132,7 @@ window.startExportDocx = async function(event) {
     } catch(e) {
       alert('Не удалось автоматически скачать PDF. Откроется печать: выберите «Сохранить как PDF».');
       var w = window.open('', '_blank');
-      w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF</title><style>body{font-family:Arial,sans-serif;color:#111}.pdf-export-root{background:#fff;color:#111;font-size:11pt;line-height:1.35}h1{color:#0B1957;font-size:22pt}h2{color:#0B1957;font-size:16pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}h3{color:#0B1957;font-size:13pt;border-left:3pt solid #FC9FBC;padding-left:6pt}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:12pt}th,td{border:1pt solid #ccc;padding:5pt 7pt;text-align:left;vertical-align:top;color:#111}th{background:#f2f2f2}.rec{background:#d9f5f2;color:#006f66;font-weight:bold}.forb{background:#ffe0ec;color:#b32068;font-weight:bold}</style></head><body>' + window.buildPdfHtml() + '
-<script>
-/* Финальная страховка: орбисы аспектов и кнопки */
-(function(){
-  function safeText(v){ return String(v == null ? '' : v); }
-  function rebuildAspectRowsWithOrbs(){
-    try {
-      var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : null);
-      if (!d || !d.aspects) return;
-      var al = document.getElementById('aspectList');
-      if (!al) return;
-      var list = d.aspects;
-      if (typeof shouldShowAspect === 'function') {
-        list = list.filter(function(a){ return shouldShowAspect(a.p1, a.p2, a.orb); });
-      }
-      al.innerHTML = '';
-      if (!list.length) {
-        al.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:1.15rem;padding:.8rem">Аспекты в заданных орбисах не найдены</div>';
-        return;
-      }
-      list.forEach(function(a){
-        var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || { name: a.typeName || a.type || '', cls: 'asp-other' };
-        var row = document.createElement('div');
-        row.className = 'aspect-row';
-        row.innerHTML =
-          '<span class="asp-type '+(info.cls || 'asp-other')+'">'+safeText(info.name || a.typeName || a.type)+'</span>' +
-          '<span class="asp-planets">'+safeText(a.p1)+' — '+safeText(a.p2)+'</span>' +
-          '<span class="asp-orb">Орбис: '+safeText(a.orb || '—')+'</span>';
-        al.appendChild(row);
-      });
-    } catch(e) { console.warn('aspect orbs render failed', e); }
-  }
-  var oldRender = window.render || (typeof render === 'function' ? render : null);
-  if (oldRender && !oldRender.__orbsPatched) {
-    var patched = function(){
-      var res = oldRender.apply(this, arguments);
-      rebuildAspectRowsWithOrbs();
-      return res;
-    };
-    patched.__orbsPatched = true;
-    window.render = patched;
-    try { render = patched; } catch(e) {}
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var pr = document.querySelectorAll('.privacy-note');
-    pr.forEach(function(el){ el.remove(); });
-    var foodBtn = document.getElementById('foodCalcBtn');
-    if (foodBtn) foodBtn.textContent = '✦ Перейти к расчёту';
-    var cont = document.getElementById('continueBtn');
-    if (cont) cont.textContent = '✦ Продолжить';
-  });
-})();
-</script>
-
-</body></html>');
+      w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF</title></head><body>' + window.buildPdfHtml() + '</body></html>');
       w.document.close();
       setTimeout(function(){ w.print(); }, 500);
     } finally {
@@ -2360,59 +2157,5 @@ window.startExportDocx = async function(event) {
   }
 })();
 </script>
-
-<script>
-/* Финальная страховка: орбисы аспектов и кнопки */
-(function(){
-  function safeText(v){ return String(v == null ? '' : v); }
-  function rebuildAspectRowsWithOrbs(){
-    try {
-      var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : null);
-      if (!d || !d.aspects) return;
-      var al = document.getElementById('aspectList');
-      if (!al) return;
-      var list = d.aspects;
-      if (typeof shouldShowAspect === 'function') {
-        list = list.filter(function(a){ return shouldShowAspect(a.p1, a.p2, a.orb); });
-      }
-      al.innerHTML = '';
-      if (!list.length) {
-        al.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:1.15rem;padding:.8rem">Аспекты в заданных орбисах не найдены</div>';
-        return;
-      }
-      list.forEach(function(a){
-        var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || { name: a.typeName || a.type || '', cls: 'asp-other' };
-        var row = document.createElement('div');
-        row.className = 'aspect-row';
-        row.innerHTML =
-          '<span class="asp-type '+(info.cls || 'asp-other')+'">'+safeText(info.name || a.typeName || a.type)+'</span>' +
-          '<span class="asp-planets">'+safeText(a.p1)+' — '+safeText(a.p2)+'</span>' +
-          '<span class="asp-orb">Орбис: '+safeText(a.orb || '—')+'</span>';
-        al.appendChild(row);
-      });
-    } catch(e) { console.warn('aspect orbs render failed', e); }
-  }
-  var oldRender = window.render || (typeof render === 'function' ? render : null);
-  if (oldRender && !oldRender.__orbsPatched) {
-    var patched = function(){
-      var res = oldRender.apply(this, arguments);
-      rebuildAspectRowsWithOrbs();
-      return res;
-    };
-    patched.__orbsPatched = true;
-    window.render = patched;
-    try { render = patched; } catch(e) {}
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var pr = document.querySelectorAll('.privacy-note');
-    pr.forEach(function(el){ el.remove(); });
-    var foodBtn = document.getElementById('foodCalcBtn');
-    if (foodBtn) foodBtn.textContent = '✦ Перейти к расчёту';
-    var cont = document.getElementById('continueBtn');
-    if (cont) cont.textContent = '✦ Продолжить';
-  });
-})();
-</script>
-
 </body>
 </html>
