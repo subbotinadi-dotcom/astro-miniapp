@@ -1,0 +1,483 @@
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #111933;
+    --pink: #FC9FBC;
+    --peach: #FEDCD1;
+    --cream: #FAF3EB;
+    --white: #FFFFFF;
+    --card: rgba(250, 243, 235, 0.055);
+    --card-strong: rgba(250, 243, 235, 0.09);
+    --border: rgba(250, 243, 235, 0.26);
+    --border-soft: rgba(254, 220, 209, 0.34);
+    --muted: rgba(254, 220, 209, 0.82);
+    --muted-soft: rgba(250, 243, 235, 0.52);
+    --danger: #FEDCD1;
+  }
+
+
+  @font-face {
+    font-family: 'Bebas Neue Cyrillic';
+    src: local('Bebas Neue Cyrillic'), local('BebasNeueCyrillic'), url('BebasNeueCyrillic.ttf') format('truetype');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  body {
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif;
+    background: var(--navy);
+    color: var(--cream);
+    min-height: 100vh;
+    letter-spacing: 0.04em;
+  }
+
+  h1, h2, .section-title, .indicator-sub {
+    color: var(--pink);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  /* ══ ЭКРАН 1 ══ */
+  #uploadZone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+  }
+
+  #uploadZone h1 {
+    font-size: 3.2rem;
+    line-height: 0.98;
+    margin-bottom: 0.7rem;
+    max-width: 680px;
+  }
+
+  #uploadZone .tagline {
+    color: var(--peach);
+    font-size: 1.35rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .steps-card {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    max-width: 480px;
+    width: 100% ;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .step { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .step-label {
+    font-size: 1.08rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--peach);
+  }
+
+  .sotis-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    background: var(--peach);
+    color: var(--navy);
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif;
+    font-size: 1.25rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .sotis-link:hover { background: var(--cream); }
+
+  .upload-btn-wrap { position: relative; display: block; }
+  .upload-btn-wrap input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100% ; height: 100% ;
+  }
+  .upload-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    border: 1.5px solid var(--peach); color: var(--cream);
+    font-size: 1.25rem; letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s; background: transparent; border-radius: 12px; width: 100% ;
+  }
+  .upload-btn:hover { background: rgba(254, 220, 209, 0.12); }
+
+  .file-chosen { font-size: 1.1rem; color: var(--cream); margin-top: 0.3rem; min-height: 1.1em; }
+
+  .gender-btns { display: flex; gap: 0.7rem; }
+  .gender-btn {
+    flex: 1; padding: 0.75rem 0.5rem;
+    border: 1.5px solid var(--border-soft); background: transparent; color: var(--peach);
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif; font-size: 1.25rem; letter-spacing: 0.12em;
+    border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  }
+  .gender-btn:hover { border-color: var(--cream); color: var(--white); }
+  .gender-btn.active { border-color: var(--cream); background: rgba(250, 243, 235, 0.12); color: var(--white); font-weight: 700; }
+
+  .gender-err { display: none; color: var(--peach); font-size: 1rem; }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    text-align: left;
+  }
+
+  .form-field label {
+    font-size: 1.05rem;
+    color: var(--peach);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .form-field select,
+  .form-field input {
+    width: 100% ;
+    padding: 0.9rem 1rem;
+    border: 1.5px solid var(--border-soft);
+    border-radius: 12px;
+    background: rgba(250, 243, 235, 0.06);
+    color: var(--cream);
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif;
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+    outline: none;
+  }
+
+  .form-field select option { color: #111933; }
+
+  .field-err {
+    display: none;
+    color: var(--peach);
+    font-size: 0.95rem;
+    text-align: left;
+  }
+
+  .calc-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    width: 100% ; padding: 1rem;
+    background: var(--cream); color: var(--navy); border: none; border-radius: 12px;
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif; font-size: 1.35rem; letter-spacing: 0.13em;
+    text-transform: uppercase; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .calc-btn:hover { background: var(--peach); }
+  .calc-btn:active { transform: scale(0.98); }
+
+  .hint { font-size: 1rem; color: var(--muted-soft); margin-top: -0.5rem; }
+
+  /* ══ ЭКРАН 2 ══ */
+  #result { display: none; padding: 3rem 1rem 5rem; max-width: 960px; margin: 0 auto; }
+
+  .chart-title { text-align: center; margin-bottom: 3rem; }
+  .chart-title h2 {
+    font-size: 3.1rem; line-height: 0.98;
+  }
+  .chart-title .subtitle { color: var(--peach); font-size: 1.35rem; margin-top: 0.7rem; }
+  .chart-title .gender-badge {
+    display: inline-block; margin-top: 0.6rem; padding: 0.25rem 1rem;
+    border: 1px solid var(--border-soft); border-radius: 999px;
+    font-size: 1.1rem; letter-spacing: 0.12em; color: var(--cream); text-transform: uppercase;
+  }
+  .chart-title .gender-badge:empty { display: none; }
+
+  .export-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    margin: 0 auto 3rem; padding: 0.85rem 2rem;
+    background: var(--cream); color: var(--navy); border: none; border-radius: 12px;
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif; font-size: 1.25rem; letter-spacing: 0.13em;
+    text-transform: uppercase; cursor: pointer; font-weight: 700;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .export-btn:hover { background: var(--peach); }
+  .export-btn:active { transform: scale(0.98); }
+
+  .section-title {
+    font-size: 1.75rem; border-bottom: 1px solid rgba(252, 159, 188, 0.28);
+    padding-bottom: 0.5rem; margin-bottom: 1.5rem;
+  }
+
+  .meal-heading {
+    margin: 2rem 0 1rem;
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif;
+    font-size: 2.1rem;
+    line-height: 1.05;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--pink);
+  }
+
+  .meal-subtitle {
+    color: var(--cream);
+    font-size: 0.78em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .planets-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem; margin-bottom: 3rem;
+  }
+  .planet-card {
+    background: var(--card); border: 1px solid var(--border-soft);
+    padding: 1.35rem 1.45rem; border-radius: 12px;
+    display: flex; align-items: center; gap: 1rem; transition: border-color 0.2s;
+  }
+  .planet-card:hover { border-color: var(--cream); }
+  @font-face {
+    font-family: 'AProf';
+    src: url('AProf.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  .planet-symbol {
+    font-family: 'AProf', serif;
+    font-size: 2.15rem; width: 2.8rem; text-align: center; flex-shrink: 0;
+    line-height: 1; color: var(--cream);
+  }
+  .planet-info { flex: 1; min-width: 0; }
+  .planet-name { font-size: 1.2rem; color: var(--peach); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.15rem; }
+  .planet-pos { font-size: 1.85rem; font-weight: 700; color: var(--white); }
+  .planet-sign { font-size: 1.3rem; color: var(--white); margin-top: 0.1rem; }
+  .retrograde { font-size: 1rem; color: var(--peach); margin-left: 0.3rem; }
+
+  .aspects-section { margin-bottom: 3rem; }
+  .aspect-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .aspect-row {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 1rem 1.25rem; background: var(--card); border: 1px solid var(--border-soft);
+    border-radius: 12px; font-size: 1.25rem; transition: border-color 0.2s;
+  }
+  .aspect-row:hover { border-color: var(--cream); }
+  .asp-type {
+    font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.2rem 0.6rem; border-radius: 999px; flex-shrink: 0; min-width: 88px; text-align: center;
+    background: rgba(254, 220, 209, 0.12); color: var(--cream); border: 1px solid var(--border-soft);
+  }
+  .asp-conj, .asp-trine, .asp-sext, .asp-sq, .asp-opp, .asp-other {
+    background: rgba(254, 220, 209, 0.12); color: var(--cream); border: 1px solid var(--border-soft);
+  }
+  .asp-planets { flex: 1; color: var(--cream); }
+  .asp-orb { color: var(--peach); font-size: 1.1rem; margin-left: auto; flex-shrink: 0; }
+
+  .bottom-btns { display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+  .bottom-btns .export-btn { width: auto; min-width: 280px; }
+  .food-data-card { max-width: 560px; margin: 0 auto 1.4rem; }
+  .food-data-card .input-grid { margin-top: 0.8rem; }
+  .reset-btn {
+    padding: 0.7rem 2rem; border: 1px solid var(--border-soft); background: transparent;
+    color: var(--cream); font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif; font-size: 1.2rem;
+    letter-spacing: 0.13em; text-transform: uppercase; cursor: pointer;
+    border-radius: 12px; transition: all 0.2s;
+  }
+  .reset-btn:hover { background: rgba(254, 220, 209, 0.12); }
+
+  /* ── Показатели ── */
+  .indicators-block { margin-bottom: 3rem; display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .indicator-sub {
+    font-size: 1.65rem; margin-bottom: 0.6rem;
+  }
+
+  /* Стихии */
+  .elements-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-bottom: 0.5rem;
+  }
+  .element-card {
+    background: var(--card); border: 1px solid var(--border-soft); border-radius: 12px;
+    padding: 1.25rem 0.85rem; text-align: center;
+  }
+  .element-name { font-size: 1.15rem; color: var(--peach); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .element-score { font-size: 3.1rem; font-weight: 700; color: var(--white); }
+  .element-card.fire, .element-card.earth, .element-card.air, .element-card.water { border-color: var(--border-soft); }
+  .element-card.fire .element-score,
+  .element-card.earth .element-score,
+  .element-card.air .element-score,
+  .element-card.water .element-score { color: var(--white); }
+  .element-detail {
+    font-size: 1rem; color: var(--white); margin-top: 0.4rem;
+    line-height: 1.4; word-break: break-word;
+  }
+
+  /* Энергии */
+  .energies-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.7rem;
+  }
+  .energy-card {
+    background: var(--card); border: 1px solid var(--border-soft); border-radius: 12px;
+    padding: 1.25rem 1.35rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .energy-label { font-size: 1.45rem; color: var(--white); }
+  .energy-formula { font-size: 1.08rem; color: var(--white); margin-top: 0.1rem; }
+  .energy-score {
+    font-size: 3.15rem; font-weight: 700; color: var(--white);
+    min-width: 2rem; text-align: right;
+  }
+
+  .wide-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .wide-card {
+    width: 100% ;
+    min-height: 150px;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .wide-card > div { width: 100% ; }
+
+  .wide-card .energy-label {
+    font-size: 2rem;
+    color: var(--pink);
+    margin-bottom: 0.55rem;
+  }
+
+  .wide-card .energy-formula {
+    font-size: 1.35rem;
+    line-height: 1.35;
+    color: var(--white);
+  }
+
+  .meal-heading {
+    margin-top: 2.3rem;
+  }
+
+  .meal-count-card {
+    margin-bottom: 2.2rem;
+  }
+
+  .salt-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+
+  .meals-grid {
+    margin-bottom: 2.5rem;
+  }
+
+  .meal-result-card {
+    min-height: 260px;
+  }
+
+  .meal-comp {
+    margin-bottom: 1.2rem;
+    font-size: 1.35rem;
+  }
+
+  .meal-value-block {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(254, 220, 209, .18);
+  }
+
+  .meal-value-title {
+    font-size: 1.45rem;
+    color: var(--white);
+    margin-bottom: .35rem;
+  }
+
+  .meal-value-text {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    color: var(--white);
+  }
+
+
+
+  .food-data-block {
+    margin-top: 3.5rem;
+  }
+
+  .food-data-form {
+    margin-top: 1.5rem;
+  }
+
+  .food-data-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.4rem;
+  }
+
+  .food-data-actions .export-btn {
+    margin: 0;
+  }
+
+  .meal-result-card .energy-label {
+    color: var(--pink);
+  }
+
+
+  .small-note-title {
+    font-size: 1.08rem;
+    color: var(--white);
+    margin-top: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .small-note-text {
+    font-size: 0.88rem;
+    line-height: 1.35;
+    color: var(--white);
+  }
+
+  .formula-list {
+    white-space: pre-line;
+  }
+
+
+  /* Значения в карточках */
+  .energy-formula, .meal-value-text, .planet-pos, .planet-sign, .energy-score { color: var(--white) !important; }
+
+  /* Пояснения */
+  .small-note-text,
+  .small-note-title,
+  .meal-value-title,
+  .element-detail,
+  .hint,
+  .subtitle {
+    color: #FFDAD2 !important;
+  }
+
+  .small-note-title { font-size: 0.96rem; }
+  .small-note-text { font-size: 0.88rem !important; color: var(--cream) !important; }
+  .explanation-output { color: var(--cream) !important; }
+
+  @media (max-width: 600px) {
+    #uploadZone h1 { font-size: 2.15rem; }
+    .steps-card { padding: 1.5rem; }
+    .planets-grid { grid-template-columns: 1fr; }
+    .asp-orb { display: none; }
+    .elements-grid { grid-template-columns: repeat(2, 1fr); }
+    .energies-grid { grid-template-columns: 1fr; }
+    .input-grid { grid-template-columns: 1fr; }
+    .salt-grid { grid-template-columns: 1fr; }
+  }
