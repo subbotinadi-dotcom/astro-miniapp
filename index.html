@@ -471,21 +471,37 @@ const PROXIES = [
 ];
 
 async function fetchViaProxy(url) {
+  const normalizedUrl = url.trim();
+
+  // Важно: некоторые прокси возвращают JSON, а некоторые — обычный HTML.
+  // Поэтому сначала читаем ответ как текст, а уже потом пробуем разобрать JSON.
+  // Так не ломается corsproxy.io в Telegram WebView.
   for (let i = 0; i < PROXIES.length; i++) {
     try {
-      const proxyUrl = PROXIES[i](url);
-      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+      const proxyUrl = PROXIES[i](normalizedUrl);
+      const resp = await fetch(proxyUrl, {
+        method: 'GET',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15000)
+      });
       if (!resp.ok) continue;
-      const data = await resp.json().catch(() => null);
-      // allorigins возвращает { contents: '...' }
-      if (data && data.contents) return data.contents;
-      // corsproxy возвращает текст напрямую
-      const text = await resp.text();
-      if (text && text.length > 500) return text;
+
+      const raw = await resp.text();
+      if (!raw) continue;
+
+      try {
+        const data = JSON.parse(raw);
+        if (data && data.contents && data.contents.length > 100) return data.contents;
+      } catch (_) {
+        // Это не JSON, значит, возможно, это уже HTML страницы.
+      }
+
+      if (raw.length > 100) return raw;
     } catch(e) {
-      console.warn('Proxy', i, 'failed:', e.message);
+      console.warn('Proxy', i, 'failed:', e && e.message ? e.message : e);
     }
   }
+
   throw new Error('Не удалось загрузить карту. Проверьте ссылку и попробуйте снова.');
 }
 
@@ -499,7 +515,7 @@ async function calculateFromUrl(event) {
 
   // Валидация ссылки
   urlErr.style.display = 'none';
-  if (!urlVal || !urlVal.includes('sotis-online.ru')) {
+  if (!urlVal || !urlVal.toLowerCase().includes('sotis-online.ru')) {
     urlErr.style.display = 'block';
     urlInput.style.borderColor = 'var(--peach)';
     return;
