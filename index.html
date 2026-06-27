@@ -401,7 +401,977 @@
 </div>
 
 <!-- Основная логика -->
-<script src="astro_logic.js"></script>
+<script>
+
+// ── Словари ───────────────────────────────────────────────────────────────────
+
+const PLANET_SYMBOLS = {
+  n:'M', // Солнце
+  o:'N', // Луна
+  p:'O', // Меркурий
+  q:'P', // Венера
+  r:'Q', // Марс
+  s:'R', // Юпитер
+  t:'S', // Сатурн
+  u:'T', // Уран
+  v:'U', // Нептун
+  w:'V', // Плутон
+  '|':'X', // Хирон
+};
+
+const PLANET_NAMES = {
+  n:'Солнце', o:'Луна', p:'Меркурий', q:'Венера', r:'Марс',
+  s:'Юпитер', t:'Сатурн', u:'Уран', v:'Нептун', w:'Плутон',
+  '|':'Хирон'
+  // x(Раху) и y(Кету) убраны
+};
+
+const SIGN_CHARS = {
+  ';':'Овен ♈',     '<':'Телец ♉',    '=':'Близнецы ♊', '>':'Рак ♋',
+  '?':'Лев ♌',      '@':'Дева ♍',     'A':'Весы ♎',     'B':'Скорпион ♏',
+  'C':'Стрелец ♐',  'D':'Козерог ♑',  'E':'Водолей ♒',  'F':'Рыбы ♓'
+};
+
+const SIGN_PLAIN = {
+  ';':'Овен',     '<':'Телец',    '=':'Близнецы', '>':'Рак',
+  '?':'Лев',      '@':'Дева',     'A':'Весы',     'B':'Скорпион',
+  'C':'Стрелец',  'D':'Козерог',  'E':'Водолей',  'F':'Рыбы'
+};
+
+const ASPECT_NAMES = {
+  0:  {name:'Соединение', cls:'asp-conj' },
+  60: {name:'Секстиль',   cls:'asp-sext' },
+  90: {name:'Квадрат',    cls:'asp-sq'   },
+  120:{name:'Тригон',     cls:'asp-trine'},
+  180:{name:'Оппозиция',  cls:'asp-opp'  }
+};
+
+// ── Стихии знаков зодиака ────────────────────────────────────────────────────
+const SIGN_ELEMENT = {
+  ';':'Огонь',   // Овен    — Огонь
+  '<':'Земля',   // Телец   — Земля
+  '=':'Воздух',  // Близнецы — Воздух
+  '>':'Вода',    // Рак     — Вода
+  '?':'Огонь',   // Лев     — Огонь
+  '@':'Земля',   // Дева    — Земля
+  'A':'Воздух',  // Весы    — Воздух
+  'B':'Вода',    // Скорпион — Вода
+  'C':'Огонь',   // Стрелец — Огонь
+  'D':'Земля',   // Козерог — Земля
+  'E':'Воздух',  // Водолей — Воздух
+  'F':'Вода',    // Рыбы    — Вода
+};
+
+// Весовые баллы планет (sym → балл)
+// ASC и MC — 2 балла (обрабатываем отдельно)
+const PLANET_WEIGHT = {
+  n:2,   // Солнце
+  o:2,   // Луна
+  p:2,   // Меркурий
+  // ASC 2, MC 2 — добавляем при расчёте
+  q:1,   // Венера
+  r:1,   // Марс
+  s:1,   // Юпитер
+  t:1,   // Сатурн
+  u:1,   // Уран
+  v:1,   // Нептун
+  w:1,   // Плутон
+  '|':1  // Хирон
+};
+
+// Считаем показатели стихий и энергий
+function calcElements(planets, asc, mc) {
+  const totals = { Огонь:0, Земля:0, Воздух:0, Вода:0 };
+
+  console.log('=== РАСЧЁТ СТИХИЙ ===');
+
+  // Планеты
+  planets.forEach(p => {
+    const weight = PLANET_WEIGHT[p.sym];
+    if (weight === undefined) return; // Раху/Кету пропускаем
+    const name = PLANET_NAMES[p.sym] || p.sym;
+    const el = SIGN_ELEMENT[p.signChar];
+    const signName = SIGN_PLAIN[p.signChar] || ('НЕИЗВЕСТНО[' + p.signChar + ']');
+    console.log(`${name}: знак="${p.signChar}" (${signName}) → стихия=${el||'НЕ НАЙДЕНО'}, вес=${weight}`);
+    if (el) totals[el] += weight;
+  });
+
+  // ASC (2 балла)
+  if (asc) {
+    const el = SIGN_ELEMENT[asc.signChar];
+    const signName = SIGN_PLAIN[asc.signChar] || ('НЕИЗВЕСТНО[' + asc.signChar + ']');
+    console.log(`ASC: знак="${asc.signChar}" (${signName}) → стихия=${el||'НЕ НАЙДЕНО'}, вес=2`);
+    if (el) totals[el] += 2;
+  }
+
+  // MC (2 балла)
+  if (mc) {
+    const el = SIGN_ELEMENT[mc.signChar];
+    const signName = SIGN_PLAIN[mc.signChar] || ('НЕИЗВЕСТНО[' + mc.signChar + ']');
+    console.log(`MC: знак="${mc.signChar}" (${signName}) → стихия=${el||'НЕ НАЙДЕНО'}, вес=2`);
+    if (el) totals[el] += 2;
+  }
+
+  console.log('Итого:', totals);
+
+  return {
+    elements: totals,
+    teplo:          totals['Огонь'] + totals['Воздух'],
+    holod:          totals['Вода']  + totals['Земля'],
+    suhost:         totals['Земля'] + totals['Огонь'],
+    vlazhnost:      totals['Вода']  + totals['Воздух'],
+    racionalnost:   totals['Земля'] + totals['Воздух'],
+    emotsionalnost: totals['Огонь'] + totals['Вода'],
+  };
+}
+
+// ── Орбисы: лимиты в формате [градусы, минуты, секунды] → хранятся в секундах ─
+// Условие "< 7°00′00″" означает строго меньше 7*3600 секунд
+function dmsToSec(d, m, s) { return d * 3600 + m * 60 + s; }
+
+const ORB_LIMITS = (function() {
+  // [планета1, планета2, градусы, минуты, секунды]
+  const pairs = [
+    ['Солнце','Луна',        7,0,0],
+    ['Солнце','Меркурий',    6,0,0],
+    ['Солнце','Венера',      6,0,0],
+    ['Солнце','Марс',        6,0,0],
+    ['Солнце','Юпитер',      5,0,0],
+    ['Солнце','Сатурн',      5,0,0],
+    ['Солнце','Уран',        4,0,0],
+    ['Солнце','Нептун',      4,0,0],
+    ['Солнце','Плутон',      4,0,0],
+    ['Солнце','Хирон',       4,0,0],
+    ['Луна','Меркурий',      6,0,0],
+    ['Луна','Венера',        6,0,0],
+    ['Луна','Марс',          6,0,0],
+    ['Луна','Юпитер',        5,0,0],
+    ['Луна','Сатурн',        5,0,0],
+    ['Луна','Уран',          4,0,0],
+    ['Луна','Нептун',        4,0,0],
+    ['Луна','Плутон',        4,0,0],
+    ['Луна','Хирон',         4,0,0],
+    ['Меркурий','Венера',    6,0,0],
+    ['Меркурий','Марс',      6,0,0],
+    ['Меркурий','Юпитер',    5,0,0],
+    ['Меркурий','Сатурн',    5,0,0],
+    ['Меркурий','Уран',      4,0,0],
+    ['Меркурий','Нептун',    4,0,0],
+    ['Меркурий','Плутон',    4,0,0],
+    ['Меркурий','Хирон',     4,0,0],
+    ['Венера','Марс',        6,0,0],
+    ['Венера','Юпитер',      5,0,0],
+    ['Венера','Сатурн',      5,0,0],
+    ['Венера','Уран',        4,0,0],
+    ['Венера','Нептун',      4,0,0],
+    ['Венера','Плутон',      4,0,0],
+    ['Венера','Хирон',       4,0,0],
+    ['Марс','Юпитер',        5,0,0],
+    ['Марс','Сатурн',        5,0,0],
+    ['Марс','Уран',          4,0,0],
+    ['Марс','Нептун',        4,0,0],
+    ['Марс','Плутон',        4,0,0],
+    ['Марс','Хирон',         4,0,0],
+    ['Юпитер','Сатурн',      5,0,0],
+    ['Юпитер','Уран',        4,0,0],
+    ['Юпитер','Нептун',      4,0,0],
+    ['Юпитер','Плутон',      4,0,0],
+    ['Юпитер','Хирон',       4,0,0],
+    ['Сатурн','Уран',        4,0,0],
+    ['Сатурн','Нептун',      4,0,0],
+    ['Сатурн','Плутон',      4,0,0],
+    ['Сатурн','Хирон',       4,0,0],
+    ['Уран','Нептун',        4,0,0],
+    ['Уран','Плутон',        4,0,0],
+    ['Уран','Хирон',         4,0,0],
+    ['Нептун','Плутон',      4,0,0],
+    ['Нептун','Хирон',       4,0,0],
+    ['Плутон','Хирон',       4,0,0],
+  ];
+  const map = {};
+  pairs.forEach(([a, b, d, m, s]) => {
+    const key = [a, b].sort().join('|');
+    map[key] = dmsToSec(d, m, s); // храним в секундах
+  });
+  return map;
+})();
+
+// Нормализуем имя планеты из аспекта к стандартному (убираем "истинный", скобки и т.п.)
+function normalizePlanetName(raw) {
+  const map = {
+    'Солнце': 'Солнце',
+    'Луна': 'Луна',
+    'Меркурий': 'Меркурий',
+    'Венера': 'Венера',
+    'Марс': 'Марс',
+    'Юпитер': 'Юпитер',
+    'Сатурн': 'Сатурн',
+    'Уран': 'Уран',
+    'Нептун': 'Нептун',
+    'Плутон': 'Плутон',
+    'Хирон': 'Хирон',
+  };
+  for (const [key, val] of Object.entries(map)) {
+    if (raw.includes(key)) return val;
+  }
+  return raw.trim();
+}
+
+// Парсим орбис из строки вида "5°40′33″" → общее количество секунд (целое)
+function parseOrbSec(orbStr) {
+  // Сотис пишет: градус °, минута ′ (U+2032), секунда ″ (U+2033)
+  const m = orbStr.match(/(\d+)\s*°\s*(\d+)\s*[′']\s*(\d+)\s*[″"]?/);
+  if (m) {
+    return parseInt(m[1]) * 3600 + parseInt(m[2]) * 60 + parseInt(m[3]);
+  }
+  // Только градусы и минуты
+  const m2 = orbStr.match(/(\d+)\s*°\s*(\d+)/);
+  if (m2) return parseInt(m2[1]) * 3600 + parseInt(m2[2]) * 60;
+  // Только градусы
+  const m3 = orbStr.match(/(\d+)\s*°/);
+  if (m3) return parseInt(m3[1]) * 3600;
+  return 999 * 3600;
+}
+
+// Проверяем, нужно ли показывать аспект.
+// Условие: орбис строго меньше X°00′00″ → в секундах строго меньше X*3600
+function shouldShowAspect(p1raw, p2raw, orbStr) {
+  const p1 = normalizePlanetName(p1raw);
+  const p2 = normalizePlanetName(p2raw);
+  const key = [p1, p2].sort().join('|');
+  const limitSec = ORB_LIMITS[key];
+  if (limitSec === undefined) return false;
+  const orbSec = parseOrbSec(orbStr);
+  return orbSec < limitSec; // строго меньше: 6°59′59″ ✓, 7°00′00″ ✗
+}
+
+// ── Состояние ─────────────────────────────────────────────────────────────────
+let currentData  = null;
+let selectedFile = null;
+let selectedGender = '';
+
+// ── Выбор пола ────────────────────────────────────────────────────────────────
+function selectGender(v) {
+  selectedGender = v;
+  const gf = document.getElementById('genderF');
+  const gm = document.getElementById('genderM');
+  const ge = document.getElementById('genderErr');
+  if (gf) gf.classList.toggle('active', v === 'Женский');
+  if (gm) gm.classList.toggle('active', v === 'Мужской');
+  if (ge) ge.style.display = 'none';
+}
+
+// ── Файл выбран ───────────────────────────────────────────────────────────────
+const __fileInput = document.getElementById('fileInput');
+if (__fileInput) {
+  __fileInput.addEventListener('change', function(e) {
+    selectedFile = e.target.files[0] || null;
+    const label = document.getElementById('fileChosen');
+    const btn   = document.getElementById('uploadBtnLabel');
+    if (selectedFile) {
+      if (label) label.textContent = '✓ ' + selectedFile.name;
+      if (btn) { btn.style.borderColor = ''; btn.style.color = ''; }
+    } else {
+      if (label) label.textContent = '';
+    }
+  });
+}
+
+// ── Рассчитать ────────────────────────────────────────────────────────────────
+function calculate() {
+  let ok = true;
+  if (!selectedFile) {
+    ok = false;
+    document.getElementById('uploadBtnLabel').style.borderColor = 'var(--peach)';
+    document.getElementById('uploadBtnLabel').style.color = 'var(--peach)';
+  }
+  if (!selectedGender) {
+    ok = false;
+    document.getElementById('genderErr').style.display = 'block';
+  }
+  if (!ok) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      currentData = parseHTML(ev.target.result);
+      render();
+    } catch(err) {
+      alert('Ошибка чтения файла: ' + err.message);
+    }
+  };
+  reader.readAsText(selectedFile, 'UTF-8');
+}
+
+// Надёжно извлекаем символ знака из ячейки таблицы
+// textContent в DOMParser декодирует entities, но иногда нет — поэтому используем innerHTML
+function decodeChar(cell) {
+  // Пробуем innerHTML — он содержит сырой текст с entities
+  const raw = (cell.innerHTML || cell.textContent || '').trim();
+  // Ручной словарь entities которые Сотис использует для знаков зодиака
+  const entityMap = {
+    '&lt;':  '<',  // Телец
+    '&gt;':  '>',  // Лев
+    '&#59;': ';',  // Близнецы
+    '&#60;': '<',  // Телец (альт)
+    '&#61;': '=',  // Рак
+    '&#62;': '>',  // Лев (альт)
+    '&#63;': '?',  // Дева
+    '&#64;': '@',  // Весы
+    '&#65;': 'A',  // Скорпион
+    '&#66;': 'B',  // Стрелец
+    '&#67;': 'C',  // Козерог
+    '&#68;': 'D',  // Водолей
+    '&#69;': 'E',  // Рыбы
+    '&#70;': 'F',  // Овен
+  };
+  for (const [entity, ch] of Object.entries(entityMap)) {
+    if (raw === entity) return ch;
+  }
+  // Если уже декодировано — берём первый символ
+  return raw.replace(/\s+/g, '').charAt(0);
+}
+
+// ── Парсер ────────────────────────────────────────────────────────────────────
+function parseHTML(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  const vsbl = doc.querySelector('.vsbl text[data-t]');
+  let chartName = '', chartDate = '';
+  if (vsbl) {
+    const raw = vsbl.getAttribute('data-t') || '';
+    const nm = raw.match(/<b>(.+?)<\/b>/i);
+    if (nm) chartName = nm[1].replace(/\s*\([a-zA-Zа-яА-Я]\)\s*$/, '').trim();
+    const dm = raw.match(/(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})/);
+    chartDate = dm ? dm[1] : '';
+  }
+
+  const planets = [];
+  doc.querySelectorAll('table.coord tbody:not(.house) tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length < 2) return;
+    const symEl = tr.querySelector('th .asmb') || tr.querySelector('th');
+    if (!symEl) return;
+    const sym = symEl.textContent.trim();
+    const posRaw = cells[0].textContent.trim();
+    // signChar — декодируем entities и берём первый символ
+    const signChar = decodeChar(cells[1]);
+    const isRetro = posRaw.startsWith('R');
+    const pos = posRaw.replace(/^R\s*/, '').trim();
+    planets.push({ sym, pos, signChar, isRetro });
+  });
+
+  const aspects = [];
+  const seen = new Set();
+  doc.querySelectorAll('g.asp path[data-t]').forEach(p => {
+    const raw = p.getAttribute('data-t') || '';
+    if (!raw || seen.has(raw)) return;
+    seen.add(raw);
+    const m = raw.match(/^(.+?)\s*\((\d+)\)\s+(.+?)\s*[<>]+\s*(.+?)\s*\((.+?)\)\s*$/);
+    if (!m) return;
+    aspects.push({
+      type: parseInt(m[2]),
+      typeName: m[1].trim(),
+      p1: m[3].trim(),
+      p2: m[4].trim(),
+      orb: m[5].trim()
+    });
+  });
+
+  // Дома — берём ASC (дом 1) и MC (дом 10)
+  let asc = null, mc = null;
+  const houseRows = doc.querySelectorAll('table.coord tbody.house tr');
+  houseRows.forEach((tr, i) => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length < 2) return;
+    const pos = cells[0].textContent.trim();
+    // signChar — декодируем entities и берём первый символ
+    const signChar = decodeChar(cells[1]);
+    if (i === 0) asc = { pos, signChar };   // Дом 1 = ASC
+    if (i === 9) mc  = { pos, signChar };   // Дом 10 = MC
+  });
+
+  return { chartName, chartDate, planets, aspects, asc, mc };
+}
+
+// ── Рендер ────────────────────────────────────────────────────────────────────
+function signLabel(ch) { return SIGN_CHARS[ch] || ch; }
+
+function makePlanetCard(symbol, name, pos, signChar, isRetro) {
+  const card = document.createElement('div');
+  card.className = 'planet-card';
+  card.innerHTML = `
+    <div class="planet-symbol">${symbol}</div>
+    <div class="planet-info">
+      <div class="planet-name">${name}${isRetro ? '<span class="retrograde">Rx</span>' : ''}</div>
+      <div class="planet-pos">${pos}</div>
+      <div class="planet-sign">${signLabel(signChar)}</div>
+    </div>`;
+  return card;
+}
+
+function render() {
+  const d = currentData;
+
+  const namePart = d.chartName || '';
+  const datePart = d.chartDate || '';
+  document.getElementById('chartMeta').textContent = [namePart, datePart].filter(Boolean).join(' · ');
+  document.getElementById('genderBadge').textContent = selectedGender;
+
+  // Планеты + ASC + MC
+  const pg = document.getElementById('planetsGrid');
+  pg.innerHTML = '';
+  d.planets.forEach(p => {
+    const name   = PLANET_NAMES[p.sym];
+    const symbol = PLANET_SYMBOLS[p.sym];
+    if (!name || !symbol) return; // пропускаем Раху/Кету
+    pg.appendChild(makePlanetCard(symbol, name, p.pos, p.signChar, p.isRetro));
+  });
+  if (d.asc) pg.appendChild(makePlanetCard('w', 'ASC', d.asc.pos, d.asc.signChar, false));
+  if (d.mc)  pg.appendChild(makePlanetCard('t', 'MC',  d.mc.pos,  d.mc.signChar,  false));
+
+  // Аспекты — фильтруем по орбисам
+  const al = document.getElementById('aspectList');
+  al.innerHTML = '';
+  const filtered = d.aspects.filter(a => shouldShowAspect(a.p1, a.p2, a.orb));
+  filtered.forEach(a => {
+    const info = ASPECT_NAMES[a.type] || { name: a.typeName, cls: 'asp-other' };
+    const p1n = normalizePlanetName(a.p1);
+    const p2n = normalizePlanetName(a.p2);
+    const key = [p1n, p2n].sort().join('|');
+    const limitSec = ORB_LIMITS[key];
+    const limitStr = limitSec !== undefined
+      ? `${Math.floor(limitSec/3600)}°${String(Math.floor((limitSec%3600)/60)).padStart(2,'0')}′${String(limitSec%60).padStart(2,'0')}″`
+      : '';
+    const row = document.createElement('div');
+    row.className = 'aspect-row';
+    row.innerHTML = `
+      <span class="asp-type ${info.cls}">${info.name || a.typeName}</span>
+      <span class="asp-planets">${a.p1} — ${a.p2}</span>
+      <span class="asp-orb" title="лимит: ${limitStr}">${a.orb}</span>`;
+    al.appendChild(row);
+  });
+  if (filtered.length === 0)
+    al.innerHTML = '<div style="color:rgba(250, 243, 235, 0.38);font-size:1.15rem;padding:.8rem">Аспекты в заданных орбисах не найдены</div>';
+
+  // Показатели
+  renderIndicators(d);
+
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function renderIndicators(d) {
+  const calc = calcElements(d.planets, d.asc, d.mc);
+  const el = calc.elements;
+  const total = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
+
+  // Детализация: какие планеты/точки попали в какую стихию
+  const breakdown = { Огонь:[], Земля:[], Воздух:[], Вода:[] };
+  d.planets.forEach(p => {
+    const weight = PLANET_WEIGHT[p.sym];
+    if (weight === undefined) return; // Раху/Кету пропускаем
+    const name = PLANET_NAMES[p.sym] || p.sym;
+    const sign = SIGN_PLAIN[p.signChar] || p.signChar;
+    const elem = SIGN_ELEMENT[p.signChar];
+    if (elem) breakdown[elem].push(`${name} (${sign})`);
+  });
+  if (d.asc) {
+    const elem = SIGN_ELEMENT[d.asc.signChar];
+    const sign = SIGN_PLAIN[d.asc.signChar] || d.asc.signChar;
+    if (elem) breakdown[elem].push(`ASC (${sign})`);
+  }
+  if (d.mc) {
+    const elem = SIGN_ELEMENT[d.mc.signChar];
+    const sign = SIGN_PLAIN[d.mc.signChar] || d.mc.signChar;
+    if (elem) breakdown[elem].push(`MC (${sign})`);
+  }
+
+  const container = document.getElementById('indicatorsSection');
+  container.innerHTML = '';
+
+  // — Стихии —
+  const elBlock = document.createElement('div');
+  elBlock.innerHTML = `<div class="indicator-sub">Стихия</div>`;
+  const elGrid = document.createElement('div');
+  elGrid.className = 'elements-grid';
+  const elDefs = [
+    { key:'Огонь',  cls:'fire',  emoji:'🔥', signs:'Овен, Лев, Стрелец' },
+    { key:'Земля',  cls:'earth', emoji:'🌍', signs:'Телец, Дева, Козерог' },
+    { key:'Воздух', cls:'air',   emoji:'💨', signs:'Близнецы, Весы, Водолей' },
+    { key:'Вода',   cls:'water', emoji:'💧', signs:'Рак, Скорпион, Рыбы' },
+  ];
+  elDefs.forEach(({ key, cls, emoji, signs }) => {
+    const score = el[key] || 0;
+    const pct = total > 0 ? Math.round(score / total * 100) : 0;
+    const detail = breakdown[key].length ? breakdown[key].join(', ') : '—';
+    const card = document.createElement('div');
+    card.className = `element-card ${cls}`;
+    card.innerHTML = `
+      <div class="element-name">${emoji} ${key}</div>
+      <div style="font-size:0.95rem;color:rgba(250, 243, 235, 0.58);margin-bottom:0.45rem">${signs}</div>
+      <div class="element-score">${score}</div>
+      <div style="font-size:1.2rem;color:var(--muted);margin-top:0.25rem">${pct}%</div>
+      <div class="element-detail">${detail}</div>`;
+    elGrid.appendChild(card);
+  });
+  elBlock.appendChild(elGrid);
+  container.appendChild(elBlock);
+
+  // — Энергии —
+  const enBlock = document.createElement('div');
+  const energies = [
+    { label:'Тепло (мужская)', formula:'Огонь + Воздух', value: calc.teplo },
+    { label:'Холод',           formula:'Вода + Земля',   value: calc.holod },
+    { label:'Сухость',         formula:'Земля + Огонь',  value: calc.suhost },
+    { label:'Влажность',       formula:'Вода + Воздух',  value: calc.vlazhnost },
+    { label:'Рациональность',  formula:'Земля + Воздух', value: calc.racionalnost },
+    { label:'Эмоциональность', formula:'Огонь + Вода',   value: calc.emotsionalnost },
+  ];
+  const enGrid = document.createElement('div');
+  enGrid.className = 'energies-grid';
+  energies.forEach(({ label, formula, value }) => {
+    const card = document.createElement('div');
+    card.className = 'energy-card';
+    card.innerHTML = `
+      <div>
+        <div class="energy-label">${label}</div>
+        <div class="energy-formula">${formula}</div>
+      </div>
+      <div class="energy-score">${value}</div>`;
+    enGrid.appendChild(card);
+  });
+  enBlock.appendChild(enGrid);
+  container.appendChild(enBlock);
+}
+
+// ── Экспорт в DOCX ───────────────────────────────────────────────────────────
+async function exportDocx() {
+  if (!currentData) return;
+  const d = currentData;
+  const name   = d.chartName || 'Неизвестно';
+  const date   = d.chartDate || '';
+  const gender = selectedGender || '—';
+  const calc   = calcElements(d.planets, d.asc, d.mc);
+  const el     = calc.elements;
+  const total  = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
+
+  const {
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+    AlignmentType, HeadingLevel, WidthType, BorderStyle, ShadingType,
+    VerticalAlign
+  } = docx;
+
+  const gold   = 'FC9FBC';
+  const dark   = '0B1957';
+  const gray   = '7D7590';
+  const white  = 'FAF3EB';
+
+  const border = { style: BorderStyle.SINGLE, size: 1, color: 'DDDDDD' };
+  const borders = { top: border, bottom: border, left: border, right: border };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+  const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+  function heading(text, level = 1) {
+    return new Paragraph({
+      children: [new TextRun({
+        text, bold: true, color: gold,
+        size: level === 1 ? 36 : 26,
+        font: 'Arial',
+      })],
+      spacing: { before: level === 1 ? 400 : 300, after: 160 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: gold, space: 4 } },
+    });
+  }
+
+  function subheading(text) {
+    return new Paragraph({
+      children: [new TextRun({ text, bold: true, size: 22, color: '333333', font: 'Arial' })],
+      spacing: { before: 200, after: 100 },
+    });
+  }
+
+  function bodyRow(label, value, bold = false) {
+    return new Paragraph({
+      children: [
+        new TextRun({ text: label + ': ', bold: true, size: 20, font: 'Arial', color: '555555' }),
+        new TextRun({ text: value, bold, size: 20, font: 'Arial', color: '222222' }),
+      ],
+      spacing: { after: 80 },
+    });
+  }
+
+  function divider() {
+    return new Paragraph({
+      children: [new TextRun({ text: '' })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: 'EEEEEE', space: 2 } },
+      spacing: { before: 120, after: 120 },
+    });
+  }
+
+  // Таблица планет
+  function planetsTable() {
+    const headerRow = new TableRow({
+      children: [
+        ['Планета', 2000], ['Позиция', 2200], ['Знак', 2200], ['Rx', 800]
+      ].map(([text, w]) => new TableCell({
+        borders,
+        width: { size: w, type: WidthType.DXA },
+        shading: { fill: '0B1957', type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 120, right: 120 },
+        children: [new Paragraph({
+          children: [new TextRun({ text, bold: true, color: gold, size: 18, font: 'Arial' })]
+        })]
+      }))
+    });
+
+    const dataRows = [];
+    // Планеты
+    d.planets.forEach(p => {
+      const pname = PLANET_NAMES[p.sym]; if (!pname) return;
+      const sign  = SIGN_PLAIN[p.signChar] || p.signChar;
+      const el    = SIGN_ELEMENT[p.signChar] || '';
+      const elColor = { Огонь:'C0392B', Земля:'27AE60', Воздух:'2980B9', Вода:'1A5276' }[el] || '444444';
+      dataRows.push(new TableRow({
+        children: [
+          cell(pname, 2000),
+          cell(p.pos, 2200),
+          colorCell(sign, elColor, 2200),
+          cell(p.isRetro ? 'Rx' : '', 800),
+        ]
+      }));
+    });
+    // ASC
+    if (d.asc) {
+      const sign = SIGN_PLAIN[d.asc.signChar] || d.asc.signChar;
+      const elColor = { Огонь:'C0392B', Земля:'27AE60', Воздух:'2980B9', Вода:'1A5276' }[SIGN_ELEMENT[d.asc.signChar]] || '444444';
+      dataRows.push(new TableRow({ children: [cell('ASC',2000), cell(d.asc.pos,2200), colorCell(sign,elColor,2200), cell('',800)] }));
+    }
+    // MC
+    if (d.mc) {
+      const sign = SIGN_PLAIN[d.mc.signChar] || d.mc.signChar;
+      const elColor = { Огонь:'C0392B', Земля:'27AE60', Воздух:'2980B9', Вода:'1A5276' }[SIGN_ELEMENT[d.mc.signChar]] || '444444';
+      dataRows.push(new TableRow({ children: [cell('MC',2000), cell(d.mc.pos,2200), colorCell(sign,elColor,2200), cell('',800)] }));
+    }
+
+    return new Table({
+      width: { size: 7200, type: WidthType.DXA },
+      columnWidths: [2000, 2200, 2200, 800],
+      rows: [headerRow, ...dataRows],
+    });
+  }
+
+  function cell(text, w) {
+    return new TableCell({
+      borders, width: { size: w, type: WidthType.DXA },
+      margins: { top: 60, bottom: 60, left: 120, right: 120 },
+      children: [new Paragraph({ children: [new TextRun({ text, size: 18, font: 'Arial' })] })]
+    });
+  }
+  function colorCell(text, color, w) {
+    return new TableCell({
+      borders, width: { size: w, type: WidthType.DXA },
+      margins: { top: 60, bottom: 60, left: 120, right: 120 },
+      children: [new Paragraph({ children: [new TextRun({ text, size: 18, font: 'Arial', color })] })]
+    });
+  }
+
+  // Таблица аспектов
+  function aspectsTable() {
+    const filtered = d.aspects.filter(a => shouldShowAspect(a.p1, a.p2, a.orb));
+    if (filtered.length === 0) return new Paragraph({ children: [new TextRun({ text: 'Нет аспектов в заданных орбисах', size: 18, font: 'Arial', color: gray })] });
+
+    const aspColors = { 'Соединение':'2471A3', 'Тригон':'1E8449', 'Секстиль':'117A65', 'Квадрат':'C0392B', 'Оппозиция':'76448A' };
+    const headerRow = new TableRow({
+      children: [['Аспект',1800],['Планета 1',2200],['Планета 2',2200],['Орбис',1000]].map(([t,w]) =>
+        new TableCell({
+          borders, width:{size:w,type:WidthType.DXA},
+          shading:{fill:'0B1957',type:ShadingType.CLEAR},
+          margins:{top:80,bottom:80,left:120,right:120},
+          children:[new Paragraph({children:[new TextRun({text:t,bold:true,color:gold,size:18,font:'Arial'})]})]
+        })
+      )
+    });
+    const rows = filtered.map(a => {
+      const info = ASPECT_NAMES[a.type] || { name: a.typeName };
+      const aColor = aspColors[info.name] || '444444';
+      return new TableRow({ children: [
+        new TableCell({ borders, width:{size:1800,type:WidthType.DXA}, margins:{top:60,bottom:60,left:120,right:120},
+          children:[new Paragraph({children:[new TextRun({text:info.name||a.typeName,size:18,font:'Arial',color:aColor,bold:true})]})] }),
+        cell(a.p1, 2200), cell(a.p2, 2200), cell(a.orb, 1000),
+      ]});
+    });
+    return new Table({ width:{size:7200,type:WidthType.DXA}, columnWidths:[1800,2200,2200,1000], rows:[headerRow,...rows] });
+  }
+
+  // Таблица стихий
+  function elementsTable() {
+    const elDefs = [
+      { key:'Огонь',  color:'C0392B', signs:'Овен, Лев, Стрелец' },
+      { key:'Земля',  color:'1E8449', signs:'Телец, Дева, Козерог' },
+      { key:'Воздух', color:'2471A3', signs:'Близнецы, Весы, Водолей' },
+      { key:'Вода',   color:'154360', signs:'Рак, Скорпион, Рыбы' },
+    ];
+    const headerRow = new TableRow({
+      children: [['Стихия',1400],['Знаки',3000],['Баллы',800],['%',600],['Состав',2400]].map(([t,w])=>
+        new TableCell({borders,width:{size:w,type:WidthType.DXA},shading:{fill:'0B1957',type:ShadingType.CLEAR},
+          margins:{top:80,bottom:80,left:120,right:120},
+          children:[new Paragraph({children:[new TextRun({text:t,bold:true,color:gold,size:18,font:'Arial'})]})]})
+      )
+    });
+
+    // Детализация
+    const breakdown = { Огонь:[], Земля:[], Воздух:[], Вода:[] };
+    d.planets.forEach(p => {
+      const w2 = PLANET_WEIGHT[p.sym]; if (w2===undefined) return;
+      const pname = PLANET_NAMES[p.sym]||p.sym;
+      const sign  = SIGN_PLAIN[p.signChar]||p.signChar;
+      const elem  = SIGN_ELEMENT[p.signChar];
+      if (elem) breakdown[elem].push(`${pname} (${sign})`);
+    });
+    if (d.asc) { const e=SIGN_ELEMENT[d.asc.signChar]; if(e) breakdown[e].push(`ASC (${SIGN_PLAIN[d.asc.signChar]||d.asc.signChar})`); }
+    if (d.mc)  { const e=SIGN_ELEMENT[d.mc.signChar];  if(e) breakdown[e].push(`MC (${SIGN_PLAIN[d.mc.signChar]||d.mc.signChar})`); }
+
+    const rows = elDefs.map(({key,color,signs}) => {
+      const sc  = el[key]||0;
+      const pct = total>0 ? Math.round(sc/total*100) : 0;
+      const det = breakdown[key].join(', ')||'—';
+      return new TableRow({ children: [
+        new TableCell({borders,width:{size:1400,type:WidthType.DXA},margins:{top:60,bottom:60,left:120,right:120},
+          children:[new Paragraph({children:[new TextRun({text:key,bold:true,color,size:18,font:'Arial'})]})]
+        }),
+        cell(signs,3000), cell(String(sc),800), cell(pct+'%',600), cell(det,2400),
+      ]});
+    });
+    return new Table({width:{size:8200,type:WidthType.DXA},columnWidths:[1400,3000,800,600,2400],rows:[headerRow,...rows]});
+  }
+
+  // Таблица энергий
+  function energiesTable() {
+    const energies = [
+      { label:'Тепло (мужская)', formula:'Огонь + Воздух', value: calc.teplo },
+      { label:'Холод',           formula:'Вода + Земля',   value: calc.holod },
+      { label:'Сухость',         formula:'Земля + Огонь',  value: calc.suhost },
+      { label:'Влажность',       formula:'Вода + Воздух',  value: calc.vlazhnost },
+      { label:'Рациональность',  formula:'Земля + Воздух', value: calc.racionalnost },
+      { label:'Эмоциональность', formula:'Огонь + Вода',   value: calc.emotsionalnost },
+    ];
+    const headerRow = new TableRow({
+      children: [['Показатель',3000],['Формула',3000],['Значение',1200]].map(([t,w])=>
+        new TableCell({borders,width:{size:w,type:WidthType.DXA},shading:{fill:'0B1957',type:ShadingType.CLEAR},
+          margins:{top:80,bottom:80,left:120,right:120},
+          children:[new Paragraph({children:[new TextRun({text:t,bold:true,color:gold,size:18,font:'Arial'})]})]})
+      )
+    });
+    const rows = energies.map(({label,formula,value})=>
+      new TableRow({children:[cell(label,3000),cell(formula,3000),cell(String(value),1200)]})
+    );
+    return new Table({width:{size:7200,type:WidthType.DXA},columnWidths:[3000,3000,1200],rows:[headerRow,...rows]});
+  }
+
+  const children = [
+    // Заголовок
+    new Paragraph({
+      children: [new TextRun({ text: 'Расчёт правильного питания с помощью натальной карты', bold: true, size: 40, font: 'Arial', color: dark })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+    }),
+    new Paragraph({
+      children: [new TextRun({ text: name + '  |  ' + gender + '  |  ' + date, size: 20, font: 'Arial', color: gray })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 },
+    }),
+
+    heading('Планеты в знаках'),
+    planetsTable(),
+    divider(),
+
+    heading('Аспекты'),
+    aspectsTable(),
+    divider(),
+
+    heading('Расчёт показателей'),
+    subheading('Стихии'),
+    elementsTable(),
+    new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 160 } }),
+    subheading('Энергии'),
+    energiesTable(),
+  ];
+
+  const document = new Document({
+    styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
+    sections: [{
+      properties: {
+        page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, right: 1134, bottom: 1134, left: 1134 } }
+      },
+      children,
+    }]
+  });
+
+  const buffer = await Packer.toBlob(document);
+  const safe = name.replace(/[^a-zA-Zа-яА-ЯёЁ0-9_\- ]/g,'').trim() || 'karta';
+  const fn = `pitanie_${safe}_${date.replace(/[.: ]/g,'-')}.docx`;
+  const a = document.createElement ? null : null;
+  const link = window.document.createElement('a');
+  link.href = URL.createObjectURL(buffer);
+  link.download = fn;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+
+// ── Прием пищи и завтрак ─────────────────────────────────────────────────────
+function showFoodPage() {
+  if (!currentData) return;
+
+  const calc = calcElements(currentData.planets, currentData.asc, currentData.mc);
+
+  const rational = calc.racionalnost;
+  const emotional = calc.emotsionalnost;
+  const cold = calc.holod;
+  const wet = calc.vlazhnost;
+  const dry = calc.suhost;
+
+  const controlCold = selectedGender === 'Мужской'
+    ? cold
+    : (cold + wet) / 2;
+
+  let meals = '';
+  let formulaText = '';
+
+  // 4 приема еды: сначала проверяем самое сильное условие
+  if (rational > emotional + controlCold) {
+    meals = '4 приема еды';
+    formulaText = 'Формула: Рациональность > Эмоциональность + контрольный показатель';
+  }
+  // 3 приема еды
+  else if (
+    (rational > controlCold && rational > emotional) ||
+    (emotional > rational && emotional > controlCold)
+  ) {
+    meals = '3 приема еды';
+    formulaText = 'Формула: Рациональность или Эмоциональность сильнее контрольного показателя';
+  }
+  // 2 приема еды
+  else if (controlCold > rational || controlCold > emotional) {
+    meals = '2 приема еды';
+    formulaText = 'Формула: контрольный показатель сильнее Рациональности или Эмоциональности';
+  }
+  else {
+    meals = 'На усмотрение';
+    formulaText = 'Показатели равны или близки';
+  }
+
+  document.getElementById('foodMeals').textContent = meals;
+  document.getElementById('foodFormula').textContent = formulaText;
+
+  // Завтрак: время
+  if (wet > dry) {
+    document.getElementById('breakfastTimeTitle').textContent = 'Ранний завтрак';
+    document.getElementById('breakfastTimeText').textContent =
+      'В течение часа после пробуждения. Формула: Влажность > Сухость';
+  } else if (dry > wet) {
+    document.getElementById('breakfastTimeTitle').textContent = 'Поздний завтрак';
+    document.getElementById('breakfastTimeText').textContent =
+      'Через несколько часов после пробуждения. Формула: Сухость > Влажность';
+  } else {
+    document.getElementById('breakfastTimeTitle').textContent = 'На усмотрение';
+    document.getElementById('breakfastTimeText').textContent =
+      'Формула: Сухость = Влажность';
+  }
+
+  // Завтрак: объем
+  if (rational > 11) {
+    document.getElementById('breakfastVolumeTitle').textContent = 'Символический завтрак';
+    document.getElementById('breakfastVolumeText').textContent =
+      '10% суточного рациона. Формула: Рациональность > 11 баллов';
+  } else if (rational > 7 && rational < 11) {
+    document.getElementById('breakfastVolumeTitle').textContent = 'Средний завтрак';
+    document.getElementById('breakfastVolumeText').textContent =
+      '40% суточного рациона. Формула: Рациональность > 7 и < 11 баллов';
+  } else {
+    document.getElementById('breakfastVolumeTitle').textContent = 'Полноценный завтрак';
+    document.getElementById('breakfastVolumeText').textContent =
+      '50% суточного рациона. Формула: Рациональность ≤ 7 баллов';
+  }
+
+  // Обед: объем по эмоциональности
+  if (emotional > 11) {
+    document.getElementById('lunchVolumeTitle').textContent = 'Символический обед';
+    document.getElementById('lunchVolumeText').textContent =
+      '10% суточного рациона. Формула: Эмоциональность > 11 баллов';
+  } else if (emotional > 6 && emotional < 11) {
+    document.getElementById('lunchVolumeTitle').textContent = 'Средний обед';
+    document.getElementById('lunchVolumeText').textContent =
+      '40% суточного рациона. Формула: Эмоциональность > 6 и < 11 баллов';
+  } else {
+    document.getElementById('lunchVolumeTitle').textContent = 'Полноценный обед';
+    document.getElementById('lunchVolumeText').textContent =
+      '50% суточного рациона. Формула: Эмоциональность ≤ 6 баллов';
+  }
+
+  // Ужин: показатель 3
+  const indicator3 = controlCold;
+  const indicator3Name = selectedGender === 'Мужской'
+    ? 'Холод'
+    : '(Холод + Влажность) / 2';
+
+  if (indicator3 < 6) {
+    document.getElementById('dinnerVolumeTitle').textContent = 'Полноценный ужин';
+    document.getElementById('dinnerVolumeText').textContent =
+      `50% суточного рациона. Формула: показатель 3 < 6 баллов. Показатель 3 = ${indicator3Name}`;
+  } else if (indicator3 > 6) {
+    document.getElementById('dinnerVolumeTitle').textContent = 'Ограниченный ужин';
+    document.getElementById('dinnerVolumeText').textContent =
+      `Количество не должно превышать завтрак и обед. Формула: показатель 3 > 6 баллов. Показатель 3 = ${indicator3Name}`;
+  } else {
+    document.getElementById('dinnerVolumeTitle').textContent = 'Ужин на усмотрение';
+    document.getElementById('dinnerVolumeText').textContent =
+      `Формула: показатель 3 = 6 баллов. Показатель 3 = ${indicator3Name}`;
+  }
+
+  // Метаболизм по положению Солнца
+  const sun = currentData.planets.find(p => p.sym === 'n');
+  const sunSign = sun ? SIGN_PLAIN[sun.signChar] : '';
+  const energySavingSigns = ['Близнецы', 'Рак', 'Весы', 'Скорпион', 'Водолей', 'Рыбы'];
+  const energyIntensiveSigns = ['Овен', 'Телец', 'Лев', 'Дева', 'Стрелец', 'Козерог'];
+
+  if (energySavingSigns.includes(sunSign)) {
+    document.getElementById('metabolismTitle').textContent = 'Энергосберегающий';
+    document.getElementById('metabolismText').textContent =
+      `Физическая активность после приёма еды. Организм необходимо разогревать после еды. Формула: Солнце в знаке ${sunSign}.`;
+  } else if (energyIntensiveSigns.includes(sunSign)) {
+    document.getElementById('metabolismTitle').textContent = 'Энергоёмкий';
+    document.getElementById('metabolismText').textContent =
+      `Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи. Формула: Солнце в знаке ${sunSign}.`;
+  } else {
+    document.getElementById('metabolismTitle').textContent = 'Метаболизм не определён';
+    document.getElementById('metabolismText').textContent = 'Не удалось определить знак Солнца.';
+  }
+
+  document.getElementById('foodPage').style.display = 'block';
+  document.getElementById('foodPage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Сброс ─────────────────────────────────────────────────────────────────────
+function resetPage() {
+  currentData = null; selectedFile = null; selectedGender = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileChosen').textContent = '';
+  const btn = document.getElementById('uploadBtnLabel');
+  btn.style.borderColor = ''; btn.style.color = '';
+  document.getElementById('genderF').classList.remove('active');
+  document.getElementById('genderM').classList.remove('active');
+  document.getElementById('genderErr').style.display = 'none';
+  const foodPage = document.getElementById('foodPage');
+  if (foodPage) foodPage.style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'flex';
+  document.getElementById('result').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+</script>
 
 <script>
 // ── Таймер Шага 2 ────────────────────────────────────────────────────────────
@@ -545,7 +1515,13 @@ async function calculateFromUrl(event) {
 
     loadingTxt.textContent = 'Рассчитываем показатели...';
 
+    // Без отдельного выбора пола на первом экране: данные пола вводятся на следующем шаге.
+    selectedGender = '';
+
     // Вызываем оригинальный парсер и рендер
+    if (typeof parseHTML !== 'function' || typeof render !== 'function') {
+      throw new Error('Логика расчёта не загрузилась. Обновите файл полностью и попробуйте снова.');
+    }
     currentData = parseHTML(html);
     render();
 
