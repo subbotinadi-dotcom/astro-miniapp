@@ -5,137 +5,313 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Натальная карта — питание</title>
 
-<!-- Telegram Mini App SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- docx.js для генерации Word-файлов -->
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
-
 <link rel="stylesheet" href="style.css">
 
 <style>
-  /* Переопределения для Telegram Mini App */
+  @font-face {
+    font-family: 'Bebas Neue Cyrillic';
+    src: local('Bebas Neue Cyrillic'), local('BebasNeueCyrillic');
+    font-weight: 400 700;
+  }
+
+  *, *::before, *::after {
+    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif !important;
+    color: #FFFFFF;
+  }
+
   body {
-    /* Используем цвета темы TG если доступны, иначе наши */
-    background: var(--tg-theme-bg-color, var(--navy));
-    color: var(--tg-theme-text-color, var(--cream));
+    background: #0D1935 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* Кнопка скачивания — стилизованная под главную */
-  #downloadSection {
-    display: none;
-    text-align: center;
-    padding: 2rem 1rem;
+  /* ══ СТИЛЬ ЗАГОЛОВКА 1 ══
+     Используется для: главного заголовка, заголовков секций результатов,
+     заголовка блока питания. Розовый, крупный, по центру, uppercase. */
+  .h1-style {
+    font-size: 2.6rem !important;
+    color: #FC9FBC !important;
+    text-align: center !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    line-height: 1.05 !important;
+    margin-bottom: 0.7rem !important;
+    display: block !important;
   }
 
-  .tg-main-btn-fallback {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 1rem 2rem; background: var(--cream); color: var(--navy);
-    border: none; border-radius: 12px;
-    font-family: 'Bebas Neue Cyrillic', 'Bebas Neue', Arial, sans-serif;
-    font-size: 1.35rem; letter-spacing: 0.13em; text-transform: uppercase;
-    font-weight: 700; cursor: pointer; width: 100%; max-width: 400px;
-    transition: background 0.2s;
+  /* Подзаголовок */
+  .tagline {
+    color: #FFFFFF !important;
+    font-size: 1.15rem !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+    letter-spacing: 0.02em !important;
   }
-  .tg-main-btn-fallback:hover { background: var(--peach); }
 
-  /* Статус загрузки */
+  /* steps-card */
+  .steps-card {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    max-width: 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 0 auto 2rem !important;
+    align-items: stretch;
+  }
+
+  /* Шаги */
+  .step { display: flex; flex-direction: column; gap: 0.5rem; width:100%; }
+  .step-label { color: #FC9FBC !important; font-size: 1.08rem; letter-spacing: 0.02em; text-transform: uppercase; text-align:center; }
+  #step1Block .step-label { text-align:left !important; width:100%; }
+
+  /* Блок инструкции */
+  .instruction-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 0.5rem;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .instruction-box *, .instruction-box p, .instruction-box li {
+    color: #FFFFFF !important;
+    font-size: 0.97rem !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.01em !important;
+    text-align: left !important;
+  }
+  .instruction-box ol { margin: 0.5rem 0 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.4rem; }
+
+  /* Кнопка Сотис и все кнопки в том же стиле */
+  .sotis-link, .sotis-btn-style {
+    background: #FFFFFF !important;
+    border-radius: 14px !important;
+    display: inline-block !important;
+    text-align: center !important;
+    margin-top: 1rem !important;
+    padding: 0.75rem 2rem !important;
+    font-size: 1.15rem !important;
+    letter-spacing: 0.04em !important;
+    font-family: 'Bebas Neue Cyrillic','Bebas Neue',Arial,sans-serif !important;
+    color: #0D1935 !important;
+    border: none !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: background 0.2s !important;
+  }
+  .sotis-link *, .sotis-btn-style * { color: #0D1935 !important; }
+  .sotis-link:hover, .sotis-btn-style:hover { background: #FEDCD1 !important; }
+
+  /* Центрирование кнопки Сотис */
+  .sotis-link-wrap { text-align: center; margin-top: 0.5rem; width:100%; }
+
+  /* Поле ввода ссылки */
+  .url-input-wrap { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem; }
+  .url-input {
+    width: 100%; padding: 0.9rem 1rem;
+    border: 1.5px solid rgba(255,255,255,0.2); border-radius: 12px;
+    background: rgba(255,255,255,0.07); color: #FFFFFF !important;
+    font-size: 1.1rem; letter-spacing: 0.02em; outline: none; box-sizing: border-box;
+  }
+  .url-input::placeholder { color: rgba(255,255,255,0.3) !important; }
+  .url-input:focus { border-color: #FC9FBC; }
+  .url-err { display: none; color: #FC9FBC !important; font-size: 0.95rem; }
+
+  /* Главная кнопка расчёта */
+  .calc-btn {
+    background: #FC9FBC !important; color: #0D1935 !important;
+    border: none; border-radius: 12px; width: 100%; padding: 1rem;
+    font-size: 1.35rem; letter-spacing: 0.02em; text-transform: uppercase;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .calc-btn * { color: #0D1935 !important; }
+  .calc-btn:hover { background: #FEDCD1 !important; }
+
+  /* Поля формы */
+  .form-field label { color: #FC9FBC !important; font-size: 1.05rem; letter-spacing: 0.02em; text-transform: uppercase; }
+  .form-field select, .form-field input {
+    background: rgba(255,255,255,0.07) !important;
+    border: 1.5px solid rgba(255,255,255,0.2) !important;
+    border-radius: 12px; color: #FFFFFF !important;
+    padding: 0.9rem 1rem; font-size: 1.35rem; width: 100%; box-sizing: border-box;
+  }
+  .form-field select option { background: #0D1935; color: #FFFFFF !important; }
+  .field-err, .gender-err { color: #FC9FBC !important; font-size: 0.95rem; }
+
+  /* Карточки результатов */
+  .planet-card, .aspect-row, .energy-card, .element-card {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 12px;
+  }
+
+  /* Планеты */
+  .planet-name { color: #FC9FBC !important; }
+  .planet-pos, .planet-sign, .planet-symbol { color: #FFFFFF !important; }
+  .retrograde { color: #FC9FBC !important; }
+
+  /* Аспекты */
+  .asp-type, .asp-planets, .asp-orb { color: #FFFFFF !important; }
+
+  /* Энергии / показатели */
+  .energy-label { color: #FC9FBC !important; }
+  .energy-score, .energy-formula { color: #FFFFFF !important; }
+  .element-name { color: #FC9FBC !important; }
+  .element-score, .element-detail { color: #FFFFFF !important; }
+  .indicator-sub { color: #FC9FBC !important; }
+
+  /* Заголовки секций результатов — белый текст */
+  .section-title {
+    color: #FFFFFF !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Кнопки экспорта */
+  .export-btn {
+    background: #FFFFFF !important; color: #0D1935 !important;
+    border-radius: 12px; border: none; cursor: pointer;
+    padding: 0.85rem 2rem; font-size: 1.25rem; letter-spacing: 0.02em;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .export-btn * { color: #0D1935 !important; }
+  .export-btn:hover { background: #FEDCD1 !important; }
+  .reset-btn { border: 1px solid rgba(255,255,255,0.25) !important; color: #FFFFFF !important; background: transparent !important; }
+
+  /* Блок питания */
+  .food-data-card {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 16px; padding: 1.5rem;
+  }
+
+  /* Подсказки */
+  .hint { color: rgba(255,255,255,0.4) !important; }
+  .subtitle { color: rgba(255,255,255,0.7) !important; }
+  .gender-badge { border-color: rgba(255,255,255,0.2) !important; color: #FFFFFF !important; }
+
+  /* Таймер */
+  #timerBlock { color: rgba(255,255,255,0.5) !important; font-size: 1rem; letter-spacing: 0.04em; padding: 0.5rem 0; text-align: center; }
+  #step2Block { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); text-align:left; }
+  #step2Block .step-label { text-align:left; }
+  .ready-now-btn { margin-top:0.5rem; background:transparent; border:none; color:#FC9FBC !important; font-family:inherit; font-size:1rem; letter-spacing:0.04em; cursor:pointer; text-decoration:underline; }
+  .continue-btn { background:#FC9FBC !important; color:#0D1935 !important; border:none; border-radius:12px; padding:0.9rem 2rem; font-size:1.15rem; letter-spacing:0.02em; text-transform:uppercase; font-weight:700; cursor:pointer; margin:2rem auto; display:block; max-width:400px; }
+  .continue-btn * { color:#0D1935 !important; }
+  .food-data-card .h1-style, .food-step-label { color:#FC9FBC !important; font-size:1.08rem !important; letter-spacing:0.02em !important; text-transform:uppercase !important; text-align:center !important; margin-bottom:1.2rem !important; display:block !important; }
+  .privacy-note { color:rgba(255,255,255,0.4) !important; font-size:1rem !important; text-align:center !important; margin-top:0.75rem; letter-spacing:0.02em; }
+
+  /* Оверлей загрузки */
   #loadingOverlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(17,25,51,0.85); z-index: 9999;
+    background: rgba(13,25,53,0.92); z-index: 9999;
     flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
   }
   #loadingOverlay.active { display: flex; }
   .spinner {
-    width: 48px; height: 48px;
-    border: 4px solid rgba(252,159,188,0.25);
-    border-top-color: var(--pink);
+    width: 52px; height: 52px;
+    border: 4px solid rgba(255,255,255,0.15);
+    border-top-color: #FC9FBC;
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: var(--peach); font-size: 1.2rem; letter-spacing: 0.1em; }
+  .loading-text { color: #FFFFFF !important; font-size: 1.15rem; letter-spacing: 0.04em; text-align: center; padding: 0 2rem; }
+
+  #uploadZone { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 5rem; box-sizing:border-box; }
+  #result { display:none; padding:2rem 1rem 5rem; max-width:960px; margin:0 auto; box-sizing:border-box; }
+  .food-data-form { text-align:left; }
 </style>
+
+
+
 </head>
 <body>
 
-<!-- Загрузочный оверлей -->
+<!-- Оверлей загрузки -->
 <div id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="loading-text">Генерируем документ...</div>
+  <div class="loading-text" id="loadingText">Загружаем карту...</div>
 </div>
 
-<!-- ЭКРАН 1: Загрузка файла и ввод данных -->
+<!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
+
+  <span class="h1-style">Питание по натальной карте</span>
+
   <p class="tagline">Заполните все шаги и нажмите «Рассчитать»</p>
 
   <div class="steps-card">
 
-    <div class="step">
-      <div class="step-label">Шаг 1 — скачайте HTML-файл натальной карты</div>
-      <a class="sotis-link" href="https://sotis-online.ru/" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M7 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1V9M10 2h4m0 0v4m0-4L8 10" stroke="var(--navy)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Перейти на сайт Сотис
-      </a>
-    </div>
+    <!-- ШАГ 1 -->
+    <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
+      <div class="step-label">Шаг 1 — создайте натальную карту на Сотисе</div>
 
-    <div class="step">
-      <div class="step-label">Шаг 2 — загрузите HTML-файл карты</div>
-      <div class="upload-btn-wrap">
-        <input type="file" accept=".html,.htm" id="fileInput">
-        <div class="upload-btn" id="uploadBtnLabel">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 11V2M5 5l3-3 3 3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="var(--peach)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Выбрать файл
-        </div>
-      </div>
-      <div class="file-chosen" id="fileChosen">Файл не выбран</div>
-    </div>
-
-    <div class="step">
-      <div class="step-label">Шаг 3 — введите данные</div>
-
-      <div class="form-field">
-        <label for="genderSelect">Пол <span style="color:var(--peach)">*</span></label>
-        <select id="genderSelect" required>
-          <option value="">Выберите</option>
-          <option value="Женский">Женский</option>
-          <option value="Мужской">Мужской</option>
-        </select>
-        <div class="gender-err" id="genderErr" style="display:none">Пожалуйста, выберите пол</div>
+      <div class="instruction-box">
+        <p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
+          В меню нажмите «Гороскоп» → «Создать новый» → «Одинарная карта»
+        </p>
+        <ol style="color:#FFFFFF">
+          <li style="color:#FFFFFF !important">Укажите тип карты — «Натал»</li>
+          <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
+          <li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
+          <li style="color:#FFFFFF !important">Перейдите в меню «Гороскоп» → «Поделиться»</li>
+          <li style="color:#FFFFFF !important">Скопируйте ссылку из поля «Разместить карту на АстроПро»</li>
+        </ol>
       </div>
 
-      <div class="input-grid" style="margin-top:0.8rem">
-        <div class="form-field">
-          <label for="weightInput">Вес, кг <span style="color:var(--peach)">*</span></label>
-          <input id="weightInput" type="number" min="1" step="0.1" placeholder="60" required>
-          <div class="field-err" id="weightErr">Укажите вес</div>
-        </div>
-        <div class="form-field">
-          <label for="heightInput">Рост, см <span style="color:var(--peach)">*</span></label>
-          <input id="heightInput" type="number" min="50" step="1" placeholder="165" required>
-          <div class="field-err" id="heightErr">Укажите рост</div>
-        </div>
-        <div class="form-field" style="grid-column:1/-1">
-          <label for="ageInput">Возраст, лет <span style="color:var(--peach)">*</span></label>
-          <input id="ageInput" type="number" min="1" step="1" placeholder="30" required>
-          <div class="field-err" id="ageErr">Укажите возраст</div>
-        </div>
-      </div>
+      <div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank" onclick="showStep2()">
+        ✦ Перейти на сайт Сотис
+      </a></div>
     </div>
 
-    <button type="button" class="calc-btn" onclick="calculate(event)">✦ Рассчитать карту</button>
+    <!-- ШАГ 2 — появляется через 30 сек после клика на кнопку -->
+    <div class="step" id="step2Block" style="display:none">
+      <div class="step-label">Шаг 2 — вставьте ссылку на карту</div>
+      <div class="url-input-wrap">
+        <input
+          type="url"
+          id="sotisUrlInput"
+          class="url-input"
+          placeholder="https://sotis-online.ru/?chr=..."
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+        <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
+      </div>
+      <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" onclick="calculateFromUrl(event)">✦ Рассчитать</button></div>
+    </div>
+
+    <!-- Таймер обратного отсчёта -->
+    <div id="timerBlock" style="display:none; text-align:center; color:rgba(255,255,255,0.5); font-size:1rem; letter-spacing:0.04em; padding:0.5rem 0">
+      Шаг 2 откроется через <span id="timerCount">30</span> сек...
+      <br>
+      <button type="button" onclick="showStep2()" class="ready-now-btn">
+        ✦ Уже готово — показать сейчас
+      </button>
+    </div>
+
   </div>
 
-  <div class="hint">Файл читается прямо в браузере — ничего не отправляется на сервер</div>
 </div>
-
 
 <!-- ЭКРАН 2: Результаты -->
 <div id="result">
 
   <div class="chart-title">
-    <h2>Расчёт правильного питания<br>с помощью натальной карты</h2>
+    <span class="h1-style">Расчёт питания по натальной карте</span>
     <div class="subtitle" id="chartMeta"></div>
     <div class="gender-badge" id="genderBadge"></div>
   </div>
@@ -162,23 +338,21 @@
         <div class="energy-score" id="foodCount"></div>
       </div>
     </div>
-
     <div class="meals-grid" id="mealsGrid"></div>
-
     <div class="salt-grid" id="saltGrid"></div>
 
     <div class="bottom-btns">
       <button type="button" class="export-btn" id="exportDocxBtn" onclick="startExportDocx()">
-        ⬇ Скачать Word-файл
+        ✦ Скачать Word-файл
       </button>
-      <button type="button" class="reset-btn" onclick="resetPage()">← Новый расчёт</button>
+      <button type="button" class="reset-btn" onclick="resetPage()">✦ Новый расчёт</button>
     </div>
   </div>
 
-  <!-- Блок ввода данных питания (если ещё не заполнен) -->
+  <!-- Блок ввода данных питания -->
   <div class="food-data-card energy-card" id="foodDataBlock">
     <div style="width:100%">
-      <div class="energy-label" style="color:var(--pink); margin-bottom:0.8rem">Данные для расчёта питания</div>
+      <span class="food-step-label">Шаг 2 — данные для расчёта питания</span>
       <div class="food-data-form">
         <div class="form-field" style="margin-bottom:0.8rem">
           <label for="genderSelect2">Пол</label>
@@ -203,14 +377,11 @@
           </div>
         </div>
         <div class="food-data-actions">
-          <div style="color:var(--peach); font-size:0.9rem; margin-bottom:0.5rem" id="foodDataErr" style="display:none">
-            Заполните пол, вес, рост и возраст.
-          </div>
+          <div style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem" id="foodDataErr"></div>
         </div>
         <div class="food-data-actions">
-          <button type="button" class="export-btn" id="foodCalcBtn" onclick="showFoodPage(event)">
-            Перейти к расчёту →
-          </button>
+          <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту →</button></div>
+          <div class="privacy-note">Данные читаются прямо в браузере — ничего не отправляется на сторонние серверы</div>
         </div>
       </div>
     </div>
@@ -223,59 +394,185 @@
   <h2 style="color:var(--pink); font-size:2.2rem; margin-bottom:1.5rem">Рекомендуемые продукты</h2>
   <div id="productsBox"></div>
   <div class="bottom-btns" style="margin-top:2rem;">
-    <button type="button" class="export-btn" id="exportDocxBtn2" onclick="startExportDocx()">
-      ⬇ Скачать Word-файл
-    </button>
-    <button type="button" class="reset-btn" onclick="backToFoodPage(event)">← Назад</button>
+    <button type="button" class="export-btn" onclick="startExportDocx()">✦ Скачать Word-файл</button>
+    <button type="button" class="reset-btn" onclick="backToFoodPage(event)">✦ Назад</button>
   </div>
-  <div style="color:var(--peach); font-size:0.9rem; text-align:center; margin-top:0.5rem" id="productsMeta"></div>
+  <div style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem" id="productsMeta"></div>
 </div>
 
-<!-- Основная логика (из products.html) -->
+<!-- Основная логика -->
 <script src="astro_logic.js"></script>
 
-<!-- Telegram Mini App интеграция -->
 <script>
+// ── Таймер Шага 2 ────────────────────────────────────────────────────────────
+let step2Timer = null;
+
+function startStep2Timer() {
+  // Оставлено для совместимости: теперь шаг 2 открывается сразу.
+  showStep2();
+}
+
+function showStep2() {
+  if (step2Timer) clearInterval(step2Timer);
+  document.getElementById('timerBlock').style.display = 'none';
+  document.getElementById('step2Block').style.display = 'block';
+  // Плавный скролл к шагу 2
+  setTimeout(() => {
+    document.getElementById('step2Block').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ── После расчёта — показать планеты/аспекты, потом Шаг 3 ────────────────────
+function showResultWithStep3() {
+  // Скрываем uploadZone, показываем result
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+
+  // Скрываем блок питания — он появится после кнопки «Продолжить»
+  const foodDataBlock = document.getElementById('foodDataBlock');
+  const foodPage = document.getElementById('foodPage');
+  if (foodDataBlock) foodDataBlock.style.display = 'none';
+  if (foodPage) foodPage.style.display = 'none';
+
+  // Добавляем кнопку «Продолжить» после аспектов
+  if (!document.getElementById('continueBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'continueBtn';
+    btn.type = 'button';
+    btn.textContent = '✦ Продолжить →';
+    btn.className = 'continue-btn';
+    btn.onclick = showStep3;
+    document.getElementById('indicatorsSection').after(btn);
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function showStep3() {
+  // Убираем кнопку продолжить
+  const btn = document.getElementById('continueBtn');
+  if (btn) btn.remove();
+
+  // Показываем блок ввода данных питания (шаг 3)
+  const foodDataBlock = document.getElementById('foodDataBlock');
+  if (foodDataBlock) {
+    foodDataBlock.style.display = 'block';
+    const oldLabel = document.getElementById('step3Label');
+    if (oldLabel) oldLabel.remove();
+    foodDataBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ── CORS-прокси список (пробуем по очереди) ──────────────────────────────────
+const PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+async function fetchViaProxy(url) {
+  for (let i = 0; i < PROXIES.length; i++) {
+    try {
+      const proxyUrl = PROXIES[i](url);
+      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) continue;
+      const data = await resp.json().catch(() => null);
+      // allorigins возвращает { contents: '...' }
+      if (data && data.contents) return data.contents;
+      // corsproxy возвращает текст напрямую
+      const text = await resp.text();
+      if (text && text.length > 500) return text;
+    } catch(e) {
+      console.warn('Proxy', i, 'failed:', e.message);
+    }
+  }
+  throw new Error('Не удалось загрузить карту. Проверьте ссылку и попробуйте снова.');
+}
+
+// ── Главная функция — загрузить карту по ссылке ───────────────────────────────
+async function calculateFromUrl(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+
+  const urlInput = document.getElementById('sotisUrlInput');
+  const urlErr   = document.getElementById('urlErr');
+  const urlVal   = urlInput.value.trim();
+
+  // Валидация ссылки
+  urlErr.style.display = 'none';
+  if (!urlVal || !urlVal.includes('sotis-online.ru')) {
+    urlErr.style.display = 'block';
+    urlInput.style.borderColor = 'var(--peach)';
+    return;
+  }
+  urlInput.style.borderColor = '';
+
+  // Показываем оверлей
+  const overlay   = document.getElementById('loadingOverlay');
+  const loadingTxt = document.getElementById('loadingText');
+  overlay.classList.add('active');
+  loadingTxt.textContent = 'Загружаем карту с Сотиса...';
+
+  try {
+    const html = await fetchViaProxy(urlVal);
+    loadingTxt.textContent = 'Читаем данные карты...';
+
+    // Если на странице есть скрытый fileInput из базовой логики — заполняем его.
+    // Если его нет, продолжаем напрямую через parseHTML(html) ниже.
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+      const blob = new Blob([html], { type: 'text/html' });
+      const file = new File([blob], 'chart.html', { type: 'text/html' });
+      const dt   = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+    }
+
+    loadingTxt.textContent = 'Рассчитываем показатели...';
+
+    // Вызываем оригинальный парсер и рендер
+    currentData = parseHTML(html);
+    render();
+
+    overlay.classList.remove('active');
+
+    // Показываем результат со встроенным шагом 3
+    showResultWithStep3();
+  } catch(e) {
+    overlay.classList.remove('active');
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ── Экспорт DOCX ─────────────────────────────────────────────────────────────
+window.startExportDocx = async function() {
+  const overlay    = document.getElementById('loadingOverlay');
+  const loadingTxt = document.getElementById('loadingText');
+  overlay.classList.add('active');
+  loadingTxt.textContent = 'Генерируем Word-файл...';
+  try {
+    await exportDocx();
+  } catch(e) {
+    alert('Ошибка генерации файла: ' + e.message);
+  } finally {
+    overlay.classList.remove('active');
+  }
+};
+
+// ── Telegram WebApp ───────────────────────────────────────────────────────────
 (function() {
-  // Инициализация Telegram WebApp
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.ready();
     tg.expand();
-    // Применяем цвета темы Telegram
-    document.documentElement.style.setProperty('--navy', tg.themeParams.bg_color || '#111933');
   }
-
-  // Переопределяем функцию сохранения файла для Telegram
-  // В Telegram Mini App нельзя напрямую скачать файл — 
-  // нужно либо отправить боту, либо использовать ссылку
-  window.startExportDocx = async function() {
-    const overlay = document.getElementById('loadingOverlay');
-    overlay.classList.add('active');
-    try {
-      await exportDocx(); // вызываем оригинальную функцию
-    } catch(e) {
-      alert('Ошибка генерации файла: ' + e.message);
-    } finally {
-      overlay.classList.remove('active');
-    }
-  };
-
-  // Переопределяем saveFile чтобы добавить уведомление в TG
-  const origSaveBuffer = window.saveBuffer;
-  
-  // После экспорта — закрываем Mini App с сообщением боту
-  // Перехватываем клик по ссылке скачивания
   document.addEventListener('click', function(e) {
     const link = e.target.closest('a[download]');
     if (link && tg) {
-      // Даём немного времени на скачивание, затем сообщаем боту
       setTimeout(() => {
         tg.sendData(JSON.stringify({ action: 'file_downloaded', filename: link.download }));
       }, 500);
     }
   });
-
 })();
 </script>
 
