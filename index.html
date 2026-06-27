@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,7 +8,6 @@
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -210,10 +210,10 @@
   #step2Block { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); text-align:left; }
   #step2Block .step-label { text-align:left; }
   .ready-now-btn { margin-top:0.5rem; background:transparent; border:none; color:#FC9FBC !important; font-family:inherit; font-size:1rem; letter-spacing:0.04em; cursor:pointer; text-decoration:underline; }
-  .continue-btn { background:#FFFFFF !important; min-width:220px !important; color:#0D1935 !important; border:none !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; letter-spacing:0.04em !important; text-transform:uppercase; font-weight:700; cursor:pointer; margin:2rem auto; display:block; max-width:400px; font-family:"Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .continue-btn { background:#FFFFFF !important; color:#0D1935 !important; border:none !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; letter-spacing:0.04em !important; text-transform:uppercase; font-weight:700; cursor:pointer; margin:2rem auto; display:block; max-width:400px; font-family:"Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif; }
   .continue-btn * { color:#0D1935 !important; }
   .food-data-card .h1-style, .food-step-label { color:#FC9FBC !important; font-size:1.08rem !important; letter-spacing:0.02em !important; text-transform:uppercase !important; text-align:center !important; margin-bottom:1.2rem !important; display:block !important; }
-  #foodCalcBtn.sotis-btn-style { background:#FFFFFF !important; color:#0D1935 !important; border-radius:14px !important; padding:0.9rem 2.8rem !important; font-size:1.15rem !important; width:100% !important; max-width:420px !important; display:inline-block !important; }
+  #foodCalcBtn.sotis-btn-style { background:#FFFFFF !important; color:#0D1935 !important; border-radius:14px !important; padding:0.75rem 2rem !important; font-size:1.15rem !important; width:auto !important; max-width:none !important; display:inline-block !important; }
   .privacy-note { color:rgba(255,255,255,0.4) !important; font-size:1rem !important; text-align:center !important; margin-top:0.35rem; letter-spacing:0.02em; }
 
   /* Оверлей загрузки */
@@ -273,9 +273,9 @@
     border: none !important;
     border-radius: 14px !important;
     display: inline-block !important;
-    width: 100% !important;
-    max-width: 420px !important;
-    padding: 0.9rem 2.8rem !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0.75rem 2rem !important;
     font-size: 1.15rem !important;
     letter-spacing: 0.04em !important;
     text-align: center !important;
@@ -353,8 +353,8 @@
       </a></div>
     </div>
 
-    <!-- ШАГ 2 — отображается сразу -->
-    <div class="step" id="step2Block" style="display:block">
+    <!-- ШАГ 2 — появляется через 30 сек после клика на кнопку -->
+    <div class="step" id="step2Block" >
       <div class="step-label">Шаг 2 — вставьте ссылку на карту</div>
       <div class="url-input-wrap">
         <input
@@ -372,16 +372,7 @@
       <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" onclick="calculateFromUrl(event)">✦ Рассчитать</button></div>
     </div>
 
-    <!-- Таймер обратного отсчёта -->
-    <div id="timerBlock" style="display:none">
-      Шаг 2 откроется через <span id="timerCount">30</span> сек...
-      <br>
-      <button type="button" onclick="showStep2()" class="ready-now-btn">
-        ✦ Уже готово — показать сейчас
-      </button>
     </div>
-
-  </div>
 
 </div>
 
@@ -420,8 +411,8 @@
     <div class="salt-grid" id="saltGrid"></div>
 
     <div class="bottom-btns">
-      <button type="button" class="export-btn" id="exportDocxBtn" onclick="startExportPdf(event)">
-        ✦ Скачать PDF-файл
+      <button type="button" class="export-btn" id="exportDocxBtn" onclick="startExportDocx()">
+        ✦ Скачать Word-файл
       </button>
     </div>
   </div>
@@ -457,7 +448,7 @@
           <div style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem" id="foodDataErr"></div>
         </div>
         <div class="food-data-actions">
-          <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту</button></div>
+          <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Перейти к расчёту →</button></div>
           <div class="privacy-note">Данные рассчитываются прямо в браузере — ничего не отправляется на сторонние серверы</div>
         </div>
       </div>
@@ -471,7 +462,7 @@
   <h2 style="color:var(--pink); font-size:2.2rem; margin-bottom:1.5rem">Рекомендуемые продукты</h2>
   <div id="productsBox"></div>
   <div class="bottom-btns" style="margin-top:2rem;">
-    <button type="button" class="export-btn" onclick="startExportPdf(event)">✦ Скачать PDF-файл</button>
+    <button type="button" class="export-btn" onclick="startExportDocx()">✦ Скачать Word-файл</button>
   </div>
   <div style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem" id="productsMeta"></div>
 </div>
@@ -1493,7 +1484,7 @@ function showFoodPage(event) {
   if (foodPage) {
     foodPage.innerHTML = `
       <div class="sotis-link-wrap" style="margin-top:2rem">
-        <button type="button" class="export-btn sotis-btn-style" id="exportPdfBtn" onclick="startExportPdf(event)">✦ Скачать PDF-файл</button>
+        <button type="button" class="export-btn sotis-btn-style" id="exportDocxBtn" onclick="startExportDocx(event)">✦ Скачать Word-файл</button>
       </div>`;
     foodPage.style.display = 'block';
     foodPage.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1568,7 +1559,7 @@ function showResultWithStep3() {
     const btn = document.createElement('button');
     btn.id = 'continueBtn';
     btn.type = 'button';
-    btn.textContent = '✦ Продолжить';
+    btn.textContent = '✦ Продолжить →';
     btn.className = 'continue-btn';
     btn.onclick = showStep3;
     document.getElementById('indicatorsSection').after(btn);
@@ -1699,7 +1690,7 @@ window.startExportDocx = async function() {
   const overlay    = document.getElementById('loadingOverlay');
   const loadingTxt = document.getElementById('loadingText');
   overlay.classList.add('active');
-  loadingTxt.textContent = 'Генерируем PDF-файл...';
+  loadingTxt.textContent = 'Генерируем Word-файл...';
   try {
     await exportDocx();
   } catch(e) {
@@ -1795,74 +1786,11 @@ window.startExportDocx = async function(event) {
   const overlay = document.getElementById('loadingOverlay');
   const loadingTxt = document.getElementById('loadingText');
   if (overlay) overlay.classList.add('active');
-  if (loadingTxt) loadingTxt.textContent = 'Генерируем PDF-файл...';
+  if (loadingTxt) loadingTxt.textContent = 'Генерируем Word-файл...';
   try {
     await exportDocx();
   } catch(e) {
     alert('Ошибка генерации файла: ' + e.message);
-  } finally {
-    if (overlay) overlay.classList.remove('active');
-  }
-};
-
-
-
-// ── Экспорт в PDF ─────────────────────────────────────────────────────────────
-function makePdfFilename() {
-  const name = (currentData && currentData.chartName ? currentData.chartName : 'karta')
-    .replace(/[^a-zA-Zа-яА-ЯёЁ0-9_\- ]/g,'')
-    .trim() || 'karta';
-  const date = (currentData && currentData.chartDate ? currentData.chartDate : '').replace(/[.: ]/g,'-');
-  return `pitanie_${name}${date ? '_' + date : ''}.pdf`;
-}
-
-async function exportPdf() {
-  if (!currentData) throw new Error('Нет данных для экспорта');
-  const reportHtml = makeWordHtml();
-
-  const wrapper = document.createElement('div');
-  wrapper.style.position = 'fixed';
-  wrapper.style.left = '-10000px';
-  wrapper.style.top = '0';
-  wrapper.style.width = '794px';
-  wrapper.style.background = '#ffffff';
-  wrapper.innerHTML = reportHtml;
-  document.body.appendChild(wrapper);
-
-  const target = wrapper.querySelector('.WordSection1') || wrapper;
-  const filename = makePdfFilename();
-
-  try {
-    if (!window.html2pdf) throw new Error('Библиотека PDF не загрузилась');
-    await html2pdf().set({
-      margin: 10,
-      filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    }).from(target).save();
-  } catch (e) {
-    const win = window.open('', '_blank');
-    if (!win) throw e;
-    win.document.open();
-    win.document.write(reportHtml + '<script>window.onload=function(){setTimeout(function(){window.print();},300)}<\/script>');
-    win.document.close();
-  } finally {
-    setTimeout(() => wrapper.remove(), 1000);
-  }
-}
-
-window.startExportPdf = async function(event) {
-  if (event) { event.preventDefault(); event.stopPropagation(); }
-  const overlay = document.getElementById('loadingOverlay');
-  const loadingTxt = document.getElementById('loadingText');
-  if (overlay) overlay.classList.add('active');
-  if (loadingTxt) loadingTxt.textContent = 'Генерируем PDF-файл...';
-  try {
-    await exportPdf();
-  } catch(e) {
-    alert('Ошибка генерации PDF: ' + e.message);
   } finally {
     if (overlay) overlay.classList.remove('active');
   }
