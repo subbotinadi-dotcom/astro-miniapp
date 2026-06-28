@@ -2280,6 +2280,75 @@ color:#00B5A6 !important;
 color:#FF99BE !important;
 }
 
+
+
+/* === FIX_KBJU_4_CARDS: 4 отдельные карточки, крупные розовые значения === */
+#result .kbju-title,
+#inlineResultContent .kbju-title,
+#productsPage .kbju-title{
+  margin: 1.6rem 0 .9rem !important;
+  text-align: center !important;
+  color: #FC9FBC !important;
+  text-transform: uppercase !important;
+  letter-spacing: .08em !important;
+}
+#result .kbju-grid,
+#inlineResultContent .kbju-grid,
+#productsPage .kbju-grid{
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 0 1.4rem !important;
+}
+#result .kbju-card,
+#inlineResultContent .kbju-card,
+#productsPage .kbju-card{
+  min-height: 118px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  border-radius: 18px !important;
+  padding: 1.05rem .8rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: .5rem !important;
+}
+#result .kbju-name,
+#inlineResultContent .kbju-name,
+#productsPage .kbju-name{
+  color: #FFFFFF !important;
+  font-size: 1rem !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+#result .kbju-value,
+#result .kbju-unit-inline,
+#inlineResultContent .kbju-value,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-value,
+#productsPage .kbju-unit-inline{
+  color: #FC9FBC !important;
+  font-size: clamp(1.9rem, 4vw, 2.55rem) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+#result .kbju-unit-inline,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-unit-inline{
+  margin-left: .22rem !important;
+}
+@media (max-width: 760px){
+  #result .kbju-grid,
+  #inlineResultContent .kbju-grid,
+  #productsPage .kbju-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
 </style>
 <style id="chatgpt-result-fix">
 #inlineResultContent,#productsPage,#foodPage{
@@ -3340,6 +3409,16 @@ return `<div class="energy-card">
 </div>`;
 }
 
+function kbjuCardsFromCalories(calories) {
+const kcal = Number(calories || 0) ? Math.round(Number(calories)) : 0;
+const protein = kcal ? Math.round(kcal * 0.25 / 4) : 0;
+const fats = kcal ? Math.round(kcal * 0.35 / 9) : 0;
+const carbs = kcal ? Math.round(kcal * 0.40 / 4) : 0;
+const fmt = v => v ? Number(v).toLocaleString('ru-RU') : '—';
+const card = (name, value, unit) => `<div class="kbju-card"><div class="kbju-name">${name}</div><div class="kbju-value">${fmt(value)}<span class="kbju-unit-inline"> ${unit}</span></div></div>`;
+return `<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">${card('Калории', kcal, 'ккал')}${card('Белки', protein, 'г')}${card('Жиры', fats, 'г')}${card('Углеводы', carbs, 'г')}</div>`;
+}
+
 let breakfastTimeTitle, breakfastTimeText;
 if (wet > dry) {
 breakfastTimeTitle = 'Ранний завтрак';
@@ -3414,7 +3493,7 @@ mealCard('Завтрак', `${breakfastVolumeTitle}. ${breakfastVolumeText}. ${b
 mealCard('Обед', `${lunchVolumeTitle}. ${lunchVolumeText}.`),
 mealCard('Ужин', `${dinnerVolumeTitle}. ${dinnerVolumeText}.`),
 mealCard('Метаболизм', `${metabolismTitle}. ${metabolismText}`),
-mealCard('КБЖУ', `Базовый обмен: ${bmr.toLocaleString('ru-RU')} ккал в день`)
+kbjuCardsFromCalories(bmr)
 ].join('');
 }
 
@@ -4195,7 +4274,7 @@ function card(name, value, unit){
 return '<div class="kbju-card"><div class="kbju-name">' + escapeHtml(name) + '</div><div class="kbju-value">' + escapeHtml(value) + (unit ? '<span class="kbju-unit-inline">' + escapeHtml(unit) + '</span>' : '') + '</div></div>';
 }
 return '<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">' +
-card('Калорийность', n(kcal), 'ккал') +
+card('Калории', n(kcal), 'ккал') +
 card('Белки', n(protein), 'г') +
 card('Жиры', n(fats), 'г') +
 card('Углеводы', n(carbs), 'г') +
@@ -5173,7 +5252,7 @@ function card(name, value, unit){
 return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>';
 }
 return '<div class="kbju-grid">'+
-card('Калорийность', fmt(kcal), 'ккал')+
+card('Калории', fmt(kcal), 'ккал')+
 card('Белки', fmt(protein), 'г')+
 card('Жиры', fmt(fats), 'г')+
 card('Углеводы', fmt(carbs), 'г')+
@@ -5322,7 +5401,7 @@ var protein = Number(source.protein || source.proteins || 0), fats = Number(sour
 if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4); if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9); if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
 function fmt(v){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') : '—'; }
 function item(name, value, unit){ return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>'; }
-return '<div class="kbju-grid">'+item('Калорийность', fmt(kcal), 'ккал')+item('Белки', fmt(protein), 'г')+item('Жиры', fmt(fats), 'г')+item('Углеводы', fmt(carbs), 'г')+'</div>';
+return '<div class="kbju-grid">'+item('Калории', fmt(kcal), 'ккал')+item('Белки', fmt(protein), 'г')+item('Жиры', fmt(fats), 'г')+item('Углеводы', fmt(carbs), 'г')+'</div>';
 }
 window.buildPdfHtml = function(){
 var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
