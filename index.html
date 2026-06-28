@@ -984,6 +984,199 @@ body.result-started #uploadZone {
     .sum-card.forb .cs-title { color: #b32068 !important; }
   }
 
+
+
+/* === RESULT_STYLE_FINAL: оформление результата под общую стилистику приложения === */
+:root {
+  --app-bg: #0D1935;
+  --app-pink: #FC9FBC;
+  --app-white: #FFFFFF;
+  --app-peach: #FEDCD1;
+  --app-card: rgba(255,255,255,0.06);
+  --app-border: rgba(255,255,255,0.12);
+  --app-border-strong: rgba(255,255,255,0.18);
+}
+
+html, body,
+#result, #productsPage, #foodPage, #inlineResultContent,
+#result *:not(.planet-symbol):not(.planet-symbol *),
+#productsPage *:not(.planet-symbol):not(.planet-symbol *),
+#foodPage *:not(.planet-symbol):not(.planet-symbol *),
+#inlineResultContent *:not(.planet-symbol):not(.planet-symbol *) {
+  font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+body,
+#result,
+#productsPage,
+#foodPage,
+#inlineResultContent,
+.pdf-export-root {
+  background: var(--app-bg) !important;
+  color: var(--app-white) !important;
+}
+
+#result .h1-style,
+#result .section-title,
+#result .energy-label,
+#result .indicator-sub,
+#result .kbju-title,
+#productsPage h2,
+#inlineResultContent h1,
+#inlineResultContent h2,
+#inlineResultContent h3,
+.pdf-export-root h1,
+.pdf-export-root h2,
+.pdf-export-root h3,
+.product-category-title,
+.cat-title {
+  color: var(--app-pink) !important;
+}
+
+#result .subtitle,
+#result .energy-formula,
+#result .meal-value-text,
+#result .meal-value-title,
+#result .element-score,
+#result .element-name,
+#result .planet-name,
+#result .planet-pos,
+#result .planet-sign,
+#result .asp-type,
+#result .asp-planets,
+#result .asp-orb,
+#productsPage,
+#productsPage td,
+#inlineResultContent,
+#inlineResultContent td,
+.pdf-export-root,
+.pdf-export-root td {
+  color: var(--app-white) !important;
+}
+
+#result .planet-card,
+#result .aspect-row,
+#result .energy-card,
+#result .element-card,
+#result .food-data-card,
+#result .meal-result-card,
+#foodPage .pdf-export-root,
+#inlineResultContent .pdf-export-root,
+#productsPage .energy-card {
+  background: var(--app-card) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 16px !important;
+}
+
+#result .export-btn,
+#result .calc-btn,
+#result .continue-btn,
+#result .sotis-btn-style,
+#result .sotis-link,
+#productsPage .export-btn,
+#foodPage .export-btn,
+.download-zone .btn.bp {
+  background: var(--app-white) !important;
+  color: var(--app-bg) !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-family: "Roboto Condensed", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+#result .export-btn:hover,
+#result .calc-btn:hover,
+#result .continue-btn:hover,
+#result .sotis-btn-style:hover,
+#result .sotis-link:hover,
+#productsPage .export-btn:hover,
+#foodPage .export-btn:hover,
+.download-zone .btn.bp:hover {
+  background: var(--app-peach) !important;
+}
+
+.pdf-export-root table,
+#inlineResultContent table,
+#productsPage table {
+  background: var(--app-card) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+.pdf-export-root th,
+#inlineResultContent th,
+#productsPage th {
+  color: var(--app-pink) !important;
+  border-bottom: 1px solid var(--app-border-strong) !important;
+}
+
+.pdf-export-root td,
+#inlineResultContent td,
+#productsPage td {
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Блок КБЖУ: 4×1, на мобильных 2×2 */
+.kbju-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: .7rem !important;
+}
+.kbju-card {
+  background: var(--app-card) !important;
+  border: 1px solid var(--app-border-strong) !important;
+  border-radius: 16px !important;
+  padding: 1rem .75rem !important;
+  text-align: center !important;
+}
+.kbju-name { color: var(--app-white) !important; }
+.kbju-value,
+.kbju-unit-inline {
+  color: var(--app-pink) !important;
+  font-size: 1.9rem !important;
+  font-weight: 700 !important;
+}
+@media (max-width: 600px) {
+  .kbju-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* Рекомендовано / Запрещено */
+.summary-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+@media (max-width: 600px) {
+  .summary-grid { grid-template-columns: 1fr !important; }
+}
+.sum-card { border-radius: 16px !important; padding: 1rem 1.2rem !important; }
+.sum-card.rec { border: 2px solid #00B5A6 !important; background: rgba(0,181,166,.18) !important; }
+.sum-card.forb { border: 2px solid #FF99BE !important; background: rgba(255,153,190,.18) !important; }
+.rec .cs-title, .sum-card.rec .cs-title { color: #00B5A6 !important; }
+.forb .cs-title, .sum-card.forb .cs-title { color: #FF99BE !important; }
+.badge-rec, .status-rec {
+  display: inline-block !important;
+  padding: .15rem .5rem !important;
+  border-radius: 999px !important;
+  background: rgba(0,181,166,.25) !important;
+  color: #00e5d5 !important;
+  border: 1px solid #00B5A6 !important;
+  font-size: .82rem !important;
+  font-weight: 700 !important;
+}
+.badge-forb, .status-forb {
+  display: inline-block !important;
+  padding: .15rem .5rem !important;
+  border-radius: 999px !important;
+  background: rgba(255,153,190,.25) !important;
+  color: #FF99BE !important;
+  border: 1px solid #FF99BE !important;
+  font-size: .82rem !important;
+  font-weight: 700 !important;
+}
+#rRecBox, #rForbBox { width: 100% !important; }
+
 </style>
 
 
@@ -2898,8 +3091,8 @@ window.startExportDocx = async function(event) {
         ['Нехватка минералов', minerals]
       ]) + '</tbody></table>' +
       '<h2>Рекомендовано / Запрещено</h2>' +
-      '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано итого</div><table class="prod-tbl"><thead><tr><th>Продукт</th></tr></thead><tbody>' + productRowsSimple(rec) + '</tbody></table></div>' +
-      '<div class="sum-card forb"><div class="cs-title">Запрещено итого</div><table class="prod-tbl"><thead><tr><th>Продукт</th></tr></thead><tbody>' + productRowsSimple(forb) + '</tbody></table></div></div>' +
+      '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано итого</div><div id="rRecBox"><table class="prod-tbl"><thead><tr><th>Продукт</th></tr></thead><tbody>' + productRowsSimple(rec) + '</tbody></table></div></div>' +
+      '<div class="sum-card forb"><div class="cs-title">Запрещено итого</div><div id="rForbBox"><table class="prod-tbl"><thead><tr><th>Продукт</th></tr></thead><tbody>' + productRowsSimple(forb) + '</tbody></table></div></div></div>' +
       '<h2>ПЕРЕЧЕНЬ ПРОДУКТОВ</h2>' + productCategoryTables(allMeaningful.length ? allMeaningful : products) +
       '</div>';
   };
@@ -2967,7 +3160,7 @@ window.startExportDocx = async function(event) {
       '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
   }
   function resultPageCss(){
-    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#111933;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FAF3EB;--white:#fff;--card:rgba(250,243,235,.055);--border-soft:rgba(254,220,209,.34);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28);text-align:center}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.pdf-export-root .kbju-title{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.4rem 0 .75rem;text-align:left;border:0;padding:0}.kbju-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.kbju-card{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:1rem .75rem;text-align:center;min-height:110px}.kbju-name{color:var(--cream);font-size:1rem;margin-bottom:.45rem}.kbju-value{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1}.kbju-unit-inline{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1;margin-left:.25rem}.kbju-unit,.kbju-pct{display:none}.rec,.forb,.status-rec,.status-forb{font-weight:800}.rec,.status-rec{background:#d9f5f2;color:#006f66;border:1px solid #00B5A6}.forb,.status-forb{background:#ffe0ec;color:#b32068;border:1px solid #FF99BE}.rec-heading{color:#00B5A6!important}.forb-heading{color:#b32068!important}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}.sum-card{border-radius:14px;padding:1rem 1.2rem}.sum-card.rec{border:2px solid #00B5A6;background:rgba(0,181,166,.18);color:var(--cream)}.sum-card.forb{border:2px solid #FF99BE;background:rgba(255,153,190,.18);color:var(--cream)}.cs-title{font-size:1.25rem;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.1em}.rec .cs-title{color:#00B5A6}.forb .cs-title{color:#FF99BE}.prod-tbl .st-col{width:130px}.status-rec,.status-forb{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.82rem;font-weight:700}.product-category-title{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem;text-align:left}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kbju-value{font-size:1.65rem}}';
+    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#0D1935;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FFFFFF;--white:#fff;--card:rgba(255,255,255,.06);--border-soft:rgba(255,255,255,.18);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28);text-align:center}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.pdf-export-root .kbju-title{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.4rem 0 .75rem;text-align:left;border:0;padding:0}.kbju-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.kbju-card{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:1rem .75rem;text-align:center;min-height:110px}.kbju-name{color:var(--cream);font-size:1rem;margin-bottom:.45rem}.kbju-value{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1}.kbju-unit-inline{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1;margin-left:.25rem}.kbju-unit,.kbju-pct{display:none}.rec,.forb,.status-rec,.status-forb{font-weight:800}.rec,.status-rec{background:#d9f5f2;color:#006f66;border:1px solid #00B5A6}.forb,.status-forb{background:#ffe0ec;color:#b32068;border:1px solid #FF99BE}.rec-heading{color:#00B5A6!important}.forb-heading{color:#b32068!important}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}.sum-card{border-radius:14px;padding:1rem 1.2rem}.sum-card.rec{border:2px solid #00B5A6;background:rgba(0,181,166,.18);color:var(--cream)}.sum-card.forb{border:2px solid #FF99BE;background:rgba(255,153,190,.18);color:var(--cream)}.cs-title{font-size:1.25rem;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.1em}.rec .cs-title{color:#00B5A6}.forb .cs-title{color:#FF99BE}.prod-tbl .st-col{width:130px}.status-rec,.status-forb{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.82rem;font-weight:700}.product-category-title{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem;text-align:left}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kbju-value{font-size:1.65rem}}';
   }
   function downloadScript(){
     return 'function downloadPdf(){var el=document.getElementById("pdfContent");var opt={margin:8,filename:"pitanie_result.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["avoid-all","css","legacy"]}};if(typeof html2pdf!=="undefined"){html2pdf().set(opt).from(el).save();}else{window.print();}}';
