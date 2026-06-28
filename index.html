@@ -1884,7 +1884,7 @@ text-align:center!important;
       <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" onclick="calculateFromUrl(event)">✦ Рассчитать</button></div>
 
       <div class="sotis-file-fallback">
-        <p class="sotis-file-note">Если ссылка не читается в Telegram или на ПК, сохраните страницу карты Сотиса как HTML и загрузите файл сюда.</p>
+        <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
         <input type="file" id="sotisHtmlFileInput" accept=".html,.htm,text/html" style="display:none">
         <label for="sotisHtmlFileInput" class="sotis-file-label">✦ Загрузить HTML карты</label>
         <span id="sotisHtmlFileName" class="sotis-file-name"></span>
@@ -4360,6 +4360,27 @@ window.startExportDocx = async function(event) {
   function energyGrid(calc){
     var list=[['Тепло',calc.teplo||0],['Сухость',calc.suhost||0],['Эмоциональность',calc.emotsionalnost||0],['Холод',calc.holod||0],['Влажность',calc.vlazhnost||0],['Рациональность',calc.racionalnost||0]];
     return '<div class="energy-grid">'+list.map(function(x){return '<div class="energy-box"><div class="energy-title">'+esc(x[0])+'</div><div class="energy-num">'+n(x[1])+'</div></div>';}).join('')+'</div>';
+  }
+  function macroCards(food){
+    var source = (food && typeof food === 'object') ? food : { bmr: food };
+    var kcal = Number(source.kcal || source.calories || source.bmr || 0);
+    kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
+    var protein = Number(source.protein || source.proteins || 0);
+    var fats = Number(source.fat || source.fats || 0);
+    var carbs = Number(source.carbs || source.carbohydrates || 0);
+    if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4);
+    if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9);
+    if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
+    function fmt(v){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') : '—'; }
+    function card(name, value, unit){
+      return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>';
+    }
+    return '<div class="kbju-grid">'+
+      card('Калорийность', fmt(kcal), 'ккал')+
+      card('Белки', fmt(protein), 'г')+
+      card('Жиры', fmt(fats), 'г')+
+      card('Углеводы', fmt(carbs), 'г')+
+      '</div>';
   }
   window.buildPdfHtml = function(){
     var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
