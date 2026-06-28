@@ -1,3 +1,4 @@
+
 /* Исправления по ТЗ от 28.06 */
 /* Центровка основных контейнеров */
 html,body{overflow-x:hidden!important;}
@@ -366,4 +367,88 @@ html,body{overflow-x:hidden!important;}
 #result .kbju-card .value{
  color:#FC9FBC!important;
  font-size:1.3rem!important;
+}
+
+
+/* Final verification fixes — only requested changes */
+#result .planets-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,315px)!important;
+  justify-content:center!important;
+  gap:1rem!important;
+}
+#result .planet-card{
+  width:315px!important;
+  max-width:315px!important;
+  height:315px!important;
+  max-height:315px!important;
+  aspect-ratio:auto!important;
+  box-sizing:border-box!important;
+}
+#result .planet-name{
+  font-size:1.2rem!important;
+}
+#result .planet-pos,
+#result .planet-sign{
+  font-size:0.8rem!important;
+}
+#result .aspect-row .asp-planets{
+  font-size:0.8rem!important;
+  color:#D8C3A5!important;
+  text-transform:uppercase!important;
+}
+#result .aspect-row .asp-orb{
+  display:none!important;
+}
+#inlineResultContent .report-section.products-rec h2,
+#productsPage .report-section.products-rec h2,
+.pdf-export-root .report-section.products-rec h2,
+#inlineResultContent .sum-card.rec .cs-title,
+#productsPage .sum-card.rec .cs-title,
+.sum-card.rec>.cs-title{
+  color:var(--status-recommended-color,#00B5A6)!important;
+}
+#result .kbju-grid,
+.kbju-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,315px)!important;
+  justify-content:center!important;
+  gap:1rem!important;
+}
+#result .kbju-card,
+.kbju-card{
+  width:315px!important;
+  max-width:315px!important;
+  height:315px!important;
+  max-height:315px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  box-sizing:border-box!important;
+}
+#result .kbju-card .kbju-name,
+.kbju-card .kbju-name{
+  color:#fff!important;
+  font-size:0.8rem!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  margin:0 0 .75rem!important;
+}
+#result .kbju-card .kbju-value,
+#result .kbju-card .kbju-unit-inline,
+.kbju-card .kbju-value,
+.kbju-card .kbju-unit-inline{
+  color:#FC9FBC!important;
+  font-size:1.3rem!important;
+  line-height:1.15!important;
+  text-align:center!important;
+}
+@media(max-width:700px){
+  #result .planets-grid,
+  #result .kbju-grid,
+  .kbju-grid{
+    grid-template-columns:repeat(2,315px)!important;
+  }
 }
