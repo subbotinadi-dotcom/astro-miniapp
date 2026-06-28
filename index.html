@@ -3809,7 +3809,6 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
   return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Данные для расчета</h2><table>${rows([['Имя',d.chartName||'—'],['Дата',d.chartDate||'—'],['Время',d.birthTime||d.time||'—'],['Место',d.birthPlace||d.place||d.city||'—'],['Пол',food.gender||selectedGender||'—'],['Возраст',food.age?food.age+' лет':'—'],['Рост',food.height?food.height+' см':'—'],['Вес',food.weight?food.weight+' кг':'—']])}</table><h2>Стихия</h2><table><tr><th>Стихия</th><th>Балл</th><th>%</th></tr>${elementRows}</table><h2>Энергия</h2><table>${energyRows}</table><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr>${aspectRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
-
 </body></html>`;
 }
 async function exportDocx() {
@@ -5176,6 +5175,158 @@ window.startExportDocx = async function(event) {
       section('Жировой обмен', rows([['Источники жиров', food.fatSource || '—'], ['Соотношение жиров', food.fatProportion || '—'], ['Накопление жира', food.fatAccumulation || '—'], ['Холестерин', food.cholesterol || '—'], ['Склонность к полноте', food.fullness || '—']]))+
       section('Углеводный обмен', rows([['Сахар', food.sugarRules || '—'], ['Гиперинсулинемия', food.hyperinsulin || '—']]))+
       section('Витамины и минералы', rows([['Нехватка витаминов', cleanList(food.vitamins || '—')], ['Нехватка минералов', cleanList(food.minerals || '—')]]))+
+      section('Продукты', '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано</div>'+productList(rec)+'</div><div class="sum-card forb"><div class="cs-title">Запрещено / ограничить</div>'+productList(forb)+'</div></div>')+
+      section('Итоговый список', categoryTables(products))+
+      '</div>';
+  };
+})();
+</script>
+
+
+
+<script>
+/* === FINAL FIX: результат строками, без планет/аспектов/стихий/энергий === */
+(function(){
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
+    });
+  }
+  function raw(v){ return v == null || v === '' ? '—' : String(v); }
+  function val(v){ return esc(raw(v)).replace(/\n/g, '<br>'); }
+  function cleanList(value){
+    var arr = String(value == null ? '' : value)
+      .replace(/•/g, '')
+      .split(/\n|;/)
+      .map(function(x){ return x.trim().replace(/[.]+$/, ''); })
+      .filter(Boolean);
+    return arr.length ? arr.join(', ') : '—';
+  }
+  function section(title, html, extra){
+    return '<section class="report-section '+(extra || '')+'"><h2>'+esc(title)+'</h2><div class="section-body">'+html+'</div></section>';
+  }
+  function rows(list){
+    return '<div class="report-rows">'+list.map(function(r){
+      return '<div class="report-row"><div class="row-label">'+esc(r[0])+'</div><div class="row-value">'+val(r[1])+'</div></div>';
+    }).join('')+'</div>';
+  }
+  function statusClass(status){
+    return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : ((status === 'ЗАПРЕЩЕНО' || status === 'ЗАПРЕЩЁН') ? 'status-forb' : 'status-neut');
+  }
+  function productRows(products){
+    if (!products || !products.length) return '<div class="product-row"><div class="product-name">—</div><div class="product-status-wrap">—</div></div>';
+    return products.map(function(x){
+      return '<div class="product-row"><div class="product-name">'+esc(x.product || x.name || '—')+'</div><div class="product-status-wrap"><span class="'+statusClass(x.status)+'">'+esc(x.status || '—')+'</span></div></div>';
+    }).join('');
+  }
+  function productList(products){ return '<div class="product-list">'+productRows(products)+'</div>'; }
+  function categoryTables(products){
+    var order = ['Напитки','Соки','Алкоголь','Мясо','Рыба','Супы','Крупы','Углеводы','Тесто','Овощи','Фрукты / ягоды','Орехи'];
+    var groups = {};
+    (products || []).forEach(function(x){
+      var key = x.category || 'Без категории';
+      (groups[key] || (groups[key] = [])).push(x);
+    });
+    Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
+    return order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
+      return '<div class="product-category"><h3 class="product-category-title">'+esc(cat.toUpperCase())+'</h3><div class="product-list">'+productRows(groups[cat])+'</div></div>';
+    }).join('') || '<div class="product-list"><div class="product-row"><div class="product-name">—</div><div class="product-status-wrap">—</div></div></div>';
+  }
+  function macroRows(food){
+    var source = (food && typeof food === 'object') ? food : { bmr: food };
+    var kcal = Number(source.kcal || source.calories || source.bmr || 0);
+    kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
+    var protein = Number(source.protein || source.proteins || 0);
+    var fats = Number(source.fat || source.fats || 0);
+    var carbs = Number(source.carbs || source.carbohydrates || 0);
+    if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4);
+    if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9);
+    if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
+    function fmt(v, unit){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') + ' ' + unit : '—'; }
+    return rows([
+      ['Калорийность', fmt(kcal, 'ккал')],
+      ['Белки', fmt(protein, 'г')],
+      ['Жиры', fmt(fats, 'г')],
+      ['Углеводы', fmt(carbs, 'г')]
+    ]);
+  }
+  function finalResultStyle(){
+    return '<style>\n'+
+      '.pdf-export-root{background:#0D1935!important;color:#fff!important;font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif!important;max-width:960px;margin:0 auto;padding:24px 16px 56px;box-sizing:border-box;}\n'+
+      '.pdf-export-root *{box-sizing:border-box;max-width:100%;overflow-wrap:break-word;word-break:normal;color:#fff;}\n'+
+      '.pdf-export-root h1{color:#FC9FBC!important;text-align:center;text-transform:uppercase;letter-spacing:.075em;font-size:clamp(1.8rem,4.8vw,2.7rem);line-height:1.05;margin:0 0 1.35rem;font-weight:800;}\n'+
+      '.report-section{border:1.5px solid rgba(255,255,255,.18)!important;border-radius:16px!important;background:rgba(255,255,255,.06)!important;padding:1.35rem 1.35rem 1.15rem!important;margin:0 0 1.15rem!important;box-shadow:none!important;}\n'+
+      '.report-section h2{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1.08rem!important;line-height:1.2!important;margin:0 0 1rem!important;font-weight:800!important;}\n'+
+      '.report-rows,.product-list{display:block!important;width:100%!important;}\n'+
+      '.report-row,.product-row{display:grid!important;grid-template-columns:minmax(145px,.62fr) minmax(0,1fr)!important;gap:1rem!important;align-items:start!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
+      '.report-row:last-child,.product-row:last-child{border-bottom:0!important;}\n'+
+      '.row-label,.product-name{color:#fff!important;font-weight:800!important;text-align:left!important;line-height:1.25!important;}\n'+
+      '.row-value,.product-status-wrap{color:#fff!important;text-align:left!important;line-height:1.28!important;min-width:0!important;}\n'+
+      '.summary-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1rem!important;margin:0!important;}\n'+
+      '.sum-card{border-radius:14px!important;padding:1rem 1.1rem!important;background:rgba(255,255,255,.04)!important;text-align:left!important;}\n'+
+      '.sum-card.rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.16)!important;}\n'+
+      '.sum-card.forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.16)!important;}\n'+
+      '.cs-title{color:#fff!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-weight:900!important;margin:0 0 .75rem!important;}\n'+
+      '.product-category{margin:0 0 1rem!important;}\n'+
+      '.product-category:last-child{margin-bottom:0!important;}\n'+
+      '.product-category-title{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1rem!important;margin:0 0 .65rem!important;font-weight:900!important;}\n'+
+      '.status-rec,.status-forb,.status-neut{display:inline-block!important;max-width:100%!important;white-space:normal!important;text-align:left!important;line-height:1.15!important;color:#fff!important;border-radius:999px!important;padding:.36rem .68rem!important;font-size:.78rem!important;font-weight:900!important;letter-spacing:.035em!important;}\n'+
+      '.status-rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.18)!important;}\n'+
+      '.status-forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.18)!important;}\n'+
+      '.status-neut{border:1px solid rgba(255,255,255,.32)!important;background:rgba(255,255,255,.08)!important;}\n'+
+      '@media(max-width:700px){.report-section{padding:1rem!important}.report-row,.product-row{grid-template-columns:minmax(105px,.62fr) minmax(0,1fr)!important;gap:.7rem!important}.summary-grid{grid-template-columns:1fr!important}.status-rec,.status-forb,.status-neut{font-size:.72rem;padding:.32rem .55rem!important}}\n'+
+      '</style>';
+  }
+  window.buildPdfHtml = function(){
+    var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+    var food = window.foodResult || {};
+    var products = [];
+    try { products = (typeof window.runProductCalculations === 'function' ? (window.productResults || window.runProductCalculations()) : (window.productResults || [])) || []; } catch(e) { products = window.productResults || []; }
+    var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВАНО'; });
+    var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО' || x.status === 'ЗАПРЕЩЁН'; });
+    return '<div class="pdf-export-root">'+finalResultStyle()+
+      '<h1>Питание по натальной карте</h1>'+ 
+      section('Данные для расчета', rows([
+        ['Имя', d.chartName || '—'],
+        ['Дата', d.chartDate || '—'],
+        ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')],
+        ['Возраст', food.age ? food.age + ' лет' : '—'],
+        ['Рост', food.height ? food.height + ' см' : '—'],
+        ['Вес', food.weight ? food.weight + ' кг' : '—']
+      ]))+
+      section('Режим питания', rows([
+        ['Количество приемов', food.meals || '—'],
+        ['Завтрак', food.breakfast || '—'],
+        ['Обед', food.lunch || '—'],
+        ['Ужин', food.dinner || '—'],
+        ['Метаболизм', food.metabolism || '—']
+      ]))+
+      section('КБЖУ', macroRows(food))+
+      section('Водно-солевой баланс', rows([
+        ['Соль', food.salt || '—'],
+        ['Вода', food.water || '—'],
+        ['Жидкость', food.liquid || '—'],
+        ['Запивать пищу', food.drinkFood || '—']
+      ]))+
+      section('Белковый обмен', rows([
+        ['Источники белка', food.proteinSource || '—'],
+        ['Вегетарианство', food.vegetarian || '—']
+      ]))+
+      section('Жировой обмен', rows([
+        ['Источники жиров', food.fatSource || '—'],
+        ['Соотношение жиров', food.fatProportion || '—'],
+        ['Накопление жира', food.fatAccumulation || '—'],
+        ['Холестерин', food.cholesterol || '—'],
+        ['Склонность к полноте', food.fullness || '—']
+      ]))+
+      section('Углеводный обмен', rows([
+        ['Сахар', food.sugarRules || '—'],
+        ['Гиперинсулинемия', food.hyperinsulin || '—']
+      ]))+
+      section('Витамины и минералы', rows([
+        ['Нехватка витаминов', cleanList(food.vitamins || '—')],
+        ['Нехватка минералов', cleanList(food.minerals || '—')]
+      ]))+
       section('Продукты', '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано</div>'+productList(rec)+'</div><div class="sum-card forb"><div class="cs-title">Запрещено / ограничить</div>'+productList(forb)+'</div></div>')+
       section('Итоговый список', categoryTables(products))+
       '</div>';
