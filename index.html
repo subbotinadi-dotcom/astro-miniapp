@@ -3140,8 +3140,8 @@ function showStep3() {
 // Старая версия перебирала много публичных прокси по очереди и могла ждать очень долго.
 // Эта версия запускает короткие попытки параллельно, быстро отбрасывает невалидные ответы
 // и показывает понятную ошибку, если Sotis/прокси сейчас недоступны.
-const SOTIS_FETCH_TIMEOUT_MS = 8000;
-const SOTIS_OVERALL_TIMEOUT_MS = 12000;
+const SOTIS_FETCH_TIMEOUT_MS = 12000;
+const SOTIS_OVERALL_TIMEOUT_MS = 26000;
 
 // Если у вас появится свой серверный прокси, впишите адрес сюда.
 // Серверный прокси для стабильной работы в Telegram WebApp/ПК.
@@ -3215,7 +3215,19 @@ function extractSotisUrl(value) {
 
 function looksLikeSotisChartHtml(html) {
   const text = String(html || '');
-  return text.length > 1000 && /sotis|coord|g\.asp|vsbl|Солнце|Луна|Меркурий|Венера|Марс/i.test(text);
+  if (text.length < 1000) return false;
+  // Быстрая проверка: страница должна содержать реальные координаты карты, а не главную/ошибку прокси.
+  return /table[^>]+class=["'][^"']*coord|class=["'][^"']*coord|g\.asp|data-t=|Солнце|Луна|Меркурий|Венера|Марс/i.test(text);
+}
+
+function hasReadableSotisPlanets(html) {
+  try {
+    if (typeof parseHTML !== 'function') return looksLikeSotisChartHtml(html);
+    const parsed = parseHTML(html);
+    return !!(parsed && parsed.planets && parsed.planets.length >= 7);
+  } catch (_) {
+    return false;
+  }
 }
 
 async function readProxyResponse(resp) {
@@ -3246,6 +3258,9 @@ async function tryLoadSotisHtml(loader, normalizedUrl) {
   const resp = await fetch(proxyUrl, {
     method: 'GET',
     cache: 'no-store',
+    mode: 'cors',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
     headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
     signal: timeoutSignal(SOTIS_FETCH_TIMEOUT_MS)
   });
@@ -3255,8 +3270,16 @@ async function tryLoadSotisHtml(loader, normalizedUrl) {
   let html = await readProxyResponse(resp);
   if (!html || html.length < 200) throw new Error(`${loader.name}: пустой ответ`);
 
-  html = html.replace(/\\u003C/g, '<').replace(/\\u003E/g, '>').replace(/\\u0026/g, '&');
-  if (!looksLikeSotisChartHtml(html)) throw new Error(`${loader.name}: координаты карты не найдены`);
+  html = html
+    .replace(/\\u003C/g, '<')
+    .replace(/\\u003E/g, '>')
+    .replace(/\\u0026/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+
+  if (!looksLikeSotisChartHtml(html)) throw new Error(`${loader.name}: это не страница построенной карты`);
+  if (!hasReadableSotisPlanets(html)) throw new Error(`${loader.name}: планеты в HTML не найдены`);
 
   return html;
 }
@@ -3267,8 +3290,14 @@ async function fetchViaProxy(url) {
   const errors = [];
 
   if (!loaders.length) {
-    throw new Error('Не настроен способ загрузки Sotis. Укажите CUSTOM_SOTIS_PROXY или откройте страницу вне Telegram WebView.');
+    throw new Error('Не настроен способ загрузки Sotis. Укажите CUSTOM_SOTIS_PROXY или загрузите HTML-файл карты.');
   }
+
+  // Некоторые прокси/Сотис по-разному реагируют на ct:1 в chr. Пробуем и исходный вариант, и нормализованный.
+  const rawUrl = String(url || '').trim().replace(/&amp;/g, '&');
+  const urlVariants = Array.from(new Set([normalizedUrl, rawUrl].filter(Boolean)));
+  const jobs = [];
+  urlVariants.forEach(u => loaders.forEach(loader => jobs.push({ loader, url: u })));
 
   return await new Promise((resolve, reject) => {
     let settled = false;
@@ -3277,11 +3306,11 @@ async function fetchViaProxy(url) {
     const overallTimer = setTimeout(() => {
       if (settled) return;
       settled = true;
-      reject(new Error('Sotis отвечает слишком долго. Попробуйте открыть ссылку в обычном браузере, обновить карту на Sotis и вставить ссылку ещё раз.'));
+      reject(new Error('Sotis/прокси отвечают слишком долго. Проверьте, что ссылка ведёт на уже построенную карту, или загрузите HTML-файл карты.'));
     }, SOTIS_OVERALL_TIMEOUT_MS);
 
-    loaders.forEach(loader => {
-      tryLoadSotisHtml(loader, normalizedUrl)
+    jobs.forEach(job => {
+      tryLoadSotisHtml(job.loader, job.url)
         .then(html => {
           if (settled) return;
           settled = true;
@@ -3293,10 +3322,10 @@ async function fetchViaProxy(url) {
         })
         .finally(() => {
           finished += 1;
-          if (!settled && finished === loaders.length) {
+          if (!settled && finished === jobs.length) {
             settled = true;
             clearTimeout(overallTimer);
-            reject(new Error('Не удалось прочитать ссылку Сотиса. Откройте карту на Sotis, убедитесь, что она построена, затем скопируйте ссылку из адресной строки. Детали: ' + errors.slice(-3).join(' | ')));
+            reject(new Error('Ссылка не прочиталась через доступные способы. Проверьте, что это ссылка именно на построенную карту Sotis, или загрузите HTML-файл. Детали: ' + errors.slice(-5).join(' | ')));
           }
         });
     });
@@ -3404,7 +3433,7 @@ async function calculateFromUrl(event) {
     overlay.classList.remove('active');
   } catch(e) {
     overlay.classList.remove('active');
-    showSotisLoadError('Не удалось прочитать ссылку автоматически. Это ограничение CORS у Сотиса/браузера. Сохраните страницу построенной карты как HTML и загрузите её через кнопку ниже. Детали: ' + (e && e.message ? e.message : e));
+    showSotisLoadError('Ссылка пока не прочиталась автоматически. Проверьте, что это ссылка на уже построенную карту Sotis, и попробуйте ещё раз. Возможность загрузить сохранённый HTML-файл карты оставлена ниже. Детали: ' + (e && e.message ? e.message : e));
   } finally {
     if (calcBtn) { calcBtn.disabled = false; calcBtn.style.opacity = ''; }
   }
