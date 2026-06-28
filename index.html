@@ -5341,5 +5341,38 @@ window.startExportDocx = async function(event) {
 })();
 </script>
 
+
+
+<style id="final-product-status-tweaks">
+/* Финальные точечные правки: только размер плашек и цвета заголовков */
+.badge-rec,
+.status-rec,
+.badge-forb,
+.status-forb,
+.badge-neut,
+.status-neut {
+  font-size: .72rem !important;
+  line-height: 1.15 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.sum-card.rec .cs-title,
+.rec .cs-title,
+#rRecBox .cs-title,
+#rRecBox h2,
+#rRecBox h3 {
+  color: #00B5A6 !important;
+}
+
+.sum-card.forb .cs-title,
+.forb .cs-title,
+#rForbBox .cs-title,
+#rForbBox h2,
+#rForbBox h3 {
+  color: #FF99BE !important;
+}
+</style>
 </body>
 </html>
