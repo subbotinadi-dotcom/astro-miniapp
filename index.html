@@ -2115,6 +2115,150 @@ body,
 
 .sum-card.rec>.cs-title{color:#00B5A6!important;}
 .sum-card.forb>.cs-title{color:#FF99BE!important;}
+
+
+/* === Точечные правки по ТЗ: статус, КБЖУ, таблицы итогов, кнопки === */
+.badge-rec,
+.status-rec,
+.badge-forb,
+.status-forb,
+.badge-neut,
+.status-neut,
+#inlineResultContent .status-rec,
+#inlineResultContent .badge-rec,
+#inlineResultContent .status-forb,
+#inlineResultContent .badge-forb,
+#inlineResultContent .status-neut,
+#inlineResultContent .badge-neut,
+#productsPage .status-rec,
+#productsPage .badge-rec,
+#productsPage .status-forb,
+#productsPage .badge-forb,
+#productsPage .status-neut,
+#productsPage .badge-neut{
+  font-size:0.7rem!important;
+}
+.sum-card.rec>.cs-title,
+#inlineResultContent .sum-card.rec .cs-title,
+#productsPage .sum-card.rec .cs-title{
+  color:#00B5A6!important;
+}
+.sum-card.forb>.cs-title,
+#inlineResultContent .sum-card.forb .cs-title,
+#productsPage .sum-card.forb .cs-title{
+  color:#FC9FBC!important;
+}
+#result .kbju-grid,
+#inlineResultContent .kbju-grid,
+#productsPage .kbju-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:1rem!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:0!important;
+  margin:0 0 1rem!important;
+}
+#result .kbju-card,
+#inlineResultContent .kbju-card,
+#productsPage .kbju-card{
+  min-height:110px!important;
+  background:rgba(255,255,255,0.06)!important;
+  border:1px solid rgba(255,255,255,0.12)!important;
+  border-radius:16px!important;
+  padding:1rem .9rem!important;
+  text-align:center!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:.45rem!important;
+  box-shadow:none!important;
+}
+#result .kbju-name,
+#inlineResultContent .kbju-name,
+#productsPage .kbju-name{
+  color:#FC9FBC!important;
+  font-size:1rem!important;
+  margin:0!important;
+}
+#result .kbju-value,
+#result .kbju-unit-inline,
+#inlineResultContent .kbju-value,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-value,
+#productsPage .kbju-unit-inline{
+  color:#FFFFFF!important;
+  font-size:1.9rem!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+#rRecBox table.summary-prod-tbl,
+#rForbBox table.summary-prod-tbl,
+#inlineResultContent #rRecBox table.summary-prod-tbl,
+#inlineResultContent #rForbBox table.summary-prod-tbl,
+#productsPage #rRecBox table.summary-prod-tbl,
+#productsPage #rForbBox table.summary-prod-tbl{
+  display:table!important;
+  width:100%!important;
+}
+#rRecBox table.summary-prod-tbl thead,
+#rForbBox table.summary-prod-tbl thead,
+#inlineResultContent #rRecBox table.summary-prod-tbl thead,
+#inlineResultContent #rForbBox table.summary-prod-tbl thead,
+#productsPage #rRecBox table.summary-prod-tbl thead,
+#productsPage #rForbBox table.summary-prod-tbl thead{
+  display:table-header-group!important;
+}
+#rRecBox table.summary-prod-tbl tr,
+#rForbBox table.summary-prod-tbl tr,
+#inlineResultContent #rRecBox table.summary-prod-tbl tr,
+#inlineResultContent #rForbBox table.summary-prod-tbl tr,
+#productsPage #rRecBox table.summary-prod-tbl tr,
+#productsPage #rForbBox table.summary-prod-tbl tr{
+  display:table-row!important;
+}
+#rRecBox table.summary-prod-tbl th,
+#rRecBox table.summary-prod-tbl td,
+#rForbBox table.summary-prod-tbl th,
+#rForbBox table.summary-prod-tbl td,
+#inlineResultContent #rRecBox table.summary-prod-tbl th,
+#inlineResultContent #rRecBox table.summary-prod-tbl td,
+#inlineResultContent #rForbBox table.summary-prod-tbl th,
+#inlineResultContent #rForbBox table.summary-prod-tbl td,
+#productsPage #rRecBox table.summary-prod-tbl th,
+#productsPage #rRecBox table.summary-prod-tbl td,
+#productsPage #rForbBox table.summary-prod-tbl th,
+#productsPage #rForbBox table.summary-prod-tbl td{
+  display:table-cell!important;
+}
+#rRecBox table.summary-prod-tbl td:first-child,
+#rForbBox table.summary-prod-tbl td:first-child,
+#inlineResultContent #rRecBox table.summary-prod-tbl td:first-child,
+#inlineResultContent #rForbBox table.summary-prod-tbl td:first-child,
+#productsPage #rRecBox table.summary-prod-tbl td:first-child,
+#productsPage #rForbBox table.summary-prod-tbl td:first-child{
+  width:38%!important;
+}
+.sotis-link,
+.sotis-btn-style,
+.calc-btn,
+.continue-btn,
+.export-btn,
+#foodCalcBtn.sotis-btn-style,
+#step2Block .sotis-btn-style,
+button[onclick="calculateFromUrl(event)"],
+.download-zone .btn.bp{
+  width:min(100%,420px)!important;
+  max-width:420px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:760px){
+  #result .kbju-grid,
+  #inlineResultContent .kbju-grid,
+  #productsPage .kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
 </style>
 
 
@@ -3813,261 +3957,6 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
   return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Данные для расчета</h2><table>${rows([['Имя',d.chartName||'—'],['Дата',d.chartDate||'—'],['Время',d.birthTime||d.time||'—'],['Место',d.birthPlace||d.place||d.city||'—'],['Пол',food.gender||selectedGender||'—'],['Возраст',food.age?food.age+' лет':'—'],['Рост',food.height?food.height+' см':'—'],['Вес',food.weight?food.weight+' кг':'—']])}</table><h2>Стихия</h2><table><tr><th>Стихия</th><th>Балл</th><th>%</th></tr>${elementRows}</table><h2>Энергия</h2><table>${energyRows}</table><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr>${aspectRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
-
-
-<!-- === CHATGPT STRICT PATCH: только согласованные правки === -->
-<style id="chatgpt-strict-requested-patch">
-/* 1) Плашки статуса: меняем только размер шрифта */
-.badge-rec,
-.status-rec,
-.badge-forb,
-.status-forb,
-.badge-neut,
-.status-neut {
-  font-size: 0.7rem !important;
-}
-
-/* 2) Заголовки блоков: Рекомендовано зелёный, Запрещено розовый */
-.sum-card.rec .cs-title,
-.rec .cs-title,
-.products-rec > h2,
-.report-section.products-rec > h2 {
-  color: #00B5A6 !important;
-}
-
-.sum-card.forb .cs-title,
-.forb .cs-title,
-.products-forb > h2,
-.report-section.products-forb > h2 {
-  color: #FF99BE !important;
-}
-
-/* 3) КБЖУ: оформление один в один по стилю карточек «Стихии» */
-.kbju-grid {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: .75rem !important;
-  margin: 0 !important;
-}
-.kbju-card {
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  aspect-ratio: auto !important;
-  min-height: 92px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  text-align: left !important;
-  padding: .35rem .15rem !important;
-  box-shadow: none !important;
-}
-.kbju-name {
-  font-size: .92rem !important;
-  line-height: 1.15 !important;
-  color: #fff !important;
-  font-weight: 800 !important;
-  text-transform: uppercase !important;
-  letter-spacing: .04em !important;
-  text-align: left !important;
-  margin: 0 !important;
-}
-.kbju-value {
-  color: #FC9FBC !important;
-  font-size: 2.55rem !important;
-  line-height: 1 !important;
-  font-weight: 900 !important;
-  margin: .35rem 0 .12rem !important;
-  text-align: left !important;
-}
-.kbju-unit-inline {
-  color: #FC9FBC !important;
-  font-size: 2.55rem !important;
-  line-height: 1 !important;
-  font-weight: 900 !important;
-}
-@media(max-width:700px){
-  .kbju-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-}
-
-/* 4) Только в блоках Рекомендовано/Запрещено: две колонки Категория / Продукт */
-.report-section.products-rec .product-row,
-.report-section.products-forb .product-row {
-  display: grid !important;
-  grid-template-columns: minmax(120px, .85fr) minmax(0, 1.4fr) !important;
-  gap: 1rem !important;
-  align-items: start !important;
-}
-.report-section.products-rec .product-status-wrap,
-.report-section.products-forb .product-status-wrap {
-  display: none !important;
-}
-.report-section.products-rec .product-category-cell,
-.report-section.products-forb .product-category-cell {
-  color: rgba(255,255,255,.72) !important;
-  text-transform: uppercase !important;
-  letter-spacing: .045em !important;
-  font-weight: 800 !important;
-  font-size: .95rem !important;
-  line-height: 1.25 !important;
-  text-align: left !important;
-}
-.report-section.products-rec .product-name,
-.report-section.products-forb .product-name {
-  color: #fff !important;
-  font-weight: 700 !important;
-  text-align: left !important;
-  line-height: 1.25 !important;
-}
-</style>
-
-<script id="chatgpt-strict-requested-build-override">
-(function(){
-  function esc(v){
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
-    });
-  }
-  function val(v){ return esc(v == null || v === '' ? '—' : v).replace(/\n/g, '<br>'); }
-  function num(v){ return Number(v || 0).toLocaleString('ru-RU'); }
-  function pct(value,total){ return total ? Math.round(value / total * 100) + '%' : '0%'; }
-  function cleanList(value){
-    var arr = String(value == null ? '' : value).replace(/•/g,'').split(/\n|;/).map(function(x){return x.trim().replace(/[.]+$/,'');}).filter(Boolean);
-    return arr.length ? arr.join(', ') : '—';
-  }
-  function section(title, html, extra){
-    return '<section class="report-section '+(extra||'')+'"><h2>'+esc(title)+'</h2><div class="section-body">'+html+'</div></section>';
-  }
-  function rows(list){
-    return '<div class="report-rows">'+list.map(function(r){
-      return '<div class="report-row"><div class="row-label">'+esc(r[0])+'</div><div class="row-value">'+val(r[1])+'</div></div>';
-    }).join('')+'</div>';
-  }
-  function resultStyle(){ return '<style>\n'+
-    '.pdf-export-root{background:#0D1935!important;color:#fff!important;font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif!important;max-width:960px;margin:0 auto;padding:24px 16px 56px;box-sizing:border-box;}\n'+
-    '.pdf-export-root *{box-sizing:border-box;max-width:100%;overflow-wrap:anywhere;word-break:normal;}\n'+
-    '.pdf-export-root h1{color:#FC9FBC!important;text-align:center;text-transform:uppercase;letter-spacing:.075em;font-size:clamp(1.8rem,4.8vw,2.7rem);line-height:1.05;margin:0 0 1.35rem;font-weight:800;}\n'+
-    '.report-section{border:1.5px solid rgba(255,255,255,.18)!important;border-radius:16px!important;background:rgba(255,255,255,.06)!important;padding:1.35rem 1.35rem 1.15rem!important;margin:0 0 1.15rem!important;box-shadow:none!important;}\n'+
-    '.report-section h2{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1.08rem!important;line-height:1.2!important;margin:0 0 1rem!important;font-weight:800!important;}\n'+
-    '.section-body{width:100%!important;}\n'+
-    '.report-rows{display:block!important;width:100%!important;}\n'+
-    '.report-row{display:grid!important;grid-template-columns:minmax(120px,.9fr) minmax(0,1.6fr)!important;gap:1rem!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.16)!important;background:transparent!important;padding:.62rem 0!important;min-height:0!important;}\n'+
-    '.report-row:last-child{border-bottom:0!important;}\n'+
-    '.row-label{color:rgba(255,255,255,.72)!important;text-transform:uppercase!important;letter-spacing:.045em!important;font-weight:800!important;font-size:.95rem!important;line-height:1.25!important;text-align:left!important;}\n'+
-    '.row-value{color:#fff!important;font-weight:700!important;font-size:1.02rem!important;line-height:1.35!important;text-align:left!important;}\n'+
-    '.element-grid,.kbju-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:.75rem!important;margin:0!important;}\n'+
-    '.element-box,.kbju-card{border:0!important;border-radius:0!important;background:transparent!important;aspect-ratio:auto!important;min-height:92px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;text-align:left!important;padding:.35rem .15rem!important;box-shadow:none!important;}\n'+
-    '.element-title,.kbju-name{font-size:.92rem!important;line-height:1.15!important;color:#fff!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.04em!important;text-align:left!important;margin:0!important;}\n'+
-    '.element-num,.kbju-value,.kbju-unit-inline{color:#FC9FBC!important;font-size:2.55rem!important;line-height:1!important;font-weight:900!important;text-align:left!important;}\n'+
-    '.element-num,.kbju-value{margin:.35rem 0 .12rem!important;}\n'+
-    '.element-pct{color:rgba(255,255,255,.78)!important;font-size:.92rem!important;font-weight:700!important;}\n'+
-    '.energy-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:.75rem!important;margin:0!important;}\n'+
-    '.energy-box{border:0!important;border-radius:0!important;background:transparent!important;min-height:92px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;text-align:left!important;padding:.35rem .15rem!important;box-shadow:none!important;}\n'+
-    '.energy-title{font-size:.9rem!important;color:rgba(255,255,255,.82)!important;text-transform:uppercase!important;letter-spacing:.045em!important;font-weight:800!important;line-height:1.2!important;text-align:left!important;}\n'+
-    '.energy-num{color:#FC9FBC!important;font-size:2.25rem!important;font-weight:900!important;line-height:1.05!important;text-align:left!important;}\n'+
-    '.summary-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1rem!important;margin:0!important;}\n'+
-    '.sum-card{border-radius:16px!important;padding:1.15rem!important;min-height:140px!important;text-align:left!important;box-shadow:none!important;}\n'+
-    '.sum-card.rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.18)!important;}\n'+
-    '.sum-card.forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.18)!important;}\n'+
-    '.cs-title{text-align:left!important;text-transform:uppercase!important;letter-spacing:.07em!important;font-weight:900!important;margin:0 0 .75rem!important;font-size:1rem!important;}\n'+
-    '.sum-card.rec .cs-title,.products-rec>h2,.report-section.products-rec>h2{color:#00B5A6!important}.sum-card.forb .cs-title,.products-forb>h2,.report-section.products-forb>h2{color:#FF99BE!important}\n'+
-    '.product-pill-list{display:block!important}.product-pill{display:block!important;color:#fff!important;text-align:left!important;padding:.32rem 0!important;border-bottom:1px solid rgba(255,255,255,.14)!important;line-height:1.28!important}.product-pill:last-child{border-bottom:0!important;}\n'+
-    '.product-category{margin:0 0 1rem!important;}\n'+
-    '.product-category-title{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.055em!important;font-size:1rem!important;line-height:1.2!important;margin:0 0 .65rem!important;font-weight:800!important;}\n'+
-    '.product-list{display:block!important;width:100%!important;}\n'+
-    '.product-row{display:grid!important;grid-template-columns:minmax(120px,1.2fr) minmax(105px,.7fr)!important;gap:1rem!important;align-items:center!important;border-bottom:1px solid rgba(255,255,255,.16)!important;padding:.52rem 0!important;}\n'+
-    '.product-row:last-child{border-bottom:0!important}.product-name{color:#fff!important;font-weight:700!important;text-align:left!important;line-height:1.25!important}.product-status-wrap{text-align:left!important;}\n'+
-    '.products-rec .product-row,.products-forb .product-row{grid-template-columns:minmax(120px,.85fr) minmax(0,1.4fr)!important;align-items:start!important;}\n'+
-    '.products-rec .product-status-wrap,.products-forb .product-status-wrap{display:none!important;}\n'+
-    '.product-category-cell{color:rgba(255,255,255,.72)!important;text-transform:uppercase!important;letter-spacing:.045em!important;font-weight:800!important;font-size:.95rem!important;line-height:1.25!important;text-align:left!important;}\n'+
-    '.status-rec,.status-forb,.status-neut{display:inline-block!important;max-width:100%!important;white-space:normal!important;text-align:left!important;line-height:1.15!important;color:#fff!important;border-radius:999px!important;overflow-wrap:anywhere!important;word-break:normal!important;padding:.34rem .65rem!important;font-size:0.7rem!important;font-weight:900!important;letter-spacing:.035em!important;}\n'+
-    '.status-rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.18)!important}.status-forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.18)!important}.status-neut{border:1px solid rgba(255,255,255,.32)!important;background:rgba(255,255,255,.08)!important}\n'+
-    '.astro-symbol{font-family:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","Noto Sans Symbols","Arial Unicode MS",sans-serif!important;font-weight:400!important;}\n'+
-    '@media(max-width:700px){.report-section{padding:1rem!important}.report-row{grid-template-columns:1fr!important;gap:.22rem!important}.products-rec .product-row,.products-forb .product-row{grid-template-columns:minmax(105px,.7fr) minmax(0,1.3fr)!important;gap:.6rem!important}.element-grid,.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.energy-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.summary-grid{grid-template-columns:1fr!important}.status-rec,.status-forb,.status-neut{font-size:0.7rem!important}}\n'+
-    '</style>'; }
-  function statusClass(status){ return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : ((status === 'ЗАПРЕЩЕНО' || status === 'ЗАПРЕЩЁН') ? 'status-forb' : 'status-neut'); }
-  function productList(rows){
-    if (!rows || !rows.length) return '<div class="product-list"><div class="product-row"><div class="product-category-cell">—</div><div class="product-name">—</div><div class="product-status-wrap">—</div></div></div>';
-    return '<div class="product-list">' + rows.map(function(x){
-      return '<div class="product-row"><div class="product-category-cell">'+esc(x.category || 'Без категории')+'</div><div class="product-name">'+esc(x.product || x.name || '—')+'</div><div class="product-status-wrap"></div></div>';
-    }).join('') + '</div>';
-  }
-  function categoryTables(products){
-    var order = ['Напитки','Соки','Алкоголь','Мясо','Рыба','Супы','Крупы','Углеводы','Тесто','Овощи','Фрукты / ягоды','Орехи'];
-    var groups = {};
-    (products || []).forEach(function(x){ var k = x.category || 'Без категории'; (groups[k] || (groups[k]=[])).push(x); });
-    Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
-    return order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
-      return '<div class="product-category"><h3 class="product-category-title">'+esc(cat.toUpperCase())+'</h3><div class="product-list">'+
-        groups[cat].map(function(x){ return '<div class="product-row"><div class="product-name">'+esc(x.product)+'</div><div class="product-status-wrap"><span class="'+statusClass(x.status)+'">'+esc(x.status)+'</span></div></div>'; }).join('')+
-        '</div></div>';
-    }).join('');
-  }
-  function signSymbol(ch){ var map={';':'♈','<':'♉','=':'♊','>':'♋','?':'♌','@':'♍','A':'♎','B':'♏','C':'♐','D':'♑','E':'♒','F':'♓'}; return map[ch] || ch || ''; }
-  function planetSymbol(sym){ return (window.PLANET_SYMBOLS && PLANET_SYMBOLS[sym]) || sym || ''; }
-  function planetNameFromAny(x){ var m={'Солнце':'☉','Луна':'☽','Меркурий':'☿','Венера':'♀','Марс':'♂','Юпитер':'♃','Сатурн':'♄','Уран':'♅','Нептун':'♆','Плутон':'♇','Хирон':'⚷'}; return m[x] || x || ''; }
-  function planetsRows(d){
-    var out=[];
-    (d.planets || []).forEach(function(p){ if (!(window.PLANET_NAMES && PLANET_NAMES[p.sym]) || !(window.PLANET_SYMBOLS && PLANET_SYMBOLS[p.sym])) return; out.push(['<span class="astro-symbol">'+esc(planetSymbol(p.sym))+'</span>', '<span class="astro-symbol">'+esc(signSymbol(p.signChar))+'</span> '+esc(p.pos || '')+(p.isRetro ? ' R' : '')]); });
-    if (d.asc) out.push(['ASC','<span class="astro-symbol">'+esc(signSymbol(d.asc.signChar))+'</span> '+esc(d.asc.pos || '')]);
-    if (d.mc) out.push(['MC','<span class="astro-symbol">'+esc(signSymbol(d.mc.signChar))+'</span> '+esc(d.mc.pos || '')]);
-    return rows(out.length ? out : [['Планеты','—']]);
-  }
-  function aspectsRows(d){
-    var list = (d.aspects || []).filter(function(a){ try { return typeof shouldShowAspect === 'function' ? shouldShowAspect(a.p1, a.p2, a.orb) : true; } catch(e){ return true; } });
-    if (!list.length) return rows([['Аспекты','В заданных орбисах не найдены']]);
-    return rows(list.map(function(a){ var info = (window.ASPECT_NAMES && ASPECT_NAMES[a.type]) || {name:a.typeName || a.type}; return [info.name || a.typeName || a.type, '<span class="astro-symbol">'+planetNameFromAny(a.p1)+'</span> — <span class="astro-symbol">'+planetNameFromAny(a.p2)+'</span>'+(a.orb ? ' '+a.orb : '')]; }));
-  }
-  function elementGrid(elements,total){
-    var list=[['🔥 Огонь','Огонь'],['🌍 Земля','Земля'],['💨 Воздух','Воздух'],['💧 Вода','Вода']];
-    return '<div class="element-grid">'+list.map(function(x){ var v=elements[x[1]]||0; return '<div class="element-box"><div class="element-title">'+esc(x[0])+'</div><div class="element-num">'+num(v)+'</div><div class="element-pct">'+pct(v,total)+'</div></div>'; }).join('')+'</div>';
-  }
-  function energyGrid(calc){
-    var list=[['Тепло',calc.teplo||0],['Сухость',calc.suhost||0],['Эмоциональность',calc.emotsionalnost||0],['Холод',calc.holod||0],['Влажность',calc.vlazhnost||0],['Рациональность',calc.racionalnost||0]];
-    return '<div class="energy-grid">'+list.map(function(x){ return '<div class="energy-box"><div class="energy-title">'+esc(x[0])+'</div><div class="energy-num">'+num(x[1])+'</div></div>'; }).join('')+'</div>';
-  }
-  function macroCards(food){
-    var source = (food && typeof food === 'object') ? food : { bmr: food };
-    var kcal = Number(source.kcal || source.calories || source.bmr || 0); kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
-    var protein = Number(source.protein || source.proteins || 0), fats = Number(source.fat || source.fats || 0), carbs = Number(source.carbs || source.carbohydrates || 0);
-    if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4); if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9); if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
-    function fmt(v){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') : '—'; }
-    function item(name, value, unit){ return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>'; }
-    return '<div class="kbju-grid">'+item('Калорийность', fmt(kcal), 'ккал')+item('Белки', fmt(protein), 'г')+item('Жиры', fmt(fats), 'г')+item('Углеводы', fmt(carbs), 'г')+'</div>';
-  }
-  window.buildPdfHtml = function(){
-    var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
-    var food = window.foodResult || {};
-    var calc = typeof calcElements === 'function' ? calcElements(d.planets || [], d.asc, d.mc) : {elements:{}};
-    var elements = calc.elements || {};
-    var total = (elements['Огонь']||0)+(elements['Земля']||0)+(elements['Воздух']||0)+(elements['Вода']||0);
-    var products = (typeof window.runProductCalculations === 'function' ? (window.productResults || window.runProductCalculations()) : (window.productResults || [])) || [];
-    var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВАНО'; });
-    var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО' || x.status === 'ЗАПРЕЩЁН'; });
-    return '<div class="pdf-export-root">'+resultStyle()+
-      '<h1>Питание по натальной карте</h1>'+ 
-      section('Данные для расчета', rows([['Имя', d.chartName || '—'], ['Дата', d.chartDate || '—'], ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')], ['Возраст', food.age ? food.age + ' лет' : '—'], ['Рост', food.height ? food.height + ' см' : '—'], ['Вес', food.weight ? food.weight + ' кг' : '—']]))+
-      section('Стихия', elementGrid(elements,total))+
-      section('Энергия', energyGrid(calc))+
-      section('Планеты в знаках', planetsRows(d))+
-      section('Аспекты', aspectsRows(d))+
-      section('Режим питания', rows([['Количество приемов', food.meals || '—'], ['Завтрак', food.breakfast || '—'], ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']]))+
-      section('КБЖУ', macroCards(food))+
-      section('Водно-солевой баланс', rows([['Соль', food.salt || '—'], ['Вода', food.water || '—'], ['Жидкость', food.liquid || '—'], ['Запивать пищу', food.drinkFood || '—']]))+
-      section('Белковый обмен', rows([['Источники белка', food.proteinSource || '—'], ['Вегетарианство', food.vegetarian || '—']]))+
-      section('Жировой обмен', rows([['Источники жиров', food.fatSource || '—'], ['Соотношение жиров', food.fatProportion || '—'], ['Накопление жира', food.fatAccumulation || '—'], ['Холестерин', food.cholesterol || '—'], ['Склонность к полноте', food.fullness || '—']]))+
-      section('Углеводный обмен', rows([['Сахар', food.sugarRules || '—'], ['Гиперинсулинемия', food.hyperinsulin || '—']]))+
-      section('Витамины и минералы', rows([['Нехватка витаминов', cleanList(food.vitamins || '—')], ['Нехватка минералов', cleanList(food.minerals || '—')]]))+
-      section('Рекомендовано', productList(rec), 'products-rec')+
-      section('Запрещено', productList(forb), 'products-forb')+
-      section('Итоговый список', categoryTables(products))+
-      '</div>';
-  };
-})();
-</script>
-<!-- === /CHATGPT STRICT PATCH === -->
-
 </body></html>`;
 }
 async function exportDocx() {
@@ -4288,11 +4177,11 @@ window.startExportDocx = async function(event) {
     return rows.map(function(r){ return '<tr><td>' + escapeHtml(r[0]) + '</td><td>' + cellHtml(r[1]) + '</td></tr>'; }).join('');
   }
   function productRowsSimple(rows){
-    return rows.map(function(x){ return '<tr><td>' + escapeHtml(x.product) + '</td></tr>'; }).join('');
+    return rows.map(function(x){ return '<tr><td>' + escapeHtml(x.category || 'Без категории') + '</td><td>' + escapeHtml(x.product) + '</td></tr>'; }).join('');
   }
   function productListSimple(rows){
-    if (!rows || !rows.length) return '<div class="product-pill-list"><span class="product-pill">—</span></div>';
-    return '<div class="product-pill-list">' + rows.map(function(x){ return '<span class="product-pill">' + escapeHtml(x.product) + '</span>'; }).join('') + '</div>';
+    if (!rows || !rows.length) return '<table class="prod-tbl summary-prod-tbl"><thead><tr><th>Категория</th><th>Продукт</th></tr></thead><tbody><tr><td>—</td><td>—</td></tr></tbody></table>';
+    return '<table class="prod-tbl summary-prod-tbl"><thead><tr><th>Категория</th><th>Продукт</th></tr></thead><tbody>' + productRowsSimple(rows) + '</tbody></table>';
   }
   function statusClass(status){
     return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : (status === 'ЗАПРЕЩЕНО' ? 'status-forb' : 'status-neut');
@@ -4973,6 +4862,58 @@ window.startExportDocx = async function(event) {
   font-weight:700!important;
   cursor:pointer!important;
 }
+
+#inlineResultContent .status-rec,
+#inlineResultContent .badge-rec,
+#productsPage .status-rec,
+#productsPage .badge-rec,
+#inlineResultContent .status-forb,
+#inlineResultContent .badge-forb,
+#productsPage .status-forb,
+#productsPage .badge-forb,
+#inlineResultContent .status-neut,
+#inlineResultContent .badge-neut,
+#productsPage .status-neut,
+#productsPage .badge-neut{font-size:0.7rem!important;}
+#inlineResultContent .sum-card.rec .cs-title,
+#productsPage .sum-card.rec .cs-title{color:var(--arc-green)!important;}
+#inlineResultContent .sum-card.forb .cs-title,
+#productsPage .sum-card.forb .cs-title{color:var(--arc-pink)!important;}
+#inlineResultContent .kbju-grid,
+#productsPage .kbju-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:1rem!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0 0 1rem!important;}
+#inlineResultContent .kbju-card,
+#productsPage .kbju-card{min-height:110px!important;background:var(--arc-card)!important;border:1px solid var(--arc-border)!important;border-radius:12px!important;padding:1rem .9rem!important;text-align:center!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:.45rem!important;box-shadow:none!important;}
+#inlineResultContent .kbju-name,
+#productsPage .kbju-name{color:var(--arc-pink)!important;font-size:1rem!important;margin:0!important;}
+#inlineResultContent .kbju-value,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-value,
+#productsPage .kbju-unit-inline{color:var(--arc-cream)!important;font-size:1.9rem!important;font-weight:700!important;line-height:1!important;}
+#rRecBox table.summary-prod-tbl,
+#rForbBox table.summary-prod-tbl,
+#inlineResultContent #rRecBox table.summary-prod-tbl,
+#inlineResultContent #rForbBox table.summary-prod-tbl,
+#productsPage #rRecBox table.summary-prod-tbl,
+#productsPage #rForbBox table.summary-prod-tbl{display:table!important;width:100%!important;}
+#rRecBox table.summary-prod-tbl thead,
+#rForbBox table.summary-prod-tbl thead,
+#inlineResultContent #rRecBox table.summary-prod-tbl thead,
+#inlineResultContent #rForbBox table.summary-prod-tbl thead,
+#productsPage #rRecBox table.summary-prod-tbl thead,
+#productsPage #rForbBox table.summary-prod-tbl thead{display:table-header-group!important;}
+#rRecBox table.summary-prod-tbl tr,
+#rForbBox table.summary-prod-tbl tr,
+#inlineResultContent #rRecBox table.summary-prod-tbl tr,
+#inlineResultContent #rForbBox table.summary-prod-tbl tr,
+#productsPage #rRecBox table.summary-prod-tbl tr,
+#productsPage #rForbBox table.summary-prod-tbl tr{display:table-row!important;}
+#rRecBox table.summary-prod-tbl th,#rRecBox table.summary-prod-tbl td,#rForbBox table.summary-prod-tbl th,#rForbBox table.summary-prod-tbl td,
+#inlineResultContent #rRecBox table.summary-prod-tbl th,#inlineResultContent #rRecBox table.summary-prod-tbl td,#inlineResultContent #rForbBox table.summary-prod-tbl th,#inlineResultContent #rForbBox table.summary-prod-tbl td,
+#productsPage #rRecBox table.summary-prod-tbl th,#productsPage #rRecBox table.summary-prod-tbl td,#productsPage #rForbBox table.summary-prod-tbl th,#productsPage #rForbBox table.summary-prod-tbl td{display:table-cell!important;}
+#rRecBox table.summary-prod-tbl td:first-child,#rForbBox table.summary-prod-tbl td:first-child,
+#inlineResultContent #rRecBox table.summary-prod-tbl td:first-child,#inlineResultContent #rForbBox table.summary-prod-tbl td:first-child,
+#productsPage #rRecBox table.summary-prod-tbl td:first-child,#productsPage #rForbBox table.summary-prod-tbl td:first-child{width:38%!important;}
+#inlineResultContent .export-btn,#productsPage .export-btn,#foodPage .export-btn,.download-zone .btn.bp{width:min(100%,420px)!important;max-width:420px!important;box-sizing:border-box!important;}
 @media(max-width:760px){
   #foodPage,#inlineResultContent,#productsPage{width:100%!important;padding:1.8rem 1rem 4rem!important;}
   #inlineResultContent .summary-grid,#productsPage .summary-grid{grid-template-columns:1fr!important;}
