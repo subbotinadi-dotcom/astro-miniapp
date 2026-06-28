@@ -475,8 +475,8 @@ function render() {
     if (!name || !symbol) return; // пропускаем Раху/Кету
     pg.appendChild(makePlanetCard(symbol, name, p.pos, p.signChar, p.isRetro));
   });
-  if (d.asc) pg.appendChild(makePlanetCard('w', 'ASC', d.asc.pos, d.asc.signChar, false));
-  if (d.mc)  pg.appendChild(makePlanetCard('t', 'MC',  d.mc.pos,  d.mc.signChar,  false));
+  if (d.asc) pg.appendChild(makePlanetCard('w', '1 дом', d.asc.pos, d.asc.signChar, false));
+  if (d.mc)  pg.appendChild(makePlanetCard('t', '10 дом',  d.mc.pos,  d.mc.signChar,  false));
 
   // Аспекты — фильтруем по орбисам
   const al = document.getElementById('aspectList');
@@ -495,8 +495,7 @@ function render() {
     row.className = 'aspect-row';
     row.innerHTML = `
       <span class="asp-type ${info.cls}">${info.name || a.typeName}</span>
-      <span class="asp-planets">${a.p1} — ${a.p2}</span>
-      <span class="asp-orb" title="лимит: ${limitStr}">${a.orb}</span>`;
+      <span class="asp-planets">${a.p1} — ${a.p2} ОРБИС: ${a.orb}</span>`;
     al.appendChild(row);
   });
   if (filtered.length === 0)
