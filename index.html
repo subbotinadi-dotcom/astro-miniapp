@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -2174,28 +2173,27 @@ const PROXIES = [
 ];
 
 function extractSotisUrl(value) {
-  let raw = String(value || '').trim();
-  const iframeMatch = raw.match(/src=["']([^"']*sotis-online\.ru[^"']+)["']/i);
-  if (iframeMatch) raw = iframeMatch[1];
-  const plainMatch = raw.match(/https?:\/\/sotis-online\.ru\/[^\s"'<>]+/i);
-  if (plainMatch) raw = plainMatch[0];
-  raw = raw.replace(/&amp;/g, '&').trim();
-  if (raw.startsWith('//')) raw = 'https:' + raw;
-  if (raw.startsWith('sotis-online.ru')) raw = 'https://' + raw;
+  var raw = String(value || '').trim();
 
-  // Сотис иногда отдаёт пустую/неполную страницу, если в chr нет ct.
-  // Не проверяем тип карты (натал/транзит), но для ссылок без ct добавляем безопасный ct:1,
-  // чтобы ссылка вида ?chr=dt:...;sx:...;cid:... читалась так же, как рабочая ?chr=ct:1;dt:...
-  try {
-    const u = new URL(raw);
-    if (u.hostname.toLowerCase().includes('sotis-online.ru')) {
-      const chr = u.searchParams.get('chr');
-      if (chr && !/(^|;)ct\s*:/i.test(chr)) {
-        u.searchParams.set('chr', 'ct:1;' + chr.replace(/^;+/, ''));
-        raw = u.toString();
-      }
-    }
-  } catch (_) {}
+  // Можно вставлять как обычную ссылку, так и iframe-код.
+  var iframeMatch = raw.match(/src=["']([^"']*sotis-online\.ru[^"']+)["']/i);
+  if (iframeMatch) raw = iframeMatch[1];
+
+  // Забираем полную ссылку Сотиса из текста без изменения chr-параметра.
+  var plainMatch = raw.match(/https?:\/\/sotis-online\.ru\/[^\s"'<>]+/i);
+  if (plainMatch) raw = plainMatch[0];
+
+  raw = raw.replace(/&amp;/g, '&').trim();
+  if (raw.indexOf('//') === 0) raw = 'https:' + raw;
+  if (raw.indexOf('sotis-online.ru') === 0) raw = 'https://' + raw;
+
+  // Важно: НЕ прогоняем ссылку через URLSearchParams.
+  // Он кодирует двоеточия и точки с запятой в chr, после чего Сотис иногда перестаёт читать карту.
+  // ct:1 добавляем только строковой вставкой и сохраняем исходный формат chr=dt:...;sx:...
+  if (/sotis-online\.ru/i.test(raw) && /[?&]chr=/i.test(raw) && !/(^|[?&]chr=[^&#]*)(^|;)ct\s*:/i.test(raw)) {
+    raw = raw.replace(/([?&]chr=)/i, '$1ct:1;');
+  }
+
   return raw;
 }
 function looksLikeSotisChartHtml(html) {
