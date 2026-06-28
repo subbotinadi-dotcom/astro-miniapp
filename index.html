@@ -4135,7 +4135,7 @@ const base64 = await new Promise((resolve, reject) => {
 const resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ chat_id: chatId, file_base64: base64, filename: 'astro_report.doc' })
+  body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: 'astro_report.doc' })
 });
 const result = await resp.json();
 if (result.ok) {
