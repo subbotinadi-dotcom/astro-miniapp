@@ -1757,79 +1757,31 @@ body,
   #productsPage .status-forb{font-size:.68rem!important;padding:.2rem .44rem!important;}
 }
 
-
-/* === RESULT_SECTION_CARDS_FIX: карточка на каждый раздел результата === */
-#foodPage #inlineResultContent,
-#productsPage {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  padding: 1.8rem 0 4.5rem !important;
-}
-#inlineResultContent .pdf-export-root,
-#productsPage .pdf-export-root {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-}
-#inlineResultContent .result-section-card,
-#productsPage .result-section-card {
-  background: var(--final-card, rgba(255,255,255,.06)) !important;
-  border: 1px solid var(--final-border, rgba(255,255,255,.14)) !important;
-  border-radius: 16px !important;
-  padding: .95rem .85rem !important;
-  margin: 0 0 1.25rem !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-}
-#inlineResultContent .result-section-card h2,
-#inlineResultContent .result-section-card h3,
-#inlineResultContent .products-main-title,
-#productsPage .result-section-card h2,
-#productsPage .result-section-card h3,
-#productsPage .products-main-title {
-  text-align: center !important;
-  border: 0 !important;
-  padding: 0 !important;
-  margin: 0 0 .75rem !important;
-}
-#inlineResultContent .products-main-title,
-#productsPage .products-main-title {
-  margin: 1.55rem 0 .85rem !important;
-}
-#inlineResultContent .result-section-card table,
-#inlineResultContent .result-section-card .prod-tbl,
-#inlineResultContent .result-section-card .kbju-grid,
-#productsPage .result-section-card table,
-#productsPage .result-section-card .prod-tbl,
-#productsPage .result-section-card .kbju-grid {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: visible !important;
-}
-#inlineResultContent .product-category-section .product-category-title,
-#productsPage .product-category-section .product-category-title {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  margin: 0 0 .75rem !important;
-}
-#inlineResultContent .product-category-title + .prod-tbl,
-#productsPage .product-category-title + .prod-tbl {
-  border-radius: 0 !important;
-  border-top: 0 !important;
-}
-
 </style>
 
 
+
+
+
+<style id="chatgpt-result-fix">
+#inlineResultContent,#productsPage,#foodPage{
+background:transparent!important;
+border:none!important;
+box-shadow:none!important;
+padding:0!important;
+}
+.result-section,.nutrition-section,.food-section,.metabolism-section,
+.section-block,[data-section],section{
+background:rgba(255,255,255,.06)!important;
+border:1px solid rgba(255,255,255,.16)!important;
+border-radius:22px!important;
+padding:24px!important;
+margin:0 0 24px!important;
+}
+.section-title,.kbju-title,h2.section-title{
+text-align:center!important;
+}
+</style>
 
 </head>
 <body>
@@ -3417,7 +3369,29 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
 
-  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Режим питания</h2><table>${foodRows}</table></div></body></html>`;
+  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style>
+
+<style id="chatgpt-result-fix">
+#inlineResultContent,#productsPage,#foodPage{
+background:transparent!important;
+border:none!important;
+box-shadow:none!important;
+padding:0!important;
+}
+.result-section,.nutrition-section,.food-section,.metabolism-section,
+.section-block,[data-section],section{
+background:rgba(255,255,255,.06)!important;
+border:1px solid rgba(255,255,255,.16)!important;
+border-radius:22px!important;
+padding:24px!important;
+margin:0 0 24px!important;
+}
+.section-title,.kbju-title,h2.section-title{
+text-align:center!important;
+}
+</style>
+
+</head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Режим питания</h2><table>${foodRows}</table></div></body></html>`;
 }
 
 async function exportDocx() {
@@ -3637,9 +3611,6 @@ window.startExportDocx = async function(event) {
   function tableRows(rows){
     return rows.map(function(r){ return '<tr><td>' + escapeHtml(r[0]) + '</td><td>' + cellHtml(r[1]) + '</td></tr>'; }).join('');
   }
-  function resultSection(title, body, extraClass){
-    return '<section class="result-section-card ' + (extraClass || '') + '"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
-  }
   function productRowsSimple(rows){
     return rows.map(function(x){ return '<tr><td>' + escapeHtml(x.product) + '</td></tr>'; }).join('');
   }
@@ -3661,9 +3632,9 @@ window.startExportDocx = async function(event) {
       groups[key].push(x);
     });
     return Object.keys(groups).sort(function(a,b){ return a.localeCompare(b, 'ru'); }).map(function(cat){
-      return '<section class="result-section-card product-category-section"><h3 class="product-category-title">' + escapeHtml(cat) + '</h3>' +
+      return '<h3 class="product-category-title">' + escapeHtml(cat) + '</h3>' +
         '<table class="prod-tbl"><thead><tr><th>Продукт</th><th class="st-col">Статус</th></tr></thead><tbody>' +
-        productRowsWithStatus(groups[cat]) + '</tbody></table></section>';
+        productRowsWithStatus(groups[cat]) + '</tbody></table>';
     }).join('');
   }
 
@@ -3677,12 +3648,12 @@ window.startExportDocx = async function(event) {
     function card(name, value, unit){
       return '<div class="kbju-card"><div class="kbju-name">' + escapeHtml(name) + '</div><div class="kbju-value">' + escapeHtml(value) + (unit ? '<span class="kbju-unit-inline">' + escapeHtml(unit) + '</span>' : '') + '</div></div>';
     }
-    return '<section class="result-section-card kbju-section"><h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">' +
+    return '<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">' +
       card('Калорийность', n(kcal), 'ккал') +
       card('Белки', n(protein), 'г') +
       card('Жиры', n(fats), 'г') +
       card('Углеводы', n(carbs), 'г') +
-      '</div></section>';
+      '</div>';
   }
 
   window.buildPdfHtml = function(){
@@ -3716,42 +3687,43 @@ window.startExportDocx = async function(event) {
     return '<div class="pdf-export-root">' +
       '<h1>Питание по натальной карте</h1>' +
       '<div class="meta">' + escapeHtml(meta) + '</div>' +
-      resultSection('Режим питания', '<table><tbody>' + tableRows([
+      '<h2>Режим питания</h2><table><tbody>' + tableRows([
         ['Количество приёмов еды', food.meals || '—'],
         ['Завтрак', food.breakfast || '—'],
         ['Обед', food.lunch || '—'],
         ['Ужин', food.dinner || '—'],
         ['Метаболизм', food.metabolism || '—']
-      ]) + '</tbody></table>') +
+      ]) + '</tbody></table>' +
       macroCards(food.bmr) +
-      resultSection('Водно-солевой баланс', '<table><tbody>' + tableRows([
+      '<h2>Водно-солевой баланс</h2><table><tbody>' + tableRows([
         ['Соль', salt],
         ['Вода', water],
         ['Жидкость', liquid],
         ['Запивать ли еду', sipFood]
-      ]) + '</tbody></table>') +
-      resultSection('Белковый обмен', '<table><tbody>' + tableRows([
+      ]) + '</tbody></table>' +
+      '<h2>Белковый обмен</h2><table><tbody>' + tableRows([
         ['Источник белка', proteinSource],
         ['Вегетарианство', vegetarian]
-      ]) + '</tbody></table>') +
-      resultSection('Жировой обмен', '<table><tbody>' + tableRows([
+      ]) + '</tbody></table>' +
+      '<h2>Жировой обмен</h2><table><tbody>' + tableRows([
         ['Источник жиров', fatSource],
         ['Пропорция', fatProportion],
         ['Накопление жира', fatAccumulation],
         ['Холестерин', cholesterol],
         ['Предрасположенность к полноте', fullness]
-      ]) + '</tbody></table>') +
-      resultSection('Углеводный обмен', '<table><tbody>' + tableRows([
+      ]) + '</tbody></table>' +
+      '<h2>Углеводный обмен</h2><table><tbody>' + tableRows([
         ['Гиперинсулинемия', hyperIns],
         ['Сахар', sugar]
-      ]) + '</tbody></table>') +
-      resultSection('Витамины и минералы', '<table><tbody>' + tableRows([
+      ]) + '</tbody></table>' +
+      '<h2>Витамины и минералы</h2><table><tbody>' + tableRows([
         ['Нехватка витаминов', vitamins],
         ['Нехватка минералов', minerals]
-      ]) + '</tbody></table>') +
-      resultSection('Рекомендовано / Запрещено', '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано итого</div><div id="rRecBox">' + productListSimple(rec) + '</div></div>' +
-      '<div class="sum-card forb"><div class="cs-title">Запрещено итого</div><div id="rForbBox">' + productListSimple(forb) + '</div></div></div>') +
-      '<h2 class="products-main-title">ПЕРЕЧЕНЬ ПРОДУКТОВ</h2>' + productCategoryTables(products) +
+      ]) + '</tbody></table>' +
+      '<h2>Рекомендовано / Запрещено</h2>' +
+      '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано итого</div><div id="rRecBox">' + productListSimple(rec) + '</div></div>' +
+      '<div class="sum-card forb"><div class="cs-title">Запрещено итого</div><div id="rForbBox">' + productListSimple(forb) + '</div></div></div>' +
+      '<h2>ПЕРЕЧЕНЬ ПРОДУКТОВ</h2>' + productCategoryTables(products) +
       '</div>';
   };
 
@@ -3812,7 +3784,29 @@ window.startExportDocx = async function(event) {
     return '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+title+'</title>'+
       '<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></scr'+'ipt>'+
       '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">'+
-      '<style>'+resultPageCss()+'</style></head><body><div class="wrap">'+
+      '<style>'+resultPageCss()+'</style>
+
+<style id="chatgpt-result-fix">
+#inlineResultContent,#productsPage,#foodPage{
+background:transparent!important;
+border:none!important;
+box-shadow:none!important;
+padding:0!important;
+}
+.result-section,.nutrition-section,.food-section,.metabolism-section,
+.section-block,[data-section],section{
+background:rgba(255,255,255,.06)!important;
+border:1px solid rgba(255,255,255,.16)!important;
+border-radius:22px!important;
+padding:24px!important;
+margin:0 0 24px!important;
+}
+.section-title,.kbju-title,h2.section-title{
+text-align:center!important;
+}
+</style>
+
+</head><body><div class="wrap">'+
       '<div id="pdfContent">'+content+'</div>'+
       '<div class="download-zone"><button class="btn bp" onclick="downloadPdf()">✦ Скачать PDF</button></div>'+
       '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
