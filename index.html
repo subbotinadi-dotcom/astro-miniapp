@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -6165,5 +6166,245 @@ body.food-calculated #foodPage{display:block!important;}
 }
 
 </style>
+
+<script id="astrodis-full-word-export-patch">
+/* Полный экспорт Word: выгружаются только фактические данные из расчёта/форм index. */
+(function(){
+function esc(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
+  });
+}
+function raw(v){ return (v == null || v === '') ? '—' : v; }
+function val(v){ return esc(raw(v)).replace(/\n/g, '<br>'); }
+function cleanList(value){
+  var arr = String(value == null ? '' : value)
+    .replace(/•/g, '')
+    .replace(/\r/g, '\n')
+    .split(/\n|;/)
+    .map(function(x){ return x.trim().replace(/[.]+$/, ''); })
+    .filter(Boolean);
+  return arr.length ? arr.join(', ') : '—';
+}
+function tableRows(list){
+  return '<table class="data-table"><tbody>'+list.map(function(r){
+    return '<tr><td class="label">'+esc(r[0])+'</td><td>'+val(r[1])+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function section(title, html, cls){
+  return '<h2 class="'+(cls || '')+'">'+esc(title)+'</h2>'+html;
+}
+function statusClass(status){
+  return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : ((status === 'ЗАПРЕЩЕНО' || status === 'ЗАПРЕЩЁН') ? 'status-forb' : 'status-neut');
+}
+function productRows(products){
+  if (!products || !products.length) return '<tr><td>—</td><td>—</td></tr>';
+  return products.map(function(x){
+    return '<tr><td>'+esc(x.product || x.name || '—')+'</td><td class="'+statusClass(x.status)+'">'+esc(x.status || '—')+'</td></tr>';
+  }).join('');
+}
+function productsSummary(products){
+  if (!products || !products.length) return '<p>—</p>';
+  return '<ul>'+products.map(function(x){
+    var cat = x.category ? String(x.category).toUpperCase()+': ' : '';
+    return '<li>'+esc(cat)+esc(x.product || x.name || '—')+'</li>';
+  }).join('')+'</ul>';
+}
+function categoryTables(products){
+  var order = ['Напитки','Соки','Алкоголь','Мясо','Рыба','Супы','Крупы','Углеводы','Тесто','Овощи','Фрукты / ягоды','Орехи'];
+  var groups = {};
+  (products || []).forEach(function(x){
+    var key = x.category || 'Без категории';
+    (groups[key] || (groups[key] = [])).push(x);
+  });
+  Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
+  var html = order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
+    return '<h3>'+esc(cat.toUpperCase())+'</h3><table class="product-table"><thead><tr><th>Наименование</th><th>Результат</th></tr></thead><tbody>'+productRows(groups[cat])+'</tbody></table>';
+  }).join('');
+  return html || '<p>—</p>';
+}
+function macroRows(food){
+  food = food || {};
+  var kcal = Number(food.kcal || food.calories || food.bmr || 0);
+  kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
+  var protein = Number(food.proteinGrams || food.protein || food.proteins || 0);
+  var fats = Number(food.fatGrams || food.fat || food.fats || 0);
+  var carbs = Number(food.carbGrams || food.carbs || food.carbohydrates || 0);
+  if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4);
+  if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9);
+  if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
+  function fmt(v, unit){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') + ' ' + unit : '—'; }
+  return tableRows([
+    ['Калорийность', fmt(kcal, 'ккал')],
+    ['Белки', fmt(protein, 'г')],
+    ['Жиры', fmt(fats, 'г')],
+    ['Углеводы', fmt(carbs, 'г')]
+  ]);
+}
+function getProducts(){
+  try {
+    return (typeof window.runProductCalculations === 'function'
+      ? (window.productResults || window.runProductCalculations())
+      : (window.productResults || [])) || [];
+  } catch(e) {
+    return window.productResults || [];
+  }
+}
+function planetName(p){
+  var names = (typeof PLANET_NAMES !== 'undefined') ? PLANET_NAMES : {};
+  var symbols = (typeof PLANET_SYMBOLS !== 'undefined') ? PLANET_SYMBOLS : {};
+  return (symbols[p.sym] ? symbols[p.sym] + ' ' : '') + (names[p.sym] || p.name || p.sym || '—') + (p.isRetro ? ' R' : '');
+}
+function signText(signChar){
+  try { return typeof signLabel === 'function' ? signLabel(signChar) : (signChar || ''); } catch(e) { return signChar || ''; }
+}
+function makePlanetsRows(d){
+  var arr = [];
+  (d.planets || []).forEach(function(p){
+    arr.push([planetName(p), [p.pos || '', signText(p.signChar)].filter(Boolean).join(' ')]);
+  });
+  if (d.asc) arr.push(['ASC', [d.asc.pos || '', signText(d.asc.signChar)].filter(Boolean).join(' ')]);
+  if (d.mc) arr.push(['MC', [d.mc.pos || '', signText(d.mc.signChar)].filter(Boolean).join(' ')]);
+  return arr.length ? tableRows(arr) : '<p>—</p>';
+}
+function makeAspectRows(d){
+  var aspects = d.aspects || [];
+  try {
+    if (typeof shouldShowAspect === 'function') aspects = aspects.filter(function(a){ return shouldShowAspect(a.p1, a.p2, a.orb); });
+  } catch(e) {}
+  if (!aspects.length) return '<p>—</p>';
+  return '<table class="data-table"><thead><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr></thead><tbody>'+aspects.map(function(a){
+    var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) ? ASPECT_NAMES[a.type] : null;
+    var type = (info && info.name) || a.typeName || a.type || '—';
+    return '<tr><td>'+esc(type)+'</td><td>'+esc(a.p1 || '—')+' — '+esc(a.p2 || '—')+'</td><td>'+esc(a.orb || '—')+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function makeElementsRows(calc){
+  var el = (calc && calc.elements) || {};
+  var total = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
+  return '<table class="quad-table"><thead><tr><th>🔥 Огонь</th><th>🌍 Земля</th><th>💨 Воздух</th><th>💧 Вода</th></tr></thead><tbody><tr>'+['Огонь','Земля','Воздух','Вода'].map(function(k){ return '<td class="big">'+esc(el[k] || 0)+'</td>'; }).join('')+'</tr><tr>'+['Огонь','Земля','Воздух','Вода'].map(function(k){ var pc = total ? Math.round((el[k] || 0) / total * 100) : 0; return '<td>'+pc+'%</td>'; }).join('')+'</tr></tbody></table>';
+}
+function makeEnergyRows(calc){
+  calc = calc || {};
+  return '<table class="energy-table"><tbody><tr><td class="label">Тепло</td><td class="big">'+esc(calc.teplo || 0)+'</td><td class="label">Сухость</td><td class="big">'+esc(calc.suhost || 0)+'</td><td class="label">Эмоциональность</td><td class="big">'+esc(calc.emotsionalnost || 0)+'</td></tr><tr><td class="label">Холод</td><td class="big">'+esc(calc.holod || 0)+'</td><td class="label">Влажность</td><td class="big">'+esc(calc.vlazhnost || 0)+'</td><td class="label">Рациональность</td><td class="big">'+esc(calc.racionalnost || 0)+'</td></tr></tbody></table>';
+}
+function wordStyle(){
+  return '<style>'+ 
+  '@page WordSection1{size:595.3pt 841.9pt;margin:32pt 28pt 38pt 28pt}div.WordSection1{page:WordSection1}'+
+  'body{font-family:Arial,"Roboto Condensed",sans-serif;color:#18304F;font-size:10.5pt;line-height:1.25;background:#fff}'+
+  'h1{color:#00AFA5;font-size:24pt;text-align:center;text-transform:uppercase;letter-spacing:1pt;margin:0 0 28pt;font-weight:bold}'+
+  'h2{color:#18304F;font-size:18pt;text-align:center;text-transform:uppercase;letter-spacing:.7pt;margin:24pt 0 10pt;border-bottom:1.5pt solid #FC9FBC;padding-bottom:5pt;font-weight:bold}'+
+  'h3{color:#18304F;font-size:12.5pt;text-transform:uppercase;margin:16pt 0 4pt;border-left:3pt solid #C01870;padding-left:6pt;font-weight:bold}'+
+  'table{border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt}th,td{padding:4pt 6pt;vertical-align:top;color:#18304F}'+
+  '.data-table td,.data-table th,.product-table td,.product-table th{border-bottom:1pt solid #D8E0EA}.data-table th,.product-table th{background:#FFF3FA;text-align:left;font-weight:bold}'+
+  '.label{font-weight:bold;color:#18304F}.big{font-size:24pt;font-weight:bold;text-align:center;color:#18304F}.quad-table th,.quad-table td{text-align:center}.energy-table td{border:0;padding:7pt 4pt}.status-rec{color:#00AFA5;font-weight:bold}.status-forb{color:#C01870;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}ul{margin-top:0}li{margin-bottom:3pt}'+
+  '</style>';
+}
+window.makeWordHtml = function(){
+  if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
+  var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+  if (!d || (!d.planets && !d.chartName)) throw new Error('Нет данных для экспорта');
+  try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
+  var food = window.foodResult || {};
+  var calc = {};
+  try { calc = typeof calcElements === 'function' ? calcElements(d.planets || [], d.asc, d.mc) : {}; } catch(e) { calc = {}; }
+  var products = getProducts();
+  var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВАНО'; });
+  var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО' || x.status === 'ЗАПРЕЩЁН'; });
+  var gender = food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—');
+  var html = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Питание по натальной карте</title>'+wordStyle()+'</head><body><div class="WordSection1">';
+  html += '<h1>Питание по натальной карте</h1>';
+  html += section('Данные для расчета', tableRows([
+    ['Имя', d.chartName || '—'],
+    ['Дата', d.chartDate || '—'],
+    ['Время', d.birthTime || d.time || '—'],
+    ['Место', d.birthPlace || d.place || d.city || '—'],
+    ['Пол', gender || '—'],
+    ['Возраст', food.age ? food.age + ' лет' : '—'],
+    ['Рост', food.height ? food.height + ' см' : '—'],
+    ['Вес', food.weight ? food.weight + ' кг' : '—']
+  ]));
+  html += section('Стихия', makeElementsRows(calc));
+  html += section('Энергия', makeEnergyRows(calc));
+  html += section('Планеты в знаках', makePlanetsRows(d));
+  html += section('Аспекты', makeAspectRows(d));
+  html += section('Режим питания', tableRows([
+    ['Количество приемов', food.meals || '—'],
+    ['Завтрак', food.breakfast || '—'],
+    ['Обед', food.lunch || '—'],
+    ['Ужин', food.dinner || '—'],
+    ['Метаболизм', food.metabolism || '—']
+  ]));
+  html += section('КБЖУ', macroRows(food));
+  html += section('Водно-солевой баланс', tableRows([
+    ['Соль', food.salt || '—'],
+    ['Вода', food.water || '—'],
+    ['Жидкость', food.liquid || '—'],
+    ['Запивать пищу', food.drinkFood || '—']
+  ]));
+  html += section('Белковый обмен', tableRows([
+    ['Источники белка', food.proteinSource || '—'],
+    ['Вегетарианство', food.vegetarian || '—']
+  ]));
+  html += section('Жировой обмен', tableRows([
+    ['Источники жиров', food.fatSource || '—'],
+    ['Соотношение жиров', food.fatProportion || '—'],
+    ['Накопление жира', food.fatAccumulation || '—'],
+    ['Холестерин', food.cholesterol || '—'],
+    ['Склонность к полноте', food.fullness || '—']
+  ]));
+  html += section('Углеводный обмен', tableRows([
+    ['Сахар', food.sugarRules || '—'],
+    ['Гиперинсулинемия', food.hyperinsulin || '—']
+  ]));
+  html += section('Витамины и минералы', tableRows([
+    ['Нехватка витаминов', cleanList(food.vitamins || '—')],
+    ['Нехватка минералов', cleanList(food.minerals || '—')]
+  ]));
+  html += section('Рекомендовано', productsSummary(rec), 'products-rec');
+  html += section('Запрещено', productsSummary(forb), 'products-forb');
+  html += section('Итоговый список', categoryTables(products));
+  html += '</div></body></html>';
+  return html;
+};
+window.startExportDocx = async function(event){
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  var overlay = document.getElementById('loadingOverlay');
+  var loadingTxt = document.getElementById('loadingText');
+  if (overlay) overlay.classList.add('active');
+  if (loadingTxt) loadingTxt.textContent = 'Отправляем Word в Telegram...';
+  try {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+    if (!chatId) { alert('Откройте приложение через Telegram-бота'); return; }
+    var wordHtml = window.makeWordHtml();
+    var blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+    var reader = new FileReader();
+    var base64 = await new Promise(function(resolve, reject){
+      reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    var safeName = ((window.currentData || {}).chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
+    var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: 'pitanie_' + safeName + '.doc' })
+    });
+    var result = await resp.json();
+    if (result.ok) {
+      if (loadingTxt) loadingTxt.textContent = 'Файл отправлен в Telegram!';
+      setTimeout(function(){ if (overlay) overlay.classList.remove('active'); }, 2000);
+    } else {
+      throw new Error(result.description || result.error || 'Ошибка сервера');
+    }
+  } catch(e) {
+    alert('Ошибка отправки файла: ' + e.message);
+    if (overlay) overlay.classList.remove('active');
+  }
+};
+window.exportPdf = window.startExportDocx;
+})();
+</script>
 </body>
 </html>
