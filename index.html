@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -2279,6 +2280,75 @@ color:#00B5A6 !important;
 color:#FF99BE !important;
 }
 
+
+
+/* === FIX_KBJU_4_CARDS: 4 отдельные карточки, крупные розовые значения === */
+#result .kbju-title,
+#inlineResultContent .kbju-title,
+#productsPage .kbju-title{
+  margin: 1.6rem 0 .9rem !important;
+  text-align: center !important;
+  color: #FC9FBC !important;
+  text-transform: uppercase !important;
+  letter-spacing: .08em !important;
+}
+#result .kbju-grid,
+#inlineResultContent .kbju-grid,
+#productsPage .kbju-grid{
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 0 1.4rem !important;
+}
+#result .kbju-card,
+#inlineResultContent .kbju-card,
+#productsPage .kbju-card{
+  min-height: 118px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  border-radius: 18px !important;
+  padding: 1.05rem .8rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: .5rem !important;
+}
+#result .kbju-name,
+#inlineResultContent .kbju-name,
+#productsPage .kbju-name{
+  color: #FFFFFF !important;
+  font-size: 1rem !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+#result .kbju-value,
+#result .kbju-unit-inline,
+#inlineResultContent .kbju-value,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-value,
+#productsPage .kbju-unit-inline{
+  color: #FC9FBC !important;
+  font-size: clamp(1.9rem, 4vw, 2.55rem) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+#result .kbju-unit-inline,
+#inlineResultContent .kbju-unit-inline,
+#productsPage .kbju-unit-inline{
+  margin-left: .22rem !important;
+}
+@media (max-width: 760px){
+  #result .kbju-grid,
+  #inlineResultContent .kbju-grid,
+  #productsPage .kbju-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
 </style>
 <style id="chatgpt-result-fix">
 #inlineResultContent,#productsPage,#foodPage{
@@ -3339,6 +3409,16 @@ return `<div class="energy-card">
 </div>`;
 }
 
+function kbjuCardsFromCalories(calories) {
+const kcal = Number(calories || 0) ? Math.round(Number(calories)) : 0;
+const protein = kcal ? Math.round(kcal * 0.25 / 4) : 0;
+const fats = kcal ? Math.round(kcal * 0.35 / 9) : 0;
+const carbs = kcal ? Math.round(kcal * 0.40 / 4) : 0;
+const fmt = v => v ? Number(v).toLocaleString('ru-RU') : '—';
+const card = (name, value, unit) => `<div class="kbju-card"><div class="kbju-name">${name}</div><div class="kbju-value">${fmt(value)}<span class="kbju-unit-inline"> ${unit}</span></div></div>`;
+return `<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">${card('Калории', kcal, 'ккал')}${card('Белки', protein, 'г')}${card('Жиры', fats, 'г')}${card('Углеводы', carbs, 'г')}</div>`;
+}
+
 let breakfastTimeTitle, breakfastTimeText;
 if (wet > dry) {
 breakfastTimeTitle = 'Ранний завтрак';
@@ -3413,7 +3493,7 @@ mealCard('Завтрак', `${breakfastVolumeTitle}. ${breakfastVolumeText}. ${b
 mealCard('Обед', `${lunchVolumeTitle}. ${lunchVolumeText}.`),
 mealCard('Ужин', `${dinnerVolumeTitle}. ${dinnerVolumeText}.`),
 mealCard('Метаболизм', `${metabolismTitle}. ${metabolismText}`),
-mealCard('КБЖУ', `Базовый обмен: ${bmr.toLocaleString('ru-RU')} ккал в день`)
+kbjuCardsFromCalories(bmr)
 ].join('');
 }
 
@@ -4194,7 +4274,7 @@ function card(name, value, unit){
 return '<div class="kbju-card"><div class="kbju-name">' + escapeHtml(name) + '</div><div class="kbju-value">' + escapeHtml(value) + (unit ? '<span class="kbju-unit-inline">' + escapeHtml(unit) + '</span>' : '') + '</div></div>';
 }
 return '<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">' +
-card('Калорийность', n(kcal), 'ккал') +
+card('Калории', n(kcal), 'ккал') +
 card('Белки', n(protein), 'г') +
 card('Жиры', n(fats), 'г') +
 card('Углеводы', n(carbs), 'г') +
@@ -5172,7 +5252,7 @@ function card(name, value, unit){
 return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>';
 }
 return '<div class="kbju-grid">'+
-card('Калорийность', fmt(kcal), 'ккал')+
+card('Калории', fmt(kcal), 'ккал')+
 card('Белки', fmt(protein), 'г')+
 card('Жиры', fmt(fats), 'г')+
 card('Углеводы', fmt(carbs), 'г')+
@@ -5321,7 +5401,7 @@ var protein = Number(source.protein || source.proteins || 0), fats = Number(sour
 if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4); if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9); if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
 function fmt(v){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') : '—'; }
 function item(name, value, unit){ return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>'; }
-return '<div class="kbju-grid">'+item('Калорийность', fmt(kcal), 'ккал')+item('Белки', fmt(protein), 'г')+item('Жиры', fmt(fats), 'г')+item('Углеводы', fmt(carbs), 'г')+'</div>';
+return '<div class="kbju-grid">'+item('Калории', fmt(kcal), 'ккал')+item('Белки', fmt(protein), 'г')+item('Жиры', fmt(fats), 'г')+item('Углеводы', fmt(carbs), 'г')+'</div>';
 }
 window.buildPdfHtml = function(){
 var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
@@ -5536,6 +5616,172 @@ color: #00B5A6 !important;
 color: #FF99BE !important;
 }
 </style>
+
+<script id="final-independent-heading-and-products-patch">
+/* === FINAL PATCH: независимые цвета заголовков + категории в Рекомендовано/Запрещено === */
+(function(){
+function esc(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
+  });
+}
+function val(v){ return esc(v == null || v === '' ? '—' : v).replace(/\n/g, '<br>'); }
+function cleanList(value){
+  var arr = String(value == null ? '' : value)
+    .replace(/•/g, '')
+    .split(/\n|;/)
+    .map(function(x){ return x.trim().replace(/[.]+$/, ''); })
+    .filter(Boolean);
+  return arr.length ? arr.join(', ') : '—';
+}
+function section(title, html, extra){
+  return '<section class="report-section '+(extra || '')+'"><h2>'+esc(title)+'</h2><div class="section-body">'+html+'</div></section>';
+}
+function rows(list){
+  return '<div class="report-rows">'+list.map(function(r){
+    return '<div class="report-row"><div class="row-label">'+esc(r[0])+'</div><div class="row-value">'+val(r[1])+'</div></div>';
+  }).join('')+'</div>';
+}
+function statusClass(status){
+  return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : ((status === 'ЗАПРЕЩЕНО' || status === 'ЗАПРЕЩЁН') ? 'status-forb' : 'status-neut');
+}
+function productRows(products){
+  if (!products || !products.length) return '<div class="product-row"><div class="product-name">—</div><div class="product-status-wrap">—</div></div>';
+  return products.map(function(x){
+    return '<div class="product-row"><div class="product-name">'+esc(x.product || x.name || '—')+'</div><div class="product-status-wrap"><span class="'+statusClass(x.status)+'">'+esc(x.status || '—')+'</span></div></div>';
+  }).join('');
+}
+function summaryProductRows(products){
+  if (!products || !products.length) {
+    return '<div class="summary-product-list"><div class="summary-product-row"><div class="summary-product-category">—</div><div class="summary-product-name">—</div></div></div>';
+  }
+  return '<div class="summary-product-list">' + products.map(function(x){
+    return '<div class="summary-product-row"><div class="summary-product-category">'+esc(x.category || 'Без категории')+'</div><div class="summary-product-name">'+esc(x.product || x.name || '—')+'</div></div>';
+  }).join('') + '</div>';
+}
+function productList(products){ return '<div class="product-list">'+productRows(products)+'</div>'; }
+function summaryProductList(products){ return summaryProductRows(products); }
+function categoryTables(products){
+  var order = ['Напитки','Соки','Алкоголь','Мясо','Рыба','Супы','Крупы','Углеводы','Тесто','Овощи','Фрукты / ягоды','Орехи'];
+  var groups = {};
+  (products || []).forEach(function(x){
+    var key = x.category || 'Без категории';
+    (groups[key] || (groups[key] = [])).push(x);
+  });
+  Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
+  return order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
+    return '<div class="product-category"><h3 class="product-category-title">'+esc(cat.toUpperCase())+'</h3><div class="product-list">'+productRows(groups[cat])+'</div></div>';
+  }).join('') || '<div class="product-list"><div class="product-row"><div class="product-name">—</div><div class="product-status-wrap">—</div></div></div>';
+}
+function macroRows(food){
+  var source = (food && typeof food === 'object') ? food : { bmr: food };
+  var kcal = Number(source.kcal || source.calories || source.bmr || 0);
+  kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
+  var protein = Number(source.protein || source.proteins || 0);
+  var fats = Number(source.fat || source.fats || 0);
+  var carbs = Number(source.carbs || source.carbohydrates || 0);
+  if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4);
+  if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9);
+  if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
+  function fmt(v, unit){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') + ' ' + unit : '—'; }
+  return rows([
+    ['Калорийность', fmt(kcal, 'ккал')],
+    ['Белки', fmt(protein, 'г')],
+    ['Жиры', fmt(fats, 'г')],
+    ['Углеводы', fmt(carbs, 'г')]
+  ]);
+}
+function finalResultStyle(){
+  return '<style>\n'+
+  ':root{--title-main-color:#FC9FBC;--title-section-color:#FC9FBC;--title-recommended-color:#00B5A6;--title-forbidden-color:#FF99BE;--title-product-category-color:#FC9FBC;--title-kbju-color:#FC9FBC;--title-table-color:#FC9FBC;--status-recommended-color:#00B5A6;--status-forbidden-color:#FF99BE;}\n'+
+  '.pdf-export-root{background:#0D1935!important;color:#fff!important;font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif!important;max-width:960px;margin:0 auto;padding:24px 16px 56px;box-sizing:border-box;}\n'+
+  '.pdf-export-root *{box-sizing:border-box;max-width:100%;overflow-wrap:break-word;word-break:normal;color:#fff;}\n'+
+  '.pdf-export-root h1{color:var(--title-main-color)!important;text-align:center;text-transform:uppercase;letter-spacing:.075em;font-size:clamp(1.8rem,4.8vw,2.7rem);line-height:1.05;margin:0 0 1.35rem;font-weight:800;}\n'+
+  '.report-section{border:1.5px solid rgba(255,255,255,.18)!important;border-radius:16px!important;background:rgba(255,255,255,.06)!important;padding:1.35rem 1.35rem 1.15rem!important;margin:0 0 1.15rem!important;box-shadow:none!important;}\n'+
+  '.report-section h2{color:var(--title-section-color)!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1.08rem!important;line-height:1.2!important;margin:0 0 1rem!important;font-weight:800!important;}\n'+
+  '.report-section.products-rec h2{color:var(--title-recommended-color)!important;}\n'+
+  '.report-section.products-forb h2{color:var(--title-forbidden-color)!important;}\n'+
+  '.report-section:has(.kbju-grid) h2,.report-section.products-kbju h2{color:var(--title-kbju-color)!important;}\n'+
+  '.product-category-title{color:var(--title-product-category-color)!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1rem!important;margin:0 0 .65rem!important;font-weight:900!important;}\n'+
+  '.report-rows,.product-list,.summary-product-list{display:block!important;width:100%!important;}\n'+
+  '.report-row{display:grid!important;grid-template-columns:minmax(145px,.62fr) minmax(0,1fr)!important;gap:1rem!important;align-items:start!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
+  '.product-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(96px,132px)!important;gap:.85rem!important;align-items:center!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
+  '.summary-product-row{display:grid!important;grid-template-columns:minmax(120px,.44fr) minmax(0,1fr)!important;gap:.85rem!important;align-items:start!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;}\n'+
+  '.report-row:last-child,.product-row:last-child,.summary-product-row:last-child{border-bottom:0!important;}\n'+
+  '.row-label,.product-name,.summary-product-category{color:rgba(255,255,255,.74)!important;font-weight:800!important;text-align:left!important;line-height:1.25!important;text-transform:uppercase!important;letter-spacing:.035em!important;}\n'+
+  '.row-value,.product-status-wrap,.summary-product-name{color:#fff!important;text-align:left!important;line-height:1.28!important;min-width:0!important;font-weight:800!important;}\n'+
+  '.summary-grid{display:block!important;margin:0!important;}\n'+
+  '.sum-card{border-radius:0!important;padding:0!important;background:transparent!important;text-align:left!important;border:0!important;}\n'+
+  '.sum-card.rec,.sum-card.forb{border:0!important;background:transparent!important;}\n'+
+  '.report-section.products-rec{border-color:var(--status-recommended-color)!important;background:rgba(255,255,255,.06)!important;}\n'+
+  '.report-section.products-forb{border-color:var(--status-forbidden-color)!important;background:rgba(255,255,255,.06)!important;}\n'+
+  '.cs-title{display:none!important;}\n'+
+  '.product-category{margin:0 0 1rem!important;}\n'+
+  '.product-category:last-child{margin-bottom:0!important;}\n'+
+  '.status-rec,.status-forb,.status-neut{display:inline-block!important;width:100%!important;max-width:100%!important;white-space:normal!important;text-align:center!important;line-height:1.15!important;color:#fff!important;border-radius:999px!important;padding:.34rem .42rem!important;font-size:clamp(.62rem,1.8vw,.78rem)!important;font-weight:900!important;letter-spacing:.02em!important;overflow-wrap:anywhere!important;word-break:normal!important;}\n'+
+  '.status-rec{border:2px solid var(--status-recommended-color)!important;background:rgba(0,181,166,.18)!important;}\n'+
+  '.status-forb{border:2px solid var(--status-forbidden-color)!important;background:rgba(255,153,190,.18)!important;}\n'+
+  '.status-neut{border:1px solid rgba(255,255,255,.32)!important;background:rgba(255,255,255,.08)!important;}\n'+
+  '@media(max-width:700px){.report-section{padding:1rem!important}.report-row{grid-template-columns:minmax(105px,.62fr) minmax(0,1fr)!important;gap:.7rem!important}.product-row{grid-template-columns:minmax(0,1fr) minmax(86px,118px)!important;gap:.6rem!important}.summary-product-row{grid-template-columns:1fr!important;gap:.22rem!important}.status-rec,.status-forb,.status-neut{font-size:.62rem!important;padding:.3rem .34rem!important;letter-spacing:0!important}}\n'+
+  '</style>';
+}
+window.buildPdfHtml = function(){
+  var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+  var food = window.foodResult || {};
+  var products = [];
+  try { products = (typeof window.runProductCalculations === 'function' ? (window.productResults || window.runProductCalculations()) : (window.productResults || [])) || []; } catch(e) { products = window.productResults || []; }
+  var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВАНО'; });
+  var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО' || x.status === 'ЗАПРЕЩЁН'; });
+  return '<div class="pdf-export-root">'+finalResultStyle()+
+  '<h1>Питание по натальной карте</h1>'+ 
+  section('Данные для расчета', rows([
+    ['Имя', d.chartName || '—'],
+    ['Дата', d.chartDate || '—'],
+    ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')],
+    ['Возраст', food.age ? food.age + ' лет' : '—'],
+    ['Рост', food.height ? food.height + ' см' : '—'],
+    ['Вес', food.weight ? food.weight + ' кг' : '—']
+  ]))+
+  section('Режим питания', rows([
+    ['Количество приемов', food.meals || '—'],
+    ['Завтрак', food.breakfast || '—'],
+    ['Обед', food.lunch || '—'],
+    ['Ужин', food.dinner || '—'],
+    ['Метаболизм', food.metabolism || '—']
+  ]))+
+  section('КБЖУ', macroRows(food), 'products-kbju')+
+  section('Водно-солевой баланс', rows([
+    ['Соль', food.salt || '—'],
+    ['Вода', food.water || '—'],
+    ['Жидкость', food.liquid || '—'],
+    ['Запивать пищу', food.drinkFood || '—']
+  ]))+
+  section('Белковый обмен', rows([
+    ['Источники белка', food.proteinSource || '—'],
+    ['Вегетарианство', food.vegetarian || '—']
+  ]))+
+  section('Жировой обмен', rows([
+    ['Источники жиров', food.fatSource || '—'],
+    ['Соотношение жиров', food.fatProportion || '—'],
+    ['Накопление жира', food.fatAccumulation || '—'],
+    ['Холестерин', food.cholesterol || '—'],
+    ['Склонность к полноте', food.fullness || '—']
+  ]))+
+  section('Углеводный обмен', rows([
+    ['Сахар', food.sugarRules || '—'],
+    ['Гиперинсулинемия', food.hyperinsulin || '—']
+  ]))+
+  section('Витамины и минералы', rows([
+    ['Нехватка витаминов', cleanList(food.vitamins || '—')],
+    ['Нехватка минералов', cleanList(food.minerals || '—')]
+  ]))+
+  section('Рекомендовано', summaryProductList(rec), 'products-rec')+
+  section('Запрещено', summaryProductList(forb), 'products-forb')+
+  section('Итоговый список', categoryTables(products))+
+  '</div>';
+};
+})();
+</script>
+
 </body>
 </html>
-
