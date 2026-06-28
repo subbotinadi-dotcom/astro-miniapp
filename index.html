@@ -1246,219 +1246,180 @@ body,
 }
 
 
-/* === USER_RESULT_RESTYLE_ONLY: только оформление финальной страницы результатов === */
-:root {
-  --result-bg: #0D1935;
-  --result-pink: #FC9FBC;
-  --result-white: #FFFFFF;
-  --result-rec-border: #00B5A6;
-  --result-rec-bg: rgba(0,181,166,.18);
-  --result-forb-border: #FF99BE;
-  --result-forb-bg: rgba(255,153,190,.18);
-  --result-card-bg: rgba(255,255,255,.06);
-  --result-card-border: rgba(255,255,255,.12);
-  --result-card-border-strong: rgba(255,255,255,.18);
-  --result-radius: 16px;
-}
-
-/* Фон и шрифт финальной страницы */
-body,
-#result,
-#productsPage,
+/* === products13 archive style: only final result page === */
 #foodPage,
 #inlineResultContent,
-.pdf-export-root {
-  background: var(--result-bg) !important;
-  color: var(--result-white) !important;
+#productsPage {
+  font-family: Roboto, "Roboto Condensed", "Helvetica Neue", Arial, sans-serif !important;
+  color: #FAF3EB !important;
 }
-
-#result,
-#productsPage,
-#foodPage,
-#inlineResultContent,
-.pdf-export-root,
-#result *:not(.planet-symbol):not(.planet-symbol *),
-#productsPage *:not(.planet-symbol):not(.planet-symbol *),
-#foodPage *:not(.planet-symbol):not(.planet-symbol *),
-#inlineResultContent *:not(.planet-symbol):not(.planet-symbol *),
-.pdf-export-root *:not(.planet-symbol):not(.planet-symbol *) {
-  font-family: Roboto, "Roboto Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+#foodPage #inlineResultContent,
+#productsPage {
+  background: #111933 !important;
+  border-radius: 16px !important;
+  padding: 2.5rem 1.2rem 5rem !important;
+  max-width: 1280px !important;
+  width: 96% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
-
-/* Заголовки: текст/значения не меняются, только цвет и единое оформление */
-#result .h1-style,
-#result .section-title,
-#result .energy-label,
-#result .indicator-sub,
-#productsPage h1,
-#productsPage h2,
-#productsPage h3,
+#inlineResultContent .pdf-export-root,
+#productsPage .pdf-export-root {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+#inlineResultContent .h1-style,
 #inlineResultContent h1,
 #inlineResultContent h2,
 #inlineResultContent h3,
-.pdf-export-root h1,
-.pdf-export-root h2,
-.pdf-export-root h3,
-.product-category-title,
-.cat-title {
-  color: var(--result-pink) !important;
+#inlineResultContent .section-title,
+#inlineResultContent .kbju-title,
+#inlineResultContent .cat-title,
+#inlineResultContent .product-category-title,
+#productsPage h1,
+#productsPage h2,
+#productsPage h3,
+#productsPage .section-title,
+#productsPage .kbju-title,
+#productsPage .cat-title,
+#productsPage .product-category-title {
+  color: #FC9FBC !important;
   text-transform: uppercase !important;
-  letter-spacing: .06em !important;
+  letter-spacing: .1em !important;
 }
-
-/* Основной текст финальной страницы */
-#result .subtitle,
-#result .energy-formula,
-#result .meal-value-text,
-#result .meal-value-title,
-#result .element-score,
-#result .element-name,
-#result .planet-name,
-#result .planet-pos,
-#result .planet-sign,
-#result .asp-type,
-#result .asp-planets,
-#result .asp-orb,
-#productsPage,
-#productsPage td,
+#inlineResultContent h2,
+#productsPage h2 {
+  font-size: 1.55rem !important;
+  margin: 2rem 0 .85rem !important;
+  padding-bottom: .4rem !important;
+  border-bottom: 1px solid rgba(252,159,188,.28) !important;
+  text-align: left !important;
+}
 #inlineResultContent,
+#inlineResultContent p,
+#inlineResultContent div,
 #inlineResultContent td,
-.pdf-export-root,
-.pdf-export-root td,
-.pdf-export-root p,
-.pdf-export-root li {
-  color: var(--result-white) !important;
+#productsPage,
+#productsPage p,
+#productsPage div,
+#productsPage td {
+  color: #FAF3EB !important;
 }
-
-/* Контейнеры и блоки с выводом, кроме КБЖУ */
-#result .planet-card,
-#result .aspect-row,
-#result .energy-card,
-#result .element-card,
-#result .food-data-card,
-#result .meal-result-card,
-#foodPage .pdf-export-root,
-#inlineResultContent .pdf-export-root,
-#productsPage .energy-card,
-.summary-grid,
-.sum-card,
-.prod-tbl,
-.pdf-export-root table:not(.kbju-grid),
-#inlineResultContent table:not(.kbju-grid),
-#productsPage table:not(.kbju-grid) {
-  border-radius: var(--result-radius) !important;
-}
-
-#result .planet-card,
-#result .aspect-row,
-#result .energy-card,
-#result .element-card,
-#result .food-data-card,
-#result .meal-result-card,
-#foodPage .pdf-export-root,
-#inlineResultContent .pdf-export-root,
-#productsPage .energy-card {
-  background: var(--result-card-bg) !important;
-  border: 1px solid var(--result-card-border) !important;
-}
-
-/* Таблицы: оформление только строк/ячеек с текстом */
-.pdf-export-root table:not(.kbju-grid),
-#inlineResultContent table:not(.kbju-grid),
-#productsPage table:not(.kbju-grid),
-.prod-tbl {
+#inlineResultContent table,
+#inlineResultContent .prod-tbl,
+#productsPage table,
+#productsPage .prod-tbl {
   width: 100% !important;
   border-collapse: separate !important;
-  border-spacing: 0 !important;
+  border-spacing: 0 .42rem !important;
   background: transparent !important;
   border: 0 !important;
-  overflow: hidden !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
 }
-
-.pdf-export-root th:not(:empty),
-.pdf-export-root td:not(:empty),
-#inlineResultContent th:not(:empty),
-#inlineResultContent td:not(:empty),
-#productsPage th:not(:empty),
-#productsPage td:not(:empty),
-.prod-tbl th:not(:empty),
-.prod-tbl td:not(:empty) {
-  color: var(--result-white) !important;
-  background: rgba(255,255,255,.035) !important;
-  border-bottom: 1px solid rgba(255,255,255,.10) !important;
-  padding: .65rem .75rem !important;
-}
-
-.pdf-export-root th:not(:empty),
-#inlineResultContent th:not(:empty),
-#productsPage th:not(:empty),
-.prod-tbl th:not(:empty) {
-  color: var(--result-pink) !important;
-  font-weight: 700 !important;
+#inlineResultContent th,
+#inlineResultContent .prod-tbl th,
+#productsPage th,
+#productsPage .prod-tbl th {
+  color: #FEDCD1 !important;
   text-transform: uppercase !important;
-  letter-spacing: .055em !important;
+  letter-spacing: .1em !important;
+  padding: .35rem .75rem !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: 0 !important;
 }
-
-.pdf-export-root tr:empty,
-#inlineResultContent tr:empty,
-#productsPage tr:empty,
-.prod-tbl tr:empty {
-  display: none !important;
+#inlineResultContent td,
+#inlineResultContent .prod-tbl td,
+#productsPage td,
+#productsPage .prod-tbl td {
+  padding: .7rem .75rem !important;
+  background: transparent !important;
+  border: 0 !important;
+  vertical-align: middle !important;
 }
-
-/* Итоговая таблица продуктов: Рекомендовано / Запрещено */
-.sum-card.rec,
-.rec:not(.kbju-card),
-.status-rec,
-.badge-rec {
-  border: 2px solid var(--result-rec-border) !important;
-  background: var(--result-rec-bg) !important;
+#inlineResultContent tbody tr:has(td:not(:empty)),
+#inlineResultContent .prod-tbl tbody tr:has(td:not(:empty)),
+#productsPage tbody tr:has(td:not(:empty)),
+#productsPage .prod-tbl tbody tr:has(td:not(:empty)) {
+  background: rgba(17,25,51,.22) !important;
+  outline: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 12px !important;
 }
-
-.sum-card.forb,
-.forb:not(.kbju-card),
-.status-forb,
-.badge-forb {
-  border: 2px solid var(--result-forb-border) !important;
-  background: var(--result-forb-bg) !important;
+#inlineResultContent tbody tr:has(td:not(:empty)) td:first-child,
+#productsPage tbody tr:has(td:not(:empty)) td:first-child { border-radius: 12px 0 0 12px !important; }
+#inlineResultContent tbody tr:has(td:not(:empty)) td:last-child,
+#productsPage tbody tr:has(td:not(:empty)) td:last-child { border-radius: 0 12px 12px 0 !important; }
+#inlineResultContent .summary-grid,
+#productsPage .summary-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(280px,1fr)) !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
 }
-
-.rec .cs-title,
-.sum-card.rec .cs-title,
-.rec-heading {
-  color: var(--result-rec-border) !important;
+#inlineResultContent .sum-card,
+#productsPage .sum-card {
+  background: rgba(250,243,235,.055) !important;
+  border-radius: 16px !important;
+  padding: 1rem 1.1rem !important;
 }
-
-.forb .cs-title,
-.sum-card.forb .cs-title,
-.forb-heading {
-  color: var(--result-forb-border) !important;
+#inlineResultContent .sum-card.rec,
+#productsPage .sum-card.rec {
+  border: 2px solid #00B5A6 !important;
+  background: rgba(0,181,166,.30) !important;
+  box-shadow: 0 0 28px rgba(0,181,166,.20) !important;
 }
-
-.status-rec,
-.badge-rec,
-.status-forb,
-.badge-forb,
-.status-neut,
-.badge-neut {
-  border-radius: 999px !important;
+#inlineResultContent .sum-card.forb,
+#productsPage .sum-card.forb {
+  border: 2px solid #FF99BE !important;
+  background: rgba(255,153,190,.30) !important;
+  box-shadow: 0 0 28px rgba(255,153,190,.20) !important;
+}
+#inlineResultContent .cs-title,
+#productsPage .cs-title {
+  font-size: 1.45rem !important;
+  margin-bottom: .7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .11em !important;
+}
+#inlineResultContent .rec .cs-title,
+#productsPage .rec .cs-title { color: #00B5A6 !important; }
+#inlineResultContent .forb .cs-title,
+#productsPage .forb .cs-title { color: #FF99BE !important; }
+#inlineResultContent .status-rec,
+#inlineResultContent .badge-rec,
+#productsPage .status-rec,
+#productsPage .badge-rec {
   display: inline-block !important;
   padding: .18rem .55rem !important;
+  border-radius: 999px !important;
+  background: rgba(0,181,166,.25) !important;
+  color: #00e5d5 !important;
+  border: 1px solid #00B5A6 !important;
+  font-size: .9rem !important;
   font-weight: 700 !important;
 }
-
-.status-rec,
-.badge-rec {
-  color: #00e5d5 !important;
+#inlineResultContent .status-forb,
+#inlineResultContent .badge-forb,
+#productsPage .status-forb,
+#productsPage .badge-forb {
+  display: inline-block !important;
+  padding: .18rem .55rem !important;
+  border-radius: 999px !important;
+  background: rgba(255,153,190,.25) !important;
+  color: #FF99BE !important;
+  border: 1px solid #FF99BE !important;
+  font-size: .9rem !important;
+  font-weight: 700 !important;
 }
-
-.status-forb,
-.badge-forb {
-  color: var(--result-forb-border) !important;
+@media(max-width:760px){
+  #inlineResultContent .summary-grid,
+  #productsPage .summary-grid { grid-template-columns: 1fr !important; }
 }
-
-/* КБЖУ намеренно не переопределяется */
-
 </style>
 
 
@@ -3446,7 +3407,7 @@ window.startExportDocx = async function(event) {
       '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
   }
   function resultPageCss(){
-    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#0D1935;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FFFFFF;--white:#fff;--card:rgba(255,255,255,.06);--border-soft:rgba(255,255,255,.18);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28);text-align:center}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.pdf-export-root .kbju-title{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.4rem 0 .75rem;text-align:left;border:0;padding:0}.kbju-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.kbju-card{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:1rem .75rem;text-align:center;min-height:110px}.kbju-name{color:var(--cream);font-size:1rem;margin-bottom:.45rem}.kbju-value{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1}.kbju-unit-inline{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1;margin-left:.25rem}.kbju-unit,.kbju-pct{display:none}.rec,.forb,.status-rec,.status-forb{font-weight:800}.rec,.status-rec{background:#d9f5f2;color:#006f66;border:1px solid #00B5A6}.forb,.status-forb{background:#ffe0ec;color:#b32068;border:1px solid #FF99BE}.rec-heading{color:#00B5A6!important}.forb-heading{color:#b32068!important}.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}.sum-card{border-radius:14px;padding:1rem 1.2rem}.sum-card.rec{border:2px solid #00B5A6;background:rgba(0,181,166,.18);color:var(--cream)}.sum-card.forb{border:2px solid #FF99BE;background:rgba(255,153,190,.18);color:var(--cream)}.cs-title{font-size:1.25rem;margin-bottom:.8rem;text-transform:uppercase;letter-spacing:.1em}.rec .cs-title{color:#00B5A6}.forb .cs-title{color:#FF99BE}.prod-tbl .st-col{width:130px}.status-rec,.status-forb{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.82rem;font-weight:700}.product-category-title{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem;text-align:left}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kbju-value{font-size:1.65rem}}.pdf-export-root{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}table,.prod-tbl{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}th,td,.prod-tbl th,.prod-tbl td{background:transparent!important;border:0!important;border-bottom:0!important;box-shadow:none!important}.product-category-title{background:transparent!important;color:var(--pink)!important}.product-pill-list{display:flex!important;flex-wrap:wrap!important;gap:.45rem!important;margin-top:.4rem!important}.product-pill{display:inline-flex!important;align-items:center!important;padding:.28rem .65rem!important;border-radius:999px!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.14)!important;color:#fff!important;font-size:.95rem!important;line-height:1.2!important}.status-neut{display:inline-block!important;padding:.15rem .5rem!important;border-radius:999px!important;background:rgba(255,255,255,.07)!important;color:rgba(255,255,255,.82)!important;border:1px solid rgba(255,255,255,.2)!important;font-size:.82rem!important}}  /* === USER_RESULT_RESTYLE_ONLY_STANDALONE: только оформление финальной страницы результатов === */ :root {   --result-bg: #0D1935;   --result-pink: #FC9FBC;   --result-white: #FFFFFF;   --result-rec-border: #00B5A6;   --result-rec-bg: rgba(0,181,166,.18);   --result-forb-border: #FF99BE;   --result-forb-bg: rgba(255,153,190,.18);   --result-card-bg: rgba(255,255,255,.06);   --result-card-border: rgba(255,255,255,.12);   --result-card-border-strong: rgba(255,255,255,.18);   --result-radius: 16px; }  /* Фон и шрифт финальной страницы */ body, #result, #productsPage, #foodPage, #inlineResultContent, .pdf-export-root {   background: var(--result-bg) !important;   color: var(--result-white) !important; }  #result, #productsPage, #foodPage, #inlineResultContent, .pdf-export-root, #result *:not(.planet-symbol):not(.planet-symbol *), #productsPage *:not(.planet-symbol):not(.planet-symbol *), #foodPage *:not(.planet-symbol):not(.planet-symbol *), #inlineResultContent *:not(.planet-symbol):not(.planet-symbol *), .pdf-export-root *:not(.planet-symbol):not(.planet-symbol *) {   font-family: Roboto, "Roboto Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif !important; }  /* Заголовки: текст/значения не меняются, только цвет и единое оформление */ #result .h1-style, #result .section-title, #result .energy-label, #result .indicator-sub, #productsPage h1, #productsPage h2, #productsPage h3, #inlineResultContent h1, #inlineResultContent h2, #inlineResultContent h3, .pdf-export-root h1, .pdf-export-root h2, .pdf-export-root h3, .product-category-title, .cat-title {   color: var(--result-pink) !important;   text-transform: uppercase !important;   letter-spacing: .06em !important; }  /* Основной текст финальной страницы */ #result .subtitle, #result .energy-formula, #result .meal-value-text, #result .meal-value-title, #result .element-score, #result .element-name, #result .planet-name, #result .planet-pos, #result .planet-sign, #result .asp-type, #result .asp-planets, #result .asp-orb, #productsPage, #productsPage td, #inlineResultContent, #inlineResultContent td, .pdf-export-root, .pdf-export-root td, .pdf-export-root p, .pdf-export-root li {   color: var(--result-white) !important; }  /* Контейнеры и блоки с выводом, кроме КБЖУ */ #result .planet-card, #result .aspect-row, #result .energy-card, #result .element-card, #result .food-data-card, #result .meal-result-card, #foodPage .pdf-export-root, #inlineResultContent .pdf-export-root, #productsPage .energy-card, .summary-grid, .sum-card, .prod-tbl, .pdf-export-root table:not(.kbju-grid), #inlineResultContent table:not(.kbju-grid), #productsPage table:not(.kbju-grid) {   border-radius: var(--result-radius) !important; }  #result .planet-card, #result .aspect-row, #result .energy-card, #result .element-card, #result .food-data-card, #result .meal-result-card, #foodPage .pdf-export-root, #inlineResultContent .pdf-export-root, #productsPage .energy-card {   background: var(--result-card-bg) !important;   border: 1px solid var(--result-card-border) !important; }  /* Таблицы: оформление только строк/ячеек с текстом */ .pdf-export-root table:not(.kbju-grid), #inlineResultContent table:not(.kbju-grid), #productsPage table:not(.kbju-grid), .prod-tbl {   width: 100% !important;   border-collapse: separate !important;   border-spacing: 0 !important;   background: transparent !important;   border: 0 !important;   overflow: hidden !important; }  .pdf-export-root th:not(:empty), .pdf-export-root td:not(:empty), #inlineResultContent th:not(:empty), #inlineResultContent td:not(:empty), #productsPage th:not(:empty), #productsPage td:not(:empty), .prod-tbl th:not(:empty), .prod-tbl td:not(:empty) {   color: var(--result-white) !important;   background: rgba(255,255,255,.035) !important;   border-bottom: 1px solid rgba(255,255,255,.10) !important;   padding: .65rem .75rem !important; }  .pdf-export-root th:not(:empty), #inlineResultContent th:not(:empty), #productsPage th:not(:empty), .prod-tbl th:not(:empty) {   color: var(--result-pink) !important;   font-weight: 700 !important;   text-transform: uppercase !important;   letter-spacing: .055em !important; }  .pdf-export-root tr:empty, #inlineResultContent tr:empty, #productsPage tr:empty, .prod-tbl tr:empty {   display: none !important; }  /* Итоговая таблица продуктов: Рекомендовано / Запрещено */ .sum-card.rec, .rec:not(.kbju-card), .status-rec, .badge-rec {   border: 2px solid var(--result-rec-border) !important;   background: var(--result-rec-bg) !important; }  .sum-card.forb, .forb:not(.kbju-card), .status-forb, .badge-forb {   border: 2px solid var(--result-forb-border) !important;   background: var(--result-forb-bg) !important; }  .rec .cs-title, .sum-card.rec .cs-title, .rec-heading {   color: var(--result-rec-border) !important; }  .forb .cs-title, .sum-card.forb .cs-title, .forb-heading {   color: var(--result-forb-border) !important; }  .status-rec, .badge-rec, .status-forb, .badge-forb, .status-neut, .badge-neut {   border-radius: 999px !important;   display: inline-block !important;   padding: .18rem .55rem !important;   font-weight: 700 !important; }  .status-rec, .badge-rec {   color: #00e5d5 !important; }  .status-forb, .badge-forb {   color: var(--result-forb-border) !important; }  /* КБЖУ намеренно не переопределяется */ ';
+    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#111933;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FAF3EB;--white:#fff;--card:rgba(250,243,235,.055);--border-soft:rgba(254,220,209,.34);--muted:rgba(254,220,209,.82);--green:#00B5A6;--red:#FF99BE}body{font-family:Roboto,"Roboto Condensed","Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:1280px;width:96%;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.25rem;color:var(--pink);text-transform:uppercase;letter-spacing:.1em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:transparent;border:0;border-radius:0;padding:0;margin:0 0 2rem;box-shadow:none;color:var(--cream)}.pdf-export-root h1{color:var(--pink);font-size:2.2rem;text-align:center;text-transform:uppercase;letter-spacing:.1em;line-height:1;margin:0 0 .85rem}.pdf-export-root h2,.section-title,.h1-style,.kbju-title,.cat-title,.product-category-title{color:var(--pink)!important;text-transform:uppercase;letter-spacing:.1em}.pdf-export-root h2{font-size:1.55rem;margin:2rem 0 .85rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28);text-align:left}.pdf-export-root h3,.product-category-title,.cat-title{font-size:1.2rem;margin:1.2rem 0 .5rem;text-align:left;border-left:3px solid var(--pink);padding-left:.6rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}.pdf-export-root p,.pdf-export-root div,.pdf-export-root td,.pdf-export-root th{color:var(--cream)}.pdf-export-root table,.prod-tbl{width:100%;border-collapse:separate;border-spacing:0 .42rem;background:transparent;border:0;border-radius:0;overflow:visible;margin-bottom:1rem}.pdf-export-root th,.prod-tbl th{color:var(--peach)!important;text-transform:uppercase;letter-spacing:.1em;padding:.35rem .75rem;text-align:left;background:transparent;border:0;font-size:.95rem}.pdf-export-root td,.prod-tbl td{padding:.7rem .75rem;text-align:left;font-size:1.05rem;vertical-align:middle;background:transparent;border:0}.pdf-export-root tbody tr:has(td:not(:empty)),.prod-tbl tbody tr:has(td:not(:empty)){background:rgba(17,25,51,.22);outline:1px solid rgba(255,255,255,.12);border-radius:12px}.pdf-export-root tbody tr:has(td:not(:empty)) td:first-child,.prod-tbl tbody tr:has(td:not(:empty)) td:first-child{border-radius:12px 0 0 12px}.pdf-export-root tbody tr:has(td:not(:empty)) td:last-child,.prod-tbl tbody tr:has(td:not(:empty)) td:last-child{border-radius:0 12px 12px 0}.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem}.sum-card{background:var(--card);border-radius:16px;padding:1rem 1.1rem}.sum-card.rec{border:2px solid var(--green);background:rgba(0,181,166,.30);box-shadow:0 0 28px rgba(0,181,166,.20);color:var(--cream)}.sum-card.forb{border:2px solid var(--red);background:rgba(255,153,190,.30);box-shadow:0 0 28px rgba(255,153,190,.20);color:var(--cream)}.cs-title{font-size:1.45rem;margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.11em}.rec .cs-title,.sum-card.rec .cs-title{color:var(--green)!important}.forb .cs-title,.sum-card.forb .cs-title{color:var(--red)!important}.rec,.status-rec{color:#00e5d5!important}.forb,.status-forb{color:var(--red)!important}.status-rec,.status-forb,.badge-rec,.badge-forb,.badge-neut,.status-neut{display:inline-block;padding:.18rem .55rem;border-radius:999px;font-size:.9rem;font-weight:700}.status-rec,.badge-rec{background:rgba(0,181,166,.25)!important;color:#00e5d5!important;border:1px solid var(--green)!important}.status-forb,.badge-forb{background:rgba(255,153,190,.25)!important;color:var(--red)!important;border:1px solid var(--red)!important}.status-neut,.badge-neut{background:rgba(255,255,255,.07)!important;color:rgba(254,220,209,.82)!important;border:1px solid rgba(255,255,255,.2)!important}.product-pill-list{display:flex!important;flex-wrap:wrap!important;gap:.45rem!important;margin-top:.4rem!important}.product-pill{display:inline-flex!important;align-items:center!important;padding:.28rem .65rem!important;border-radius:999px!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.14)!important;color:var(--cream)!important;font-size:.95rem!important;line-height:1.2!important}.kbju-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.kbju-card{background:rgba(250,243,235,.055);border:1px solid rgba(254,220,209,.34);border-radius:12px;padding:1rem .75rem;text-align:center;min-height:110px}.kbju-name{color:var(--cream);font-size:1rem;margin-bottom:.45rem}.kbju-value{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1}.kbju-unit-inline{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1;margin-left:.25rem}.kbju-unit,.kbju-pct{display:none}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn,.download-zone .btn.bp{display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1.25rem;border-radius:12px;border:1.5px solid var(--border-soft);background:var(--pink);color:var(--navy);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-weight:700}@media(max-width:760px){.summary-grid{grid-template-columns:1fr}.page-header h2{font-size:1.8rem}.pdf-export-root h1{font-size:1.8rem}.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root td,.pdf-export-root th,.prod-tbl td,.prod-tbl th{font-size:.92rem;padding:.6rem}}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{background:#fff;color:#111}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957!important}.pdf-export-root td,.pdf-export-root th{color:#111}.pdf-export-root tbody tr:has(td:not(:empty)),.prod-tbl tbody tr:has(td:not(:empty)){outline:1pt solid #ccc;background:#fff}}';
   }
   function downloadScript(){
     return 'function downloadPdf(){var el=document.getElementById("pdfContent");var opt={margin:8,filename:"pitanie_result.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["avoid-all","css","legacy"]}};if(typeof html2pdf!=="undefined"){html2pdf().set(opt).from(el).save();}else{window.print();}}';
