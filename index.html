@@ -2366,6 +2366,23 @@ color:#FF99BE !important;
   }
 }
 
+
+
+/* Точечные правки по списку: аспекты и названия стихий/энергий */
+#result .aspect-row .asp-planets{
+  font-size:clamp(.62rem,2.2vw,.76rem)!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+}
+#result .element-name,
+#result .energy-label{
+  color:#FC9FBC!important;
+  font-size:clamp(1rem,3.2vw,1.2rem)!important;
+  line-height:1.08!important;
+  letter-spacing:.055em!important;
+  text-transform:uppercase!important;
+}
 </style>
 <style id="chatgpt-result-fix">
 #inlineResultContent,#productsPage,#foodPage{
@@ -4032,6 +4049,8 @@ const foodRows = rows([
 ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
 ]);
 return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Данные для расчета</h2><table>${rows([['Имя',d.chartName||'—'],['Дата',d.chartDate||'—'],['Время',d.birthTime||d.time||'—'],['Место',d.birthPlace||d.place||d.city||'—'],['Пол',food.gender||selectedGender||'—'],['Возраст',food.age?food.age+' лет':'—'],['Рост',food.height?food.height+' см':'—'],['Вес',food.weight?food.weight+' кг':'—']])}</table><h2>Стихия</h2><table><tr><th>Стихия</th><th>Балл</th><th>%</th></tr>${elementRows}</table><h2>Энергия</h2><table>${energyRows}</table><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr>${aspectRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
+
+
 </body></html>`;
 }
 async function exportDocx() {
@@ -5870,6 +5889,127 @@ html,body{overflow-x:hidden!important;}
 #foodCalcBtn{width:min(100%,560px)!important;margin:0 auto!important;}
 @media(max-width:700px){#uploadZone,#result,#foodDataBlock,#foodPage,#productsPage{max-width:calc(100% - 24px)!important;}#result .planets-grid{grid-template-columns:1fr!important;gap:.85rem!important;}#result .planet-card{min-height:96px!important;padding:.75rem .9rem!important;grid-template-columns:48px minmax(0,1fr)!important;}#result .planet-symbol{font-size:2.15rem!important;width:46px!important;min-width:46px!important;}#result .planet-name{font-size:.82rem!important;line-height:1.12!important;}#result .planet-pos{font-size:2rem!important;line-height:1.05!important;}#result .elements-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}#result .energies-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}#result .element-card,#result .energies-grid .energy-card{min-height:100px!important;}#foodDataBlock{padding:1rem!important;margin-bottom:2.5rem!important;}}
 </style>
+
+<style id="astrodis-final-user-fix-20260628">
+/* Финальная точечная правка: планеты как стихии, 2 в строку; название больше, градусы меньше */
+#result .planets-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:.7rem!important;
+  width:100%!important;
+  margin:.85rem auto 1.2rem!important;
+}
+#result .planet-card{
+  aspect-ratio:1/1!important;
+  min-height:0!important;
+  height:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  padding:.7rem!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  gap:.35rem!important;
+  border-radius:15px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+#result .planet-symbol{
+  font-size:clamp(1.8rem,5vw,2.35rem)!important;
+  line-height:1!important;
+  width:auto!important;
+  min-width:0!important;
+}
+#result .planet-info{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+#result .planet-name{
+  color:#FC9FBC!important;
+  font-size:clamp(1rem,3.2vw,1.2rem)!important;
+  line-height:1.08!important;
+  letter-spacing:.055em!important;
+  margin:0 0 .28rem!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+#result .planet-pos,
+#result .planet-sign{
+  font-size:clamp(.72rem,2.4vw,.8rem)!important;
+  line-height:1.15!important;
+  margin:0!important;
+  color:#fff!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+@media(max-width:700px){
+  #result .planets-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.65rem!important;}
+  #result .planet-card{aspect-ratio:1/1!important;min-height:0!important;padding:.55rem!important;}
+  #result .planet-symbol{font-size:clamp(1.45rem,7vw,2rem)!important;width:auto!important;min-width:0!important;}
+  #result .planet-name{font-size:clamp(.9rem,4.6vw,1.08rem)!important;}
+  #result .planet-pos,#result .planet-sign{font-size:clamp(.66rem,3.3vw,.8rem)!important;}
+}
+/* После нажатия «Рассчитать» в шаге 3 виден только итоговый расчет */
+body.food-calculated #uploadZone,
+body.food-calculated #foodDataBlock,
+body.food-calculated #result > .chart-title,
+body.food-calculated #result > .section-title,
+body.food-calculated #result > .planets-grid,
+body.food-calculated #result > .aspects-section,
+body.food-calculated #result > #indicatorsSection,
+body.food-calculated #continueBtn{display:none!important;}
+body.food-calculated #result{display:block!important;}
+body.food-calculated #foodPage{display:block!important;}
+</style>
+<script id="astrodis-final-user-fix-script-20260628">
+(function(){
+  var previousShowFoodPage = window.showFoodPage;
+  if (typeof previousShowFoodPage === 'function') {
+    window.showFoodPage = function(event) {
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      var result = previousShowFoodPage.call(this, event);
+      var foodPage = document.getElementById('foodPage');
+      if (foodPage && foodPage.style.display !== 'none' && foodPage.innerHTML.trim()) {
+        document.body.classList.add('food-calculated');
+        document.body.classList.add('result-started');
+        var uploadZone = document.getElementById('uploadZone');
+        if (uploadZone) {
+          uploadZone.style.display = 'none';
+          uploadZone.setAttribute('hidden', 'hidden');
+          uploadZone.setAttribute('aria-hidden', 'true');
+        }
+        var foodDataBlock = document.getElementById('foodDataBlock');
+        if (foodDataBlock) foodDataBlock.style.display = 'none';
+        var resultEl = document.getElementById('result');
+        if (resultEl) {
+          resultEl.style.display = 'block';
+          ['.chart-title','.planets-grid','.aspects-section','#indicatorsSection','#continueBtn'].forEach(function(sel){
+            resultEl.querySelectorAll(sel).forEach(function(el){ el.style.display = 'none'; });
+          });
+          resultEl.querySelectorAll(':scope > .section-title').forEach(function(el){ el.style.display = 'none'; });
+        }
+        foodPage.style.display = 'block';
+        window.scrollTo(0, 0);
+      }
+      return result;
+    };
+  }
+  var previousResetPage = window.resetPage;
+  if (typeof previousResetPage === 'function') {
+    window.resetPage = function(){
+      document.body.classList.remove('food-calculated');
+      return previousResetPage.apply(this, arguments);
+    };
+  }
+})();
+</script>
 
 </body>
 </html>
