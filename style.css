@@ -1,3 +1,4 @@
+
 /* Исправления по ТЗ от 28.06 */
 /* Центровка основных контейнеров */
 html,body{overflow-x:hidden!important;}
@@ -544,3 +545,36 @@ body.food-calculated #foodPage{display:block!important;}
     padding:.32rem 1rem!important;
   }
 }
+
+/* Правка 28.06: убрать плашки и уменьшить названия стихий/энергий */
+#indicatorsSection .elements-grid .element-name,
+#indicatorsSection .energies-grid .energy-label{
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#FC9FBC!important;
+  text-align:center!important;
+  font-size:clamp(.68rem,1.85vw,.82rem)!important;
+  line-height:1.1!important;
+  font-weight:900!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  margin:0 0 .45rem!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:700px){
+  #indicatorsSection .elements-grid .element-name,
+  #indicatorsSection .energies-grid .energy-label{
+    font-size:.74rem!important;
+    min-width:0!important;
+    padding:0!important;
+  }
+}
+
