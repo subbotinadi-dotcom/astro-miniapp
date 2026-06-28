@@ -5175,7 +5175,8 @@ window.startExportDocx = async function(event) {
       section('Жировой обмен', rows([['Источники жиров', food.fatSource || '—'], ['Соотношение жиров', food.fatProportion || '—'], ['Накопление жира', food.fatAccumulation || '—'], ['Холестерин', food.cholesterol || '—'], ['Склонность к полноте', food.fullness || '—']]))+
       section('Углеводный обмен', rows([['Сахар', food.sugarRules || '—'], ['Гиперинсулинемия', food.hyperinsulin || '—']]))+
       section('Витамины и минералы', rows([['Нехватка витаминов', cleanList(food.vitamins || '—')], ['Нехватка минералов', cleanList(food.minerals || '—')]]))+
-      section('Продукты', '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано</div>'+productList(rec)+'</div><div class="sum-card forb"><div class="cs-title">Запрещено / ограничить</div>'+productList(forb)+'</div></div>')+
+      section('Рекомендовано', productList(rec), 'products-rec')+
+      section('Запрещено', productList(forb), 'products-forb')+
       section('Итоговый список', categoryTables(products))+
       '</div>';
   };
@@ -5258,23 +5259,25 @@ window.startExportDocx = async function(event) {
       '.report-section{border:1.5px solid rgba(255,255,255,.18)!important;border-radius:16px!important;background:rgba(255,255,255,.06)!important;padding:1.35rem 1.35rem 1.15rem!important;margin:0 0 1.15rem!important;box-shadow:none!important;}\n'+
       '.report-section h2{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1.08rem!important;line-height:1.2!important;margin:0 0 1rem!important;font-weight:800!important;}\n'+
       '.report-rows,.product-list{display:block!important;width:100%!important;}\n'+
-      '.report-row,.product-row{display:grid!important;grid-template-columns:minmax(145px,.62fr) minmax(0,1fr)!important;gap:1rem!important;align-items:start!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
+      '.report-row{display:grid!important;grid-template-columns:minmax(145px,.62fr) minmax(0,1fr)!important;gap:1rem!important;align-items:start!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
+      '.product-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(96px,132px)!important;gap:.85rem!important;align-items:center!important;border-bottom:1px solid rgba(255,255,255,.14)!important;padding:.56rem 0!important;min-height:0!important;}\n'+
       '.report-row:last-child,.product-row:last-child{border-bottom:0!important;}\n'+
       '.row-label,.product-name{color:#fff!important;font-weight:800!important;text-align:left!important;line-height:1.25!important;}\n'+
       '.row-value,.product-status-wrap{color:#fff!important;text-align:left!important;line-height:1.28!important;min-width:0!important;}\n'+
-      '.summary-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1rem!important;margin:0!important;}\n'+
-      '.sum-card{border-radius:14px!important;padding:1rem 1.1rem!important;background:rgba(255,255,255,.04)!important;text-align:left!important;}\n'+
-      '.sum-card.rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.16)!important;}\n'+
-      '.sum-card.forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.16)!important;}\n'+
-      '.cs-title{color:#fff!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-weight:900!important;margin:0 0 .75rem!important;}\n'+
+      '.summary-grid{display:block!important;margin:0!important;}\n'+
+      '.sum-card{border-radius:0!important;padding:0!important;background:transparent!important;text-align:left!important;border:0!important;}\n'+
+      '.sum-card.rec,.sum-card.forb{border:0!important;background:transparent!important;}\n'+
+      '.report-section.products-rec{border-color:#00B5A6!important;background:rgba(255,255,255,.06)!important;}\n'+
+      '.report-section.products-forb{border-color:#FF99BE!important;background:rgba(255,255,255,.06)!important;}\n'+
+      '.cs-title{display:none!important;}\n'+
       '.product-category{margin:0 0 1rem!important;}\n'+
       '.product-category:last-child{margin-bottom:0!important;}\n'+
       '.product-category-title{color:#FC9FBC!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.06em!important;font-size:1rem!important;margin:0 0 .65rem!important;font-weight:900!important;}\n'+
-      '.status-rec,.status-forb,.status-neut{display:inline-block!important;max-width:100%!important;white-space:normal!important;text-align:left!important;line-height:1.15!important;color:#fff!important;border-radius:999px!important;padding:.36rem .68rem!important;font-size:.78rem!important;font-weight:900!important;letter-spacing:.035em!important;}\n'+
+      '.status-rec,.status-forb,.status-neut{display:inline-block!important;width:100%!important;max-width:100%!important;white-space:normal!important;text-align:center!important;line-height:1.15!important;color:#fff!important;border-radius:999px!important;padding:.34rem .42rem!important;font-size:clamp(.62rem,1.8vw,.78rem)!important;font-weight:900!important;letter-spacing:.02em!important;overflow-wrap:anywhere!important;word-break:normal!important;}\n'+
       '.status-rec{border:2px solid #00B5A6!important;background:rgba(0,181,166,.18)!important;}\n'+
       '.status-forb{border:2px solid #FF99BE!important;background:rgba(255,153,190,.18)!important;}\n'+
       '.status-neut{border:1px solid rgba(255,255,255,.32)!important;background:rgba(255,255,255,.08)!important;}\n'+
-      '@media(max-width:700px){.report-section{padding:1rem!important}.report-row,.product-row{grid-template-columns:minmax(105px,.62fr) minmax(0,1fr)!important;gap:.7rem!important}.summary-grid{grid-template-columns:1fr!important}.status-rec,.status-forb,.status-neut{font-size:.72rem;padding:.32rem .55rem!important}}\n'+
+      '@media(max-width:700px){.report-section{padding:1rem!important}.report-row{grid-template-columns:minmax(105px,.62fr) minmax(0,1fr)!important;gap:.7rem!important}.product-row{grid-template-columns:minmax(0,1fr) minmax(86px,118px)!important;gap:.6rem!important}.status-rec,.status-forb,.status-neut{font-size:.62rem!important;padding:.3rem .34rem!important;letter-spacing:0!important}}\n'+
       '</style>';
   }
   window.buildPdfHtml = function(){
@@ -5327,7 +5330,8 @@ window.startExportDocx = async function(event) {
         ['Нехватка витаминов', cleanList(food.vitamins || '—')],
         ['Нехватка минералов', cleanList(food.minerals || '—')]
       ]))+
-      section('Продукты', '<div class="summary-grid"><div class="sum-card rec"><div class="cs-title">Рекомендовано</div>'+productList(rec)+'</div><div class="sum-card forb"><div class="cs-title">Запрещено / ограничить</div>'+productList(forb)+'</div></div>')+
+      section('Рекомендовано', productList(rec), 'products-rec')+
+      section('Запрещено', productList(forb), 'products-forb')+
       section('Итоговый список', categoryTables(products))+
       '</div>';
   };
