@@ -1,4 +1,3 @@
-
 // ── Словари ───────────────────────────────────────────────────────────────────
 
 const PLANET_SYMBOLS = {
@@ -1152,7 +1151,6 @@ function showFoodPage(event) {
   const venusSign = venus ? SIGN_PLAIN[venus.signChar] : '';
   const fixedSigns = ['Телец', 'Лев', 'Скорпион', 'Водолей'];
   const hyperTriggers = [];
-  if (['Дева', 'Скорпион'].includes(venusSign)) hyperTriggers.push(`Венера в знаке ${venusSign}`);
   if (hasAspectBetween(aspectsForCalc, 'Венера', 'Солнце', [0])) hyperTriggers.push('Венера соединение Солнце');
   if (fixedSigns.includes(venusSign) && fixedSigns.includes(jupiterSign)) hyperTriggers.push(`Венера и Юпитер в фиксированных знаках: ${venusSign} / ${jupiterSign}`);
   if (hasAspectBetween(aspectsForCalc, 'Юпитер', 'Нептун', [90, 180])) hyperTriggers.push('Юпитер квадрат / оппозиция Нептун');
@@ -1343,6 +1341,4 @@ function resetPage() {
   document.getElementById('result').style.display = 'none';
   window.scrollTo(0, 0);
 }
-</script>
-
 
