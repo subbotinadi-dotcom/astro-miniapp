@@ -1,1 +1,179 @@
-
+/* Исправления по ТЗ от 28.06 */
+/* Центровка основных контейнеров */
+html,body{overflow-x:hidden!important;}
+#uploadZone,#result,#foodDataBlock,#foodPage,#inlineResultContent,#productsPage,.steps-card,.step,.instruction-box,.aspects-section{
+  box-sizing:border-box!important;
+}
+#uploadZone,#result,#foodDataBlock,#foodPage{
+  width:min(100%, 820px)!important;
+  max-width:820px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+#result{
+  padding-left:clamp(18px,4vw,34px)!important;
+  padding-right:clamp(18px,4vw,34px)!important;
+}
+#chartMeta{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  margin:0 auto 2rem!important;
+  padding:0!important;
+  color:#fff!important;
+}
+/* Единый Заголовок 2 */
+#result > .section-title,
+#inlineResultContent h2,
+#productsPage h2,
+.pdf-export-root h2,
+.kbju-title{
+  display:block!important;
+  width:100%!important;
+  margin:2rem auto 1.15rem!important;
+  padding:0!important;
+  text-align:center!important;
+  color:#FC9FBC!important;
+  font-size:clamp(1.85rem,5vw,2.45rem)!important;
+  line-height:1.05!important;
+  font-weight:900!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  background:transparent!important;
+  border:0!important;
+}
+/* Планеты: 2 квадратные карточки в ряд */
+#result .planets-grid{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:1rem!important;
+  margin:1rem auto 1.8rem!important;
+}
+#result .planet-card{
+  width:100%!important;
+  aspect-ratio:1/1!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:1rem!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  gap:.55rem!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+}
+#result .planet-info{align-items:center!important;text-align:center!important;}
+#result .planet-symbol{font-size:clamp(2rem,7vw,3.1rem)!important;width:auto!important;min-width:0!important;}
+#result .planet-name{font-size:clamp(.86rem,3.2vw,1.05rem)!important;margin:0!important;letter-spacing:.12em!important;}
+#result .planet-pos{font-size:clamp(1.5rem,6vw,2.25rem)!important;margin:0!important;}
+#result .planet-sign{font-size:clamp(.95rem,3.5vw,1.2rem)!important;}
+/* Аспекты: меньше и не вылезают */
+#result .aspect-list{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:.75rem!important;}
+#result .aspect-row{
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:.8rem .9rem!important;
+  border-radius:16px!important;
+  gap:.45rem!important;
+  overflow:hidden!important;
+}
+#result .aspect-row .asp-type{font-size:.85rem!important;min-width:0!important;max-width:100%!important;padding:.28rem .9rem!important;white-space:normal!important;}
+#result .aspect-row .asp-planets{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  font-size:clamp(.92rem,3.5vw,1.08rem)!important;
+  line-height:1.25!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+#result .aspect-row .asp-orb{display:none!important;}
+/* Стихии и энергии: квадратные карточки */
+#result .elements-grid,#result .energies-grid{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:1rem!important;
+  margin:1rem auto 1.6rem!important;
+}
+#result .element-card,#result .energy-card{
+  width:100%!important;
+  aspect-ratio:1/1!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:1rem!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  gap:.55rem!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+}
+#result .energy-card>div{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;}
+#result .energy-label,#result .element-name{font-size:clamp(.85rem,3.4vw,1.05rem)!important;text-align:center!important;}
+#result .energy-score,#result .element-score{font-size:clamp(2.1rem,8vw,3.1rem)!important;text-align:center!important;min-width:0!important;}
+/* КБЖУ: заголовок как H2 и 4 карточки рядом */
+#inlineResultContent .kbju-grid,#productsPage .kbju-grid,#result .kbju-grid,.pdf-export-root .kbju-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:.75rem!important;
+  width:100%!important;
+  margin:1rem auto 1.5rem!important;
+}
+#inlineResultContent .kbju-card,#productsPage .kbju-card,#result .kbju-card,.pdf-export-root .kbju-card{
+  aspect-ratio:1/1!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:.7rem!important;
+  border-radius:16px!important;
+}
+#inlineResultContent .kbju-name,#productsPage .kbju-name,.pdf-export-root .kbju-name{font-size:clamp(.68rem,2.3vw,.95rem)!important;}
+#inlineResultContent .kbju-value,#inlineResultContent .kbju-unit-inline,#productsPage .kbju-value,#productsPage .kbju-unit-inline,.pdf-export-root .kbju-value,.pdf-export-root .kbju-unit-inline{font-size:clamp(1.15rem,4.5vw,2rem)!important;}
+/* После Продолжить скрывается всё предыдущее */
+#result.step3-active .chart-title,
+#result.step3-active > .section-title,
+#result.step3-active > .planets-grid,
+#result.step3-active > .aspects-section,
+#result.step3-active > #indicatorsSection,
+#result.step3-active > #continueBtn{display:none!important;}
+#result.step3-active #foodDataBlock{display:block!important;}
+/* Итоговые строки: ИМЯ: New chart */
+#inlineResultContent .report-row,#productsPage .report-row,.pdf-export-root .report-row{
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:flex-start!important;
+  gap:.35rem!important;
+  grid-template-columns:none!important;
+  text-align:left!important;
+}
+#inlineResultContent .row-label,#productsPage .row-label,.pdf-export-root .row-label{
+  white-space:nowrap!important;
+  color:#FEDCD1!important;
+}
+#inlineResultContent .row-label::after,#productsPage .row-label::after,.pdf-export-root .row-label::after{content:':';}
+#inlineResultContent .row-value,#productsPage .row-value,.pdf-export-root .row-value{color:#fff!important;text-align:left!important;}
+/* Рекомендовано зелёным */
+#inlineResultContent .report-section.products-rec h2,
+#productsPage .report-section.products-rec h2,
+.pdf-export-root .report-section.products-rec h2,
+#inlineResultContent .sum-card.rec .cs-title,
+#productsPage .sum-card.rec .cs-title,
+.sum-card.rec>.cs-title{color:#00B050!important;}
+@media(max-width:700px){
+  #result .planets-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.75rem!important;}
+  #result .planet-card{padding:.75rem!important;}
+  #inlineResultContent .kbju-grid,#productsPage .kbju-grid,#result .kbju-grid,.pdf-export-root .kbju-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:.45rem!important;}
+  #inlineResultContent .kbju-card,#productsPage .kbju-card,#result .kbju-card,.pdf-export-root .kbju-card{padding:.45rem!important;border-radius:12px!important;}
+  #inlineResultContent .report-row,#productsPage .report-row,.pdf-export-root .report-row{flex-wrap:wrap!important;gap:.25rem!important;}
+}
