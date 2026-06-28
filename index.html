@@ -740,6 +740,34 @@ body.result-started #uploadZone {
   margin: 0 !important;
 }
 
+
+
+/* Финальные правки полей и итогового файла */
+#genderSelect2,
+#foodDataBlock select,
+#foodDataBlock input {
+  border-radius: 12px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+}
+#foodDataBlock select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  padding-right: 42px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 14px 9px !important;
+}
+#foodDataBlock input[type='number']::-webkit-inner-spin-button,
+#foodDataBlock input[type='number']::-webkit-outer-spin-button {
+  opacity: 1 !important;
+  filter: invert(1) brightness(2) !important;
+}
+#foodDataBlock input[type='number'] {
+  color-scheme: dark;
+}
 </style>
 
 
@@ -850,7 +878,7 @@ body.result-started #uploadZone {
   <!-- Блок ввода данных питания -->
   <div class="food-data-card energy-card" id="foodDataBlock">
     <div style="width:100%">
-      <span class="food-step-label">Шаг 3 — данные для расчёта питания</span>
+      <span class="food-step-label">Шаг 3 — режим питания</span>
       <div class="food-data-form">
         <div class="form-field" style="margin-bottom:0.8rem">
           <label for="genderSelect2">Пол</label>
@@ -2269,7 +2297,7 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
 
-  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Расчёт питания по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Данные питания</h2><table>${foodRows}</table></div></body></html>`;
+  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div></body></html>`;
 }
 
 async function exportDocx() {
@@ -2494,13 +2522,9 @@ window.startExportDocx = async function(event) {
     var aspectList = (d.aspects || []).filter(function(a){ try { return shouldShowAspect(a.p1, a.p2, a.orb); } catch(e){ return true; } });
 
     return '<div class="pdf-export-root">' +
-      '<h1>Расчёт питания по натальной карте</h1>' +
+      '<h1>Питание по натальной карте</h1>' +
       '<div class="meta">' + escapeHtml(meta) + '</div>' +
-      '<h2>Данные для расчёта питания</h2><table><tbody>' + tableRows([
-        ['Пол', food.gender || selectedGender || '—'],
-        ['Вес', food.weight ? food.weight + ' кг' : '—'],
-        ['Рост', food.height ? food.height + ' см' : '—'],
-        ['Возраст', food.age ? food.age + ' лет' : '—'],
+      '<h2>Режим питания</h2><table><tbody>' + tableRows([
         ['КБЖУ', food.bmr ? 'Базовый обмен: ' + Number(food.bmr).toLocaleString('ru-RU') + ' ккал в день' : '—'],
         ['Количество приёмов еды', food.meals || '—'],
         ['Завтрак', food.breakfast || '—'],
@@ -2508,14 +2532,6 @@ window.startExportDocx = async function(event) {
         ['Ужин', food.dinner || '—'],
         ['Метаболизм', food.metabolism || '—']
       ]) + '</tbody></table>' +
-      '<h2>Показатели</h2><table><tbody>' + tableRows([
-        ['Огонь', elements['Огонь'] || 0], ['Земля', elements['Земля'] || 0], ['Воздух', elements['Воздух'] || 0], ['Вода', elements['Вода'] || 0],
-        ['Тепло', calc.teplo || 0], ['Холод', calc.holod || 0], ['Сухость', calc.suhost || 0], ['Влажность', calc.vlazhnost || 0],
-        ['Рациональность', calc.racionalnost || 0], ['Эмоциональность', calc.emotsionalnost || 0]
-      ]) + '</tbody></table>' +
-      '<h2>Аспекты с орбисами</h2><table><thead><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr></thead><tbody>' +
-      aspectList.map(function(a){ var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) || {name:a.typeName || a.type}; return '<tr><td>' + escapeHtml(info.name || a.typeName || '') + '</td><td>' + escapeHtml((a.p1 || '') + ' — ' + (a.p2 || '')) + '</td><td>' + escapeHtml(a.orb || '') + '</td></tr>'; }).join('') +
-      '</tbody></table>' +
       '<h2>Рекомендовано итого (' + rec.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(rec) + '</tbody></table>' +
       '<h2>Запрещено итого (' + forb.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(forb) + '</tbody></table>' +
       '<h2>Все рассчитанные продукты по страницам (' + products.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(allMeaningful.length ? allMeaningful : products) + '</tbody></table>' +
@@ -2578,12 +2594,11 @@ window.startExportDocx = async function(event) {
 (function(){
   function buildStandaloneResultHtml(){
     var content = (typeof window.buildPdfHtml === 'function') ? window.buildPdfHtml() : '<div class="pdf-export-root"><h1>Расчёт питания</h1><p>Данные расчёта не найдены.</p></div>';
-    var title = 'Расчёт питания по натальной карте';
+    var title = 'Питание по натальной карте';
     return '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+title+'</title>'+
       '<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></scr'+'ipt>'+
       '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">'+
       '<style>'+resultPageCss()+'</style></head><body><div class="wrap">'+
-      '<div class="page-header"><h2>Расчёт питания</h2><div class="page-meta">Итоговый файл</div><div class="page-sub">Результаты расчёта сформированы автоматически</div></div>'+
       '<div id="pdfContent">'+content+'</div>'+
       '<div class="download-zone"><button class="btn bp" onclick="downloadPdf()">✦ Скачать PDF</button></div>'+
       '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
