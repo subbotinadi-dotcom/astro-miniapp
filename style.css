@@ -479,3 +479,68 @@ body.food-calculated #foodPage{display:block!important;}
   letter-spacing:.055em!important;
   text-transform:uppercase!important;
 }
+
+
+
+/* Точечные правки 28.06: только аспектная строка и названия стихий/энергий */
+#result .aspect-row{
+  grid-template-columns:1fr!important;
+  grid-template-areas:"type" "planets"!important;
+  text-align:center!important;
+}
+#result .aspect-row .asp-planets{
+  grid-area:planets!important;
+  justify-self:center!important;
+  width:100%!important;
+  max-width:100%!important;
+  text-align:center!important;
+  color:#fff!important;
+  font-size:clamp(.82rem,2.2vw,1rem)!important;
+  line-height:1.05!important;
+  font-weight:900!important;
+  letter-spacing:.07em!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+  margin:0!important;
+}
+#result .aspect-row .asp-orb{
+  display:none!important;
+}
+#result .element-name,
+#result .energy-label,
+#result .energies-grid .energy-label{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:min(9.5rem,100%)!important;
+  padding:.34rem 1.25rem!important;
+  border-radius:999px!important;
+  border:1.5px solid rgba(254,220,209,.42)!important;
+  background:rgba(254,220,209,.12)!important;
+  color:#FC9FBC!important;
+  text-align:center!important;
+  font-size:clamp(.82rem,2.2vw,1rem)!important;
+  line-height:1.05!important;
+  font-weight:900!important;
+  letter-spacing:.07em!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+  margin:0 0 .45rem!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:700px){
+  #result .aspect-row .asp-planets{
+    font-size:.95rem!important;
+    text-align:center!important;
+    justify-self:center!important;
+  }
+  #result .element-name,
+  #result .energy-label,
+  #result .energies-grid .energy-label{
+    font-size:.95rem!important;
+    min-width:min(8.5rem,100%)!important;
+    padding:.32rem 1rem!important;
+  }
+}
