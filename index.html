@@ -680,6 +680,54 @@ button[onclick="calculateFromUrl(event)"] {
   #uploadZone .instruction-box { padding: 24px 18px !important; }
   #uploadZone .sotis-link, #uploadZone .sotis-btn-style { min-height: 56px !important; }
 }
+
+
+/* Правки 2: компактные заголовки шагов и экран Шага 3 */
+#uploadZone .step-label {
+  font-size: clamp(1.02rem, 1.65vw, 1.32rem) !important;
+  line-height: 1.18 !important;
+  margin-bottom: 16px !important;
+}
+#result .chart-title .h1-style {
+  font-size: clamp(2.55rem, 5.3vw, 4.35rem) !important;
+  line-height: .98 !important;
+  letter-spacing: .105em !important;
+  margin: 0 0 26px !important;
+  color: var(--mock-pink, #FC9FBC) !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+#foodDataBlock .food-step-label {
+  color: var(--mock-pink, #FC9FBC) !important;
+  font-size: clamp(1.02rem, 1.65vw, 1.32rem) !important;
+  line-height: 1.18 !important;
+  letter-spacing: .045em !important;
+  text-transform: uppercase !important;
+  text-align: left !important;
+  margin: 0 0 16px !important;
+  display: block !important;
+  font-weight: 700 !important;
+}
+#foodDataBlock .form-field select,
+#foodDataBlock .form-field input {
+  height: 58px !important;
+  min-height: 58px !important;
+  line-height: 1.2 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+#result.step3-active .chart-title,
+#result.step3-active > .section-title,
+#result.step3-active > .planets-grid,
+#result.step3-active > .aspects-section,
+#result.step3-active > #indicatorsSection,
+#result.step3-active > #continueBtn {
+  display: none !important;
+}
+#result.step3-active #foodDataBlock {
+  margin-top: 0 !important;
+}
 </style>
 
 
@@ -750,7 +798,7 @@ button[onclick="calculateFromUrl(event)"] {
 <div id="result">
 
   <div class="chart-title">
-    <span class="h1-style">Расчёт питания по натальной карте</span>
+    <span class="h1-style">Расчёт питания</span>
     <div class="subtitle" id="chartMeta"></div>
     <div class="gender-badge" id="genderBadge"></div>
   </div>
@@ -1294,7 +1342,9 @@ function render() {
   renderIndicators(d);
 
   document.getElementById('uploadZone').style.display = 'none';
-  document.getElementById('result').style.display = 'block';
+  const resultEl = document.getElementById('result');
+  resultEl.classList.remove('step3-active');
+  resultEl.style.display = 'block';
   window.scrollTo(0, 0);
 }
 
@@ -1915,7 +1965,9 @@ function showStep2() {
 function showResultWithStep3() {
   // Скрываем uploadZone, показываем result
   document.getElementById('uploadZone').style.display = 'none';
-  document.getElementById('result').style.display = 'block';
+  const resultEl = document.getElementById('result');
+  resultEl.classList.remove('step3-active');
+  resultEl.style.display = 'block';
 
   // Скрываем блок питания — он появится после кнопки «Продолжить»
   const foodDataBlock = document.getElementById('foodDataBlock');
@@ -1942,13 +1994,16 @@ function showStep3() {
   const btn = document.getElementById('continueBtn');
   if (btn) btn.remove();
 
-  // Показываем блок ввода данных питания (шаг 3)
+  // Показываем только блок ввода данных питания (шаг 3)
+  const resultEl = document.getElementById('result');
+  if (resultEl) resultEl.classList.add('step3-active');
+
   const foodDataBlock = document.getElementById('foodDataBlock');
   if (foodDataBlock) {
     foodDataBlock.style.display = 'block';
     const oldLabel = document.getElementById('step3Label');
     if (oldLabel) oldLabel.remove();
-    foodDataBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
