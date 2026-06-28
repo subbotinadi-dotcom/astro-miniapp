@@ -2160,16 +2160,38 @@ function showStep3() {
 
 // ── Чтение ссылки Сотиса ───────────────────────────────────────────────────
 // В Telegram WebView прямой fetch к sotis-online.ru часто блокируется CORS.
-// Поэтому пробуем несколько рабочих способов и принимаем только HTML, где есть таблицы карты.
-const PROXIES = [
-  url => url,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
-  url => `https://cors.isomorphic-git.org/${url}`,
+// Старая версия перебирала много публичных прокси по очереди и могла ждать очень долго.
+// Эта версия запускает короткие попытки параллельно, быстро отбрасывает невалидные ответы
+// и показывает понятную ошибку, если Sotis/прокси сейчас недоступны.
+const SOTIS_FETCH_TIMEOUT_MS = 8000;
+const SOTIS_OVERALL_TIMEOUT_MS = 12000;
+
+// Если у вас появится свой серверный прокси, впишите адрес сюда.
+// Пример: const CUSTOM_SOTIS_PROXY = '/api/sotis?url=';
+// Тогда код будет пробовать его первым: /api/sotis?url=<encoded sotis url>
+const CUSTOM_SOTIS_PROXY = '';
+
+const SOTIS_LOADERS = [
+  {
+    name: 'custom-proxy',
+    enabled: () => Boolean(CUSTOM_SOTIS_PROXY),
+    build: url => CUSTOM_SOTIS_PROXY + encodeURIComponent(url)
+  },
+  {
+    name: 'direct',
+    enabled: () => true,
+    build: url => url
+  },
+  {
+    name: 'allorigins-raw',
+    enabled: () => true,
+    build: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  },
+  {
+    name: 'corsproxy',
+    enabled: () => true,
+    build: url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  }
 ];
 
 function extractSotisUrl(value) {
@@ -2196,6 +2218,7 @@ function extractSotisUrl(value) {
 
   return raw;
 }
+
 function looksLikeSotisChartHtml(html) {
   const text = String(html || '');
   return text.includes('table') && (text.includes('coord') || text.includes('g.asp') || text.includes('vsbl'));
@@ -2215,43 +2238,75 @@ async function readProxyResponse(resp) {
   return raw;
 }
 
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+async function tryLoadSotisHtml(loader, normalizedUrl) {
+  const proxyUrl = loader.build(normalizedUrl);
+  const resp = await fetch(proxyUrl, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
+    signal: timeoutSignal(SOTIS_FETCH_TIMEOUT_MS)
+  });
+
+  if (!resp.ok) throw new Error(`${loader.name}: HTTP ${resp.status}`);
+
+  let html = await readProxyResponse(resp);
+  if (!html || html.length < 200) throw new Error(`${loader.name}: пустой ответ`);
+
+  html = html.replace(/\\u003C/g, '<').replace(/\\u003E/g, '>').replace(/\\u0026/g, '&');
+  if (!looksLikeSotisChartHtml(html)) throw new Error(`${loader.name}: координаты карты не найдены`);
+
+  return html;
+}
+
 async function fetchViaProxy(url) {
   const normalizedUrl = extractSotisUrl(url);
-  let lastError = '';
+  const loaders = SOTIS_LOADERS.filter(loader => loader.enabled());
+  const errors = [];
 
-  for (let i = 0; i < PROXIES.length; i++) {
-    try {
-      const proxyUrl = PROXIES[i](normalizedUrl);
-      const resp = await fetch(proxyUrl, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
-        signal: AbortSignal.timeout(20000)
-      });
-      if (!resp.ok) {
-        lastError = `HTTP ${resp.status}`;
-        continue;
-      }
-
-      let html = await readProxyResponse(resp);
-      if (!html || html.length < 200) {
-        lastError = 'пустой ответ';
-        continue;
-      }
-
-      html = html.replace(/\\u003C/g, '<').replace(/\\u003E/g, '>').replace(/\\u0026/g, '&');
-
-      // Возвращаем только реальную страницу карты, а не страницу ошибки/заглушку прокси.
-      if (looksLikeSotisChartHtml(html)) return html;
-
-      lastError = 'координаты карты не найдены в ответе';
-    } catch(e) {
-      lastError = e && e.message ? e.message : String(e);
-      console.warn('Sotis loader', i, 'failed:', lastError);
-    }
+  if (!loaders.length) {
+    throw new Error('Не настроен способ загрузки Sotis. Укажите CUSTOM_SOTIS_PROXY или откройте страницу вне Telegram WebView.');
   }
 
-  throw new Error('Не удалось прочитать ссылку Сотиса. Откройте ссылку в браузере, убедитесь, что карта построена, затем скопируйте ссылку из адресной строки и вставьте её в поле Шага 2 ещё раз. Последняя ошибка: ' + lastError);
+  return await new Promise((resolve, reject) => {
+    let settled = false;
+    let finished = 0;
+
+    const overallTimer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error('Sotis отвечает слишком долго. Попробуйте открыть ссылку в обычном браузере, обновить карту на Sotis и вставить ссылку ещё раз.'));
+    }, SOTIS_OVERALL_TIMEOUT_MS);
+
+    loaders.forEach(loader => {
+      tryLoadSotisHtml(loader, normalizedUrl)
+        .then(html => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(overallTimer);
+          resolve(html);
+        })
+        .catch(err => {
+          errors.push(err && err.message ? err.message : String(err));
+        })
+        .finally(() => {
+          finished += 1;
+          if (!settled && finished === loaders.length) {
+            settled = true;
+            clearTimeout(overallTimer);
+            reject(new Error('Не удалось прочитать ссылку Сотиса. Откройте карту на Sotis, убедитесь, что она построена, затем скопируйте ссылку из адресной строки. Детали: ' + errors.slice(-3).join(' | ')));
+          }
+        });
+    });
+  });
 }
 
 // ── Главная функция — загрузить карту по ссылке ───────────────────────────────
@@ -2274,6 +2329,8 @@ async function calculateFromUrl(event) {
   // Показываем оверлей
   const overlay   = document.getElementById('loadingOverlay');
   const loadingTxt = document.getElementById('loadingText');
+  const calcBtn = event && event.currentTarget ? event.currentTarget : document.querySelector('button[onclick="calculateFromUrl(event)"]');
+  if (calcBtn) { calcBtn.disabled = true; calcBtn.style.opacity = '0.65'; }
   overlay.classList.add('active');
   loadingTxt.textContent = 'Читаем ссылку Сотиса...';
 
@@ -2314,6 +2371,8 @@ async function calculateFromUrl(event) {
   } catch(e) {
     overlay.classList.remove('active');
     alert('Ошибка: ' + e.message);
+  } finally {
+    if (calcBtn) { calcBtn.disabled = false; calcBtn.style.opacity = ''; }
   }
 }
 
