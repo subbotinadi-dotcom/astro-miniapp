@@ -3994,14 +3994,45 @@ if (calcBtn) { calcBtn.disabled = false; calcBtn.style.opacity = ''; }
 window.startExportDocx = async function() {
 const overlay = document.getElementById('loadingOverlay');
 const loadingTxt = document.getElementById('loadingText');
-overlay.classList.add('active');
-loadingTxt.textContent = 'Генерируем PDF...';
+if (overlay) { overlay.classList.add('active'); }
+if (loadingTxt) { loadingTxt.textContent = 'Отправляем PDF в Telegram...'; }
 try {
-await exportDocx();
+const tg = window.Telegram?.WebApp;
+const chatId = tg?.initDataUnsafe?.user?.id;
+if (!chatId) {
+  alert('Откройте приложение через Telegram-бота');
+  return;
+}
+const wordHtml = makeWordHtml();
+const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+const reader = new FileReader();
+const base64 = await new Promise((resolve, reject) => {
+  reader.onload = () => resolve(reader.result.split(',')[1]);
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+const resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    pdf_base64: base64,
+    chat_id: chatId,
+    filename: 'питание_по_натальной_карте.doc'
+  })
+});
+const result = await resp.json();
+if (result.ok) {
+  if (loadingTxt) { loadingTxt.textContent = 'Файл отправлен!'; }
+  setTimeout(() => { tg?.close(); }, 1500);
+} else {
+  alert('Ошибка отправки: ' + (result.error || 'неизвестная ошибка'));
+}
 } catch(e) {
-alert('Ошибка генерации файла: ' + e.message);
+alert('Ошибка: ' + e.message);
 } finally {
-overlay.classList.remove('active');
+setTimeout(() => {
+  if (overlay) overlay.classList.remove('active');
+}, 2000);
 }
 };
 
