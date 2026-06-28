@@ -1,19 +1,18 @@
 
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
 <title>Натальная карта — питание</title>
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="stylesheet" href="style.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+<link href="style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
 <style>
 
   html, body, button, input, select, textarea, label, option, div, span, p, a, li, h1, h2, h3 {
@@ -2259,12 +2258,22 @@ button[onclick="calculateFromUrl(event)"],
   #inlineResultContent .kbju-grid,
   #productsPage .kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 }
+
+/* ChatGPT fix */
+#rRecBox .cs-title,
+.sum-card.rec .cs-title,
+.rec .cs-title,
+.cs-title.rec-title{
+ color:#00B5A6 !important;
+}
+#rForbBox .cs-title,
+.sum-card.forb .cs-title,
+.forb .cs-title,
+.cs-title.forb-title{
+ color:#FF99BE !important;
+}
+
 </style>
-
-
-
-
-
 <style id="chatgpt-result-fix">
 #inlineResultContent,#productsPage,#foodPage{
 background:transparent!important;
@@ -2284,165 +2293,132 @@ margin:0 0 24px!important;
 text-align:center!important;
 }
 </style>
-
 </head>
 <body>
-
 <!-- Оверлей загрузки -->
 <div id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Загружаем карту...</div>
+<div class="spinner"></div>
+<div class="loading-text" id="loadingText">Загружаем карту...</div>
 </div>
-
 <!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
-
-  <span class="h1-style">Питание по натальной карте</span>
-
-  <p class="tagline">Заполните все шаги и нажмите «Рассчитать»</p>
-
-  <div class="steps-card">
-
-    <!-- ШАГ 1 -->
-    <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-      <div class="step-label">Шаг 1 — создайте карту на Сотисе</div>
-
-      <div class="instruction-box">
-        <p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
+<span class="h1-style">Питание по натальной карте</span>
+<p class="tagline">Заполните все шаги и нажмите «Рассчитать»</p>
+<div class="steps-card">
+<!-- ШАГ 1 -->
+<div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
+<div class="step-label">Шаг 1 — создайте карту на Сотисе</div>
+<div class="instruction-box">
+<p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
           В меню «Гороскоп» → «Создать новый» → «Одиночная карта»
         </p>
-        <ol style="color:#FFFFFF">
-          <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
-          <li style="color:#FFFFFF !important">Тип карты: Натал</li>
-          <li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
-          <li style="color:#FFFFFF !important">Скопируй ссылку в браузере и вставь в поле Шага 2.</li>
-        </ol>
-      </div>
-
-      <div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank" >
+<ol style="color:#FFFFFF">
+<li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
+<li style="color:#FFFFFF !important">Тип карты: Натал</li>
+<li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
+<li style="color:#FFFFFF !important">Скопируй ссылку в браузере и вставь в поле Шага 2.</li>
+</ol>
+</div>
+<div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank">
         ✦ Перейти на сайт Сотис
       </a></div>
-    </div>
-
-    <!-- ШАГ 2 -->
-    <div class="step" id="step2Block" >
-      <div class="step-label">Шаг 2 — вставьте ссылку на карту</div>
-      <div class="url-input-wrap">
-        <input
-          type="url"
-          id="sotisUrlInput"
-          class="url-input"
-          placeholder="https://sotis-online.ru/?chr=..."
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="none"
-          spellcheck="false"
-        >
-        <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
-      </div>
-      <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" onclick="calculateFromUrl(event)">✦ Рассчитать</button></div>
-
-      <div class="sotis-file-fallback">
-        <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
-        <input type="file" id="sotisHtmlFileInput" accept=".html,.htm,text/html" style="display:none">
-        <label for="sotisHtmlFileInput" class="sotis-file-label">✦ Загрузить HTML карты</label>
-        <span id="sotisHtmlFileName" class="sotis-file-name"></span>
-      </div>
-    </div>
-
-    </div>
-
 </div>
-
+<!-- ШАГ 2 -->
+<div class="step" id="step2Block">
+<div class="step-label">Шаг 2 — вставьте ссылку на карту</div>
+<div class="url-input-wrap">
+<input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
+<div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
+</div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ Рассчитать</button></div>
+<div class="sotis-file-fallback">
+<p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
+<input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
+<label class="sotis-file-label" for="sotisHtmlFileInput">✦ Загрузить HTML карты</label>
+<span class="sotis-file-name" id="sotisHtmlFileName"></span>
+</div>
+</div>
+</div>
+</div>
 <!-- ЭКРАН 2: Результаты -->
 <div id="result">
-
-  <div class="chart-title">
-    <span class="h1-style">Расчёт питания</span>
-    <div class="subtitle" id="chartMeta"></div>
-    <div class="gender-badge" id="genderBadge"></div>
-  </div>
-
-  <div class="section-title">Планеты в знаках</div>
-  <div class="planets-grid" id="planetsGrid"></div>
-
-  <div class="section-title">Аспекты</div>
-  <div class="aspects-section">
-    <div class="aspect-list" id="aspectList"></div>
-  </div>
-
-  <div class="section-title">Расчёт показателей</div>
-  <div id="indicatorsSection"></div>
-
-  <div id="foodPage" style="display:none; margin-top:3rem;">
-    <div class="section-title">Прием пищи</div>
-    <div class="wide-grid">
-      <div class="energy-card wide-card meal-count-card">
-        <div>
-          <div class="energy-label">Количество приемов</div>
-          <div class="energy-formula" id="foodFormula"></div>
-        </div>
-        <div class="energy-score" id="foodCount"></div>
-      </div>
-    </div>
-    <div class="meals-grid" id="mealsGrid"></div>
-    <div class="salt-grid" id="saltGrid"></div>
-
-    <div class="bottom-btns">
-      <button type="button" class="export-btn" id="exportDocxBtn" onclick="startExportDocx()">
+<div class="chart-title">
+<span class="h1-style">Расчёт питания</span>
+<div class="subtitle" id="chartMeta"></div>
+<div class="gender-badge" id="genderBadge"></div>
+</div>
+<div class="section-title">Планеты в знаках</div>
+<div class="planets-grid" id="planetsGrid"></div>
+<div class="section-title">Аспекты</div>
+<div class="aspects-section">
+<div class="aspect-list" id="aspectList"></div>
+</div>
+<div class="section-title">Расчёт показателей</div>
+<div id="indicatorsSection"></div>
+<div id="foodPage" style="display:none; margin-top:3rem;">
+<div class="section-title">Прием пищи</div>
+<div class="wide-grid">
+<div class="energy-card wide-card meal-count-card">
+<div>
+<div class="energy-label">Количество приемов</div>
+<div class="energy-formula" id="foodFormula"></div>
+</div>
+<div class="energy-score" id="foodCount"></div>
+</div>
+</div>
+<div class="meals-grid" id="mealsGrid"></div>
+<div class="salt-grid" id="saltGrid"></div>
+<div class="bottom-btns">
+<button class="export-btn" id="exportDocxBtn" onclick="startExportDocx()" type="button">
         ✦ Скачать PDF
       </button>
-    </div>
-  </div>
-
-  <!-- Блок ввода данных питания -->
-  <div class="food-data-card energy-card" id="foodDataBlock">
-    <div style="width:100%">
-      <span class="food-step-label">Шаг 3 — режим питания</span>
-      <div class="food-data-form">
-        <div class="form-field" style="margin-bottom:0.8rem">
-          <label for="genderSelect2">Пол</label>
-          <select id="genderSelect2">
-            <option value="Женский" selected>Женский</option>
-            <option value="Мужской">Мужской</option>
-          </select>
-        </div>
-        <div class="input-grid">
-          <div class="form-field">
-            <label for="weightInput2">Вес, кг</label>
-            <input id="weightInput2" type="number" min="1" step="0.1" placeholder="60">
-          </div>
-          <div class="form-field">
-            <label for="heightInput2">Рост, см</label>
-            <input id="heightInput2" type="number" min="50" step="1" placeholder="165">
-          </div>
-          <div class="form-field" style="grid-column:1/-1">
-            <label for="ageInput2">Возраст, лет</label>
-            <input id="ageInput2" type="number" min="1" step="1" placeholder="30">
-          </div>
-        </div>
-        <div class="food-data-actions">
-          <div style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem" id="foodDataErr"></div>
-        </div>
-        <div class="food-data-actions">
-          <div class="sotis-link-wrap" id="foodCalcBtnWrap"><button type="button" class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)">✦ Рассчитать</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
-
+</div>
+<!-- Блок ввода данных питания -->
+<div class="food-data-card energy-card" id="foodDataBlock">
+<div style="width:100%">
+<span class="food-step-label">Шаг 3 — режим питания</span>
+<div class="food-data-form">
+<div class="form-field" style="margin-bottom:0.8rem">
+<label for="genderSelect2">Пол</label>
+<select id="genderSelect2">
+<option selected="" value="Женский">Женский</option>
+<option value="Мужской">Мужской</option>
+</select>
+</div>
+<div class="input-grid">
+<div class="form-field">
+<label for="weightInput2">Вес, кг</label>
+<input id="weightInput2" min="1" placeholder="60" step="0.1" type="number"/>
+</div>
+<div class="form-field">
+<label for="heightInput2">Рост, см</label>
+<input id="heightInput2" min="50" placeholder="165" step="1" type="number"/>
+</div>
+<div class="form-field" style="grid-column:1/-1">
+<label for="ageInput2">Возраст, лет</label>
+<input id="ageInput2" min="1" placeholder="30" step="1" type="number"/>
+</div>
+</div>
+<div class="food-data-actions">
+<div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem"></div>
+</div>
+<div class="food-data-actions">
+<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ Рассчитать</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <!-- Страница продуктов -->
 <div id="productsPage" style="display:none; padding:2rem 1rem 5rem; max-width:960px; margin:0 auto;">
-  <h2 style="color:var(--pink); font-size:2.2rem; margin-bottom:1.5rem">Рекомендуемые продукты</h2>
-  <div id="productsBox"></div>
-  <div class="bottom-btns" style="margin-top:2rem;">
-    <button type="button" class="export-btn" onclick="startExportDocx()">✦ Скачать PDF</button>
-  </div>
-  <div style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem" id="productsMeta"></div>
+<h2 style="color:var(--pink); font-size:2.2rem; margin-bottom:1.5rem">Рекомендуемые продукты</h2>
+<div id="productsBox"></div>
+<div class="bottom-btns" style="margin-top:2rem;">
+<button class="export-btn" onclick="startExportDocx()" type="button">✦ Скачать PDF</button>
 </div>
-
+<div id="productsMeta" style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem"></div>
+</div>
 <!-- Основная логика -->
 <script>
 
@@ -3517,7 +3493,6 @@ function resetPage() {
 
 
 </script>
-
 <script>
 // ── Таймер Шага 2 ────────────────────────────────────────────────────────────
 let step2Timer = null;
@@ -4020,8 +3995,6 @@ window.startExportDocx = async function(event) {
   });
 })();
 </script>
-
-
 <script>
 /* Расчёты продуктов по страницам и экспорт PDF. Вынесено отдельным скриптом, чтобы код не выводился текстом на странице. */
 (function(){
@@ -4340,7 +4313,6 @@ window.startExportDocx = async function(event) {
   }
 })();
 </script>
-
 <script>
 (function(){
   function resultPageCss(){
@@ -5066,7 +5038,6 @@ window.startExportDocx = async function(event) {
   };
 })();
 </script>
-
 <script>
 (function(){
   document.addEventListener('DOMContentLoaded', function(){
@@ -5075,9 +5046,6 @@ window.startExportDocx = async function(event) {
   });
 })();
 </script>
-
-
-
 <script>
 /* === Итоговая последовательность как в Word: сначала результат на странице, затем тот же HTML уходит в PDF === */
 (function(){
@@ -5237,10 +5205,6 @@ window.startExportDocx = async function(event) {
   };
 })();
 </script>
-
-
-
-
 <script>
 /* === FIX: один контейнер на раздел, строки внутри без отдельных рамок === */
 (function(){
@@ -5382,9 +5346,6 @@ window.startExportDocx = async function(event) {
   };
 })();
 </script>
-
-
-
 <script>
 /* === FINAL FIX: результат строками, без планет/аспектов/стихий/энергий === */
 (function(){
@@ -5537,9 +5498,6 @@ window.startExportDocx = async function(event) {
   };
 })();
 </script>
-
-
-
 <style id="final-product-status-tweaks">
 /* Финальные точечные правки: только размер плашек и цвета заголовков */
 .badge-rec,
