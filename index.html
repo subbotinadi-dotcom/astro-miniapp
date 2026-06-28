@@ -768,6 +768,90 @@ body.result-started #uploadZone {
 #foodDataBlock input[type='number'] {
   color-scheme: dark;
 }
+
+/* Финал: белые стрелки в числовых полях и центр режима питания */
+#foodDataBlock .food-step-label {
+  text-align: center !important;
+  width: 100% !important;
+}
+#foodDataBlock input[type=number] {
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+  color-scheme: dark !important;
+  padding-right: 42px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='20' viewBox='0 0 12 20'%3E%3Cpath d='M6 3L2 7h8L6 3z' fill='%23FFFFFF'/%3E%3Cpath d='M6 17l4-4H2l4 4z' fill='%23FFFFFF'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 12px 20px !important;
+}
+#foodDataBlock input[type=number]::-webkit-inner-spin-button,
+#foodDataBlock input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+}
+
+
+
+/* Финал КБЖУ: белые стрелки в числовых полях и карточки как на макете */
+#weightInput2,
+#heightInput2,
+#ageInput2 {
+  border-radius: 12px !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+  color-scheme: dark !important;
+  padding-right: 44px !important;
+  background-color: rgba(255,255,255,0.07) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='22' viewBox='0 0 12 22'%3E%3Cpath d='M2 8l4-4 4 4' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 14l4 4 4-4' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 12px 22px !important;
+}
+#weightInput2::-webkit-inner-spin-button,
+#weightInput2::-webkit-outer-spin-button,
+#heightInput2::-webkit-inner-spin-button,
+#heightInput2::-webkit-outer-spin-button,
+#ageInput2::-webkit-inner-spin-button,
+#ageInput2::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+}
+.kbju-title {
+  color: var(--mock-pink, #FC9FBC) !important;
+  font-size: 1.35rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+  margin: 1.4rem 0 .75rem !important;
+}
+.kbju-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: .7rem !important;
+  margin-bottom: 1rem !important;
+}
+.kbju-card {
+  background: rgba(250,243,235,.055) !important;
+  border: 1px solid rgba(254,220,209,.34) !important;
+  border-radius: 12px !important;
+  padding: 1rem .75rem !important;
+  text-align: center !important;
+  min-height: 110px !important;
+}
+.kbju-name { color: #FFFFFF !important; font-size: 1rem !important; margin-bottom: .45rem !important; }
+.kbju-value { color: #FC9FBC !important; font-size: 1.9rem !important; font-weight: 700 !important; line-height: 1 !important; }
+.kbju-unit { color: #FFFFFF !important; font-size: 1rem !important; margin-top: .45rem !important; }
+.kbju-pct { color: #FFFFFF !important; font-size: 1rem !important; margin-top: .35rem !important; }
+
+.pdf-export-root .kbju-title {
+  text-align: left !important;
+  border-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+@media (max-width: 600px) { .kbju-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 </style>
 
 
@@ -1906,11 +1990,11 @@ function showFoodPage(event) {
   const mealsGrid = document.getElementById('mealsGrid');
   if (mealsGrid) {
     mealsGrid.innerHTML = [
-      mealCard('КБЖУ', `Базовый обмен: ${bmr.toLocaleString('ru-RU')} ккал в день`),
       mealCard('Завтрак', `${breakfastVolumeTitle}. ${breakfastVolumeText}. ${breakfastTimeTitle}: ${breakfastTimeText}.`),
       mealCard('Обед', `${lunchVolumeTitle}. ${lunchVolumeText}.`),
       mealCard('Ужин', `${dinnerVolumeTitle}. ${dinnerVolumeText}.`),
-      mealCard('Метаболизм', `${metabolismTitle}. ${metabolismText}`)
+      mealCard('Метаболизм', `${metabolismTitle}. ${metabolismText}`),
+      mealCard('КБЖУ', `Базовый обмен: ${bmr.toLocaleString('ru-RU')} ккал в день`)
     ].join('');
   }
 
@@ -1922,7 +2006,8 @@ function showFoodPage(event) {
     saltGrid.innerHTML = [
       mealCard('Соль', '5 грамм'),
       mealCard('Вода', `${water.toLocaleString('ru-RU')} мл в день`),
-      mealCard('Жидкость', `${liquidMin.toLocaleString('ru-RU')}–${liquidMax.toLocaleString('ru-RU')} мл в день`)
+      mealCard('Жидкость', `${liquidMin.toLocaleString('ru-RU')}–${liquidMax.toLocaleString('ru-RU')} мл в день`),
+      mealCard('Запивать ли еду', wet > dry ? 'Можно небольшими глотками' : 'Не запивать')
     ].join('');
   }
 
@@ -2297,7 +2382,140 @@ function makeWordHtml() {
     ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
   ]);
 
-  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div></body></html>`;
+  return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планета 1</th><th>Планета 2</th><th>Орбис</th></tr>${aspectRows}</table><h2>Стихии</h2><table><tr><th>Стихия</th><th>Баллы</th><th>%</th></tr>${elementRows}</table><h2>Показатели</h2><table>${energyRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
+
+<style>
+/* Правки формы Шага 3: единые скругления и белые стрелки */
+#foodDataBlock .food-step-label{
+  text-align:center !important;
+}
+#genderSelect2,
+#weightInput2,
+#heightInput2,
+#ageInput2{
+  border-radius:12px !important;
+}
+#foodDataBlock input[type="number"]{
+  -moz-appearance:textfield !important;
+  appearance:textfield !important;
+  padding-right:44px !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='22' viewBox='0 0 12 22'%3E%3Cpath d='M2 8l4-4 4 4' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 14l4 4 4-4' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;
+  background-position:right 16px center !important;
+  background-size:12px 22px !important;
+}
+#foodDataBlock input[type="number"]::-webkit-inner-spin-button,
+#foodDataBlock input[type="number"]::-webkit-outer-spin-button{
+  -webkit-appearance:none !important;
+  appearance:none !important;
+  margin:0 !important;
+}
+</style>
+
+<script>
+(function(){
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);});
+  }
+  function fmtLiters(ml){
+    if (!ml || !isFinite(ml)) return '—';
+    return (ml/1000).toLocaleString('ru-RU',{maximumFractionDigits:1}) + ' л в день';
+  }
+  function extraFoodValues(food){
+    food = food || {};
+    var weight = Number(food.weight || 0);
+    var height = Number(food.height || 0);
+    var bmi = (weight && height) ? weight / Math.pow(height/100, 2) : 0;
+    var fullness = bmi >= 30 ? 'Высокая' : (bmi >= 25 ? 'Умеренная' : 'Низкая');
+    var hyper = bmi >= 30 ? 'Повышенная склонность' : (bmi >= 25 ? 'Умеренная склонность' : 'Низкая склонность');
+    return {
+      salt: '5 грамм в день',
+      water: weight ? fmtLiters(Math.round(weight * 30)) : '—',
+      liquid: weight ? fmtLiters(Math.round(weight * 50)).replace(' в день','') + '–' + fmtLiters(Math.round(weight * 60)) : '—',
+      drink: 'Не запивать еду',
+      proteinSource: 'Животный и растительный',
+      vegetarian: 'Допустимо',
+      fatSource: 'Растительные масла, рыба, орехи',
+      fatProportion: 'Омега-6 : Омега-3 = 4 : 1',
+      fatAccumulation: 'Среднее',
+      cholesterol: 'Умеренный уровень',
+      fullness: fullness,
+      hyperinsulin: hyper,
+      sugar: 'Ограничить',
+      vitamins: 'D, B12, магний',
+      minerals: 'Железо, цинк, селен'
+    };
+  }
+  function rows(arr){
+    return arr.map(function(r){ return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1] || '—')+'</td></tr>'; }).join('');
+  }
+  function section(title, arr){
+    return '<h2 style="text-align:center">'+esc(title)+'</h2><table><tbody>'+rows(arr)+'</tbody></table>';
+  }
+
+  function macroCards(calories){
+    var c = Number(calories || 0);
+    var kcal = c ? Math.round(c) : 0;
+    var protein = kcal ? Math.round(kcal * 0.25 / 4) : 0;
+    var fats = kcal ? Math.round(kcal * 0.35 / 9) : 0;
+    var carbs = kcal ? Math.round(kcal * 0.40 / 4) : 0;
+    function n(v){ return v ? Number(v).toLocaleString('ru-RU') : '—'; }
+    function card(name, value, unit, pct){
+      return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+'</div><div class="kbju-unit">'+esc(unit)+'</div>'+(pct?'<div class="kbju-pct">'+esc(pct)+'</div>':'')+'</div>';
+    }
+    return '<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">'+card('Калорийность',n(kcal),'ккал','')+card('Белки',n(protein),'г','25%')+card('Жиры',n(fats),'г','35%')+card('Углеводы',n(carbs),'г','40%')+'</div>';
+  }
+  function productsTable(title, list){
+    list = list || [];
+    return '<h2>'+esc(title)+' ('+list.length+')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>'+
+      list.map(function(x){return '<tr><td>'+esc(x.category)+'</td><td>'+esc(x.product)+'</td><td>'+esc(x.status)+'</td></tr>';}).join('')+
+      '</tbody></table>';
+  }
+  window.buildPdfHtml = function(){
+    var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+    var food = window.foodResult || {};
+    var products = [];
+    try { products = window.productResults || (typeof window.runProductCalculations === 'function' ? window.runProductCalculations() : []); } catch(e){ products = []; }
+    var rec = products.filter(function(x){return x.status === 'РЕКОМЕНДОВАНО';});
+    var forb = products.filter(function(x){return x.status === 'ЗАПРЕЩЕНО';});
+    var allMeaningful = products.filter(function(x){return x.status !== 'НЕЙТРАЛЬНО';});
+    var meta = [d.chartName || '', d.chartDate || '', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '')].filter(Boolean).join(' · ');
+    var ex = extraFoodValues(food);
+    return '<div class="pdf-export-root">' +
+      '<h1>Питание по натальной карте</h1>' +
+      '<div class="meta">'+esc(meta)+'</div>' +
+      section('Режим питания', [
+        ['Количество приёмов еды', food.meals],
+        ['Завтрак', food.breakfast],
+        ['Обед', food.lunch],
+        ['Ужин', food.dinner],
+        ['Метаболизм', food.metabolism]
+      ]) +
+      macroCards(food.bmr) +
+      section('Водно-солевой баланс', [
+        ['Соль', ex.salt], ['Вода', ex.water], ['Жидкость', ex.liquid], ['Запивать ли еду', ex.drink]
+      ]) +
+      section('Белковый обмен', [
+        ['Источник белка', ex.proteinSource], ['Вегетарианство', ex.vegetarian]
+      ]) +
+      section('Жировой обмен', [
+        ['Источник жиров', ex.fatSource], ['Пропорция', ex.fatProportion], ['Накопление жира', ex.fatAccumulation], ['Холестерин', ex.cholesterol], ['Предрасположенность к полноте', ex.fullness]
+      ]) +
+      section('Углеводный обмен', [
+        ['Гиперинсулинемия', ex.hyperinsulin], ['Сахар', ex.sugar]
+      ]) +
+      section('Витамины и минералы', [
+        ['Нехватка витаминов', ex.vitamins], ['Нехватка минералов', ex.minerals]
+      ]) +
+      productsTable('Рекомендовано итого', rec) +
+      productsTable('Запрещено итого', forb) +
+      productsTable('Все рассчитанные продукты по страницам', allMeaningful.length ? allMeaningful : products) +
+      '</div>';
+  };
+})();
+</script>
+
+</body></html>`;
 }
 
 async function exportDocx() {
@@ -2509,6 +2727,24 @@ window.startExportDocx = async function(event) {
     return rows.map(function(x){ return '<tr><td>' + escapeHtml(x.category) + '</td><td>' + escapeHtml(x.product) + '</td><td>' + escapeHtml(x.status) + '</td></tr>'; }).join('');
   }
 
+  function macroCards(calories){
+    var c = Number(calories || 0);
+    var kcal = c ? Math.round(c) : 0;
+    var protein = kcal ? Math.round(kcal * 0.25 / 4) : 0;
+    var fats = kcal ? Math.round(kcal * 0.35 / 9) : 0;
+    var carbs = kcal ? Math.round(kcal * 0.40 / 4) : 0;
+    function n(v){ return v ? Number(v).toLocaleString('ru-RU') : '—'; }
+    function card(name, value, unit, pct){
+      return '<div class="kbju-card"><div class="kbju-name">' + escapeHtml(name) + '</div><div class="kbju-value">' + escapeHtml(value) + '</div><div class="kbju-unit">' + escapeHtml(unit) + '</div>' + (pct ? '<div class="kbju-pct">' + escapeHtml(pct) + '</div>' : '') + '</div>';
+    }
+    return '<h2 class="kbju-title">КБЖУ</h2><div class="kbju-grid">' +
+      card('Калорийность', n(kcal), 'ккал', '') +
+      card('Белки', n(protein), 'г', '25%') +
+      card('Жиры', n(fats), 'г', '35%') +
+      card('Углеводы', n(carbs), 'г', '40%') +
+      '</div>';
+  }
+
   window.buildPdfHtml = function(){
     var d = window.currentData || currentData || {};
     var calc = typeof calcElements === 'function' ? calcElements(d.planets || [], d.asc, d.mc) : { elements:{} };
@@ -2521,16 +2757,57 @@ window.startExportDocx = async function(event) {
     var elements = calc.elements || {};
     var aspectList = (d.aspects || []).filter(function(a){ try { return shouldShowAspect(a.p1, a.p2, a.orb); } catch(e){ return true; } });
 
+    var water = food.weight ? Math.round(Number(food.weight) * 30).toLocaleString('ru-RU') + ' мл в день' : '—';
+    var liquidMin = food.weight ? Math.round(Number(food.weight) * 50).toLocaleString('ru-RU') : '—';
+    var liquidMax = food.weight ? Math.round(Number(food.weight) * 60).toLocaleString('ru-RU') : '—';
+    var liquid = food.weight ? liquidMin + '–' + liquidMax + ' мл в день' : '—';
+    var sipFood = (calc && calc.vlazhnost > calc.suhost) ? 'Можно небольшими глотками' : 'Не запивать';
+    var proteinSource = (calc && calc.racionalnost >= calc.emotsionalnost) ? 'Животный и растительный' : 'Растительный + лёгкий животный';
+    var vegetarian = (calc && calc.holod > calc.teplo) ? 'Нежелательно строгое' : 'Допустимо';
+    var fatSource = (calc && calc.suhost > calc.vlazhnost) ? 'Растительные масла, рыба, орехи' : 'Растительные масла и мягкие жиры';
+    var fatAccumulation = (calc && calc.holod > 11) ? 'Повышенное' : ((calc && calc.holod >= 7) ? 'Среднее' : 'Низкое');
+    var cholesterol = (calc && calc.teplo > calc.holod) ? 'Контролировать' : 'Умеренный уровень';
+    var fullness = (calc && (calc.holod + calc.vlazhnost) > (calc.teplo + calc.suhost)) ? 'Умеренная' : 'Низкая';
+    var hyperIns = (calc && calc.vlazhnost > calc.suhost) ? 'Умеренная склонность' : 'Низкая склонность';
+    var sugar = (calc && calc.emotsionalnost > calc.racionalnost) ? 'Ограничить' : 'Умеренно';
+    var vitamins = (calc && calc.suhost > calc.vlazhnost) ? 'A, E, группа B' : 'D, B12, магний';
+    var minerals = (calc && calc.holod > calc.teplo) ? 'Железо, цинк, селен' : 'Магний, калий, цинк';
+
     return '<div class="pdf-export-root">' +
       '<h1>Питание по натальной карте</h1>' +
       '<div class="meta">' + escapeHtml(meta) + '</div>' +
       '<h2>Режим питания</h2><table><tbody>' + tableRows([
-        ['КБЖУ', food.bmr ? 'Базовый обмен: ' + Number(food.bmr).toLocaleString('ru-RU') + ' ккал в день' : '—'],
         ['Количество приёмов еды', food.meals || '—'],
         ['Завтрак', food.breakfast || '—'],
         ['Обед', food.lunch || '—'],
         ['Ужин', food.dinner || '—'],
         ['Метаболизм', food.metabolism || '—']
+      ]) + '</tbody></table>' +
+      macroCards(food.bmr) +
+      '<h2>Водно-солевой баланс</h2><table><tbody>' + tableRows([
+        ['Соль', '5 грамм'],
+        ['Вода', water],
+        ['Жидкость', liquid],
+        ['Запивать ли еду', sipFood]
+      ]) + '</tbody></table>' +
+      '<h2>Белковый обмен</h2><table><tbody>' + tableRows([
+        ['Источник белка', proteinSource],
+        ['Вегетарианство', vegetarian]
+      ]) + '</tbody></table>' +
+      '<h2>Жировой обмен</h2><table><tbody>' + tableRows([
+        ['Источник жиров', fatSource],
+        ['Пропорция', 'Омега-6 : Омега-3 = 4 : 1'],
+        ['Накопление жира', fatAccumulation],
+        ['Холестерин', cholesterol],
+        ['Предрасположенность к полноте', fullness]
+      ]) + '</tbody></table>' +
+      '<h2>Углеводный обмен</h2><table><tbody>' + tableRows([
+        ['Гиперинсулинемия', hyperIns],
+        ['Сахар', sugar]
+      ]) + '</tbody></table>' +
+      '<h2>Витамины и минералы</h2><table><tbody>' + tableRows([
+        ['Нехватка витаминов', vitamins],
+        ['Нехватка минералов', minerals]
       ]) + '</tbody></table>' +
       '<h2>Рекомендовано итого (' + rec.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(rec) + '</tbody></table>' +
       '<h2>Запрещено итого (' + forb.length + ')</h2><table><thead><tr><th>Категория</th><th>Продукт</th><th>Статус</th></tr></thead><tbody>' + productRows(forb) + '</tbody></table>' +
@@ -2604,7 +2881,7 @@ window.startExportDocx = async function(event) {
       '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
   }
   function resultPageCss(){
-    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#111933;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FAF3EB;--white:#fff;--card:rgba(250,243,235,.055);--border-soft:rgba(254,220,209,.34);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28)}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.rec,.forb{font-weight:700}.rec{color:#00B5A6}.forb{color:#FF99BE}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}}';
+    return '*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#111933;--pink:#FC9FBC;--peach:#FEDCD1;--cream:#FAF3EB;--white:#fff;--card:rgba(250,243,235,.055);--border-soft:rgba(254,220,209,.34);--muted:rgba(254,220,209,.82)}body{font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--navy);color:var(--cream);min-height:100vh;letter-spacing:.02em}.wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.2rem 5rem}.page-header{text-align:center;margin-bottom:1.8rem}.page-header h2{font-size:2.2rem;color:var(--pink);text-transform:uppercase;letter-spacing:.06em;line-height:1}.page-meta{color:var(--peach);font-size:1.05rem;margin-top:.45rem}.page-sub{color:var(--muted);font-size:.95rem;margin-top:.25rem}.pdf-export-root{background:rgba(250,243,235,.055);border:1px solid var(--border-soft);border-radius:16px;padding:1.4rem;margin-bottom:2rem}.pdf-export-root h1{color:var(--pink);font-size:2rem;text-align:center;text-transform:uppercase;margin-bottom:.6rem}.pdf-export-root h2{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.6rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid rgba(252,159,188,.28);text-align:center}.pdf-export-root h3{color:var(--peach);font-size:1.2rem;margin:1.2rem 0 .5rem}.meta{color:var(--peach);text-align:center;margin-bottom:1.2rem}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;margin-bottom:1rem}th,td{padding:.75rem .8rem;border-bottom:1px solid rgba(254,220,209,.14);font-size:1rem;text-align:left;vertical-align:top;color:var(--cream)}th{color:var(--peach);text-transform:uppercase;letter-spacing:.06em}.pdf-export-root .kbju-title{color:var(--pink);font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em;margin:1.4rem 0 .75rem;text-align:left;border:0;padding:0}.kbju-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.kbju-card{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:1rem .75rem;text-align:center;min-height:110px}.kbju-name{color:var(--cream);font-size:1rem;margin-bottom:.45rem}.kbju-value{color:var(--pink);font-size:1.9rem;font-weight:700;line-height:1}.kbju-unit,.kbju-pct{color:var(--cream);font-size:1rem;margin-top:.4rem}.rec,.forb{font-weight:700}.rec{color:#00B5A6}.forb{color:#FF99BE}.download-zone{display:flex;justify-content:center;margin-top:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 2.4rem;border-radius:14px;border:1.5px solid var(--border-soft);background:transparent;color:var(--cream);text-decoration:none;font-family:inherit;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.btn.bp{background:var(--cream);color:var(--navy);font-weight:700}@media print{body{background:#fff;color:#111}.download-zone,.page-header{display:none}.wrap{padding:0}.pdf-export-root{border:0;background:#fff;color:#111}th,td{color:#111;border-color:#ccc}.pdf-export-root h1,.pdf-export-root h2,.pdf-export-root h3{color:#0B1957}}@media(max-width:600px){.wrap{padding:1.5rem .8rem 4rem}.pdf-export-root{padding:.9rem}th,td{font-size:.9rem;padding:.6rem}.page-header h2{font-size:1.85rem}.kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kbju-value{font-size:1.65rem}}';
   }
   function downloadScript(){
     return 'function downloadPdf(){var el=document.getElementById("pdfContent");var opt={margin:8,filename:"pitanie_result.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["avoid-all","css","legacy"]}};if(typeof html2pdf!=="undefined"){html2pdf().set(opt).from(el).save();}else{window.print();}}';
@@ -2680,7 +2957,7 @@ window.startExportDocx = async function(event) {
     else if(intensive.indexOf(sunSign)!==-1){metabolismTitle='Энергоёмкий';metabolismText='Прием еды после физической активности. Организм должен быть разогретым в момент приема пищи.';}
     var bmr=selectedGender==='Мужской'?Math.round(10*weight+6.25*height-5*age+5):Math.round(10*weight+6.25*height-5*age-161);
     window.currentData=currentData;
-    window.foodResult={gender:gender,weight:weight,height:height,age:age,bmr:bmr,meals:meals,formulaText:formulaText,breakfast:breakfastVolumeTitle+'. '+breakfastVolumeText+'. '+breakfastTimeTitle+': '+breakfastTimeText+'.',lunch:lunchVolumeTitle+'. '+lunchVolumeText+'.',dinner:dinnerVolumeTitle+'. '+dinnerVolumeText+'.',metabolism:metabolismTitle+'. '+metabolismText};
+    window.foodResult={gender:gender,weight:weight,height:height,age:age,bmr:bmr,calories:bmr,proteinGrams:Math.round(bmr*0.25/4),fatGrams:Math.round(bmr*0.35/9),carbGrams:Math.round(bmr*0.40/4),meals:meals,formulaText:formulaText,breakfast:breakfastVolumeTitle+'. '+breakfastVolumeText+'. '+breakfastTimeTitle+': '+breakfastTimeText+'.',lunch:lunchVolumeTitle+'. '+lunchVolumeText+'.',dinner:dinnerVolumeTitle+'. '+dinnerVolumeText+'.',metabolism:metabolismTitle+'. '+metabolismText};
     window.openStandaloneResultFile();
   };
 })();
