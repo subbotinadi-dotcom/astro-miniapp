@@ -728,6 +728,18 @@ button[onclick="calculateFromUrl(event)"] {
 #result.step3-active #foodDataBlock {
   margin-top: 0 !important;
 }
+
+/* После расчёта стартовый экран полностью убирается */
+body.result-started #uploadZone {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 </style>
 
 
@@ -1341,7 +1353,13 @@ function render() {
   // Показатели
   renderIndicators(d);
 
-  document.getElementById('uploadZone').style.display = 'none';
+  const uploadZoneEl = document.getElementById('uploadZone');
+  if (uploadZoneEl) {
+    uploadZoneEl.style.display = 'none';
+    uploadZoneEl.setAttribute('hidden', 'hidden');
+    uploadZoneEl.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.add('result-started');
   const resultEl = document.getElementById('result');
   resultEl.classList.remove('step3-active');
   resultEl.style.display = 'block';
@@ -1888,6 +1906,14 @@ function showFoodPage(event) {
     metabolism: `${metabolismTitle}. ${metabolismText}`
   };
 
+  const uploadZoneEl3 = document.getElementById('uploadZone');
+  if (uploadZoneEl3) {
+    uploadZoneEl3.style.display = 'none';
+    uploadZoneEl3.setAttribute('hidden', 'hidden');
+    uploadZoneEl3.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.add('result-started');
+
   const foodDataBlock = document.getElementById('foodDataBlock');
   if (foodDataBlock) foodDataBlock.style.display = 'none';
 
@@ -1929,7 +1955,13 @@ function resetPage() {
   if (foodPage) foodPage.style.display = 'none';
   const foodDataBlock = document.getElementById('foodDataBlock');
   if (foodDataBlock) foodDataBlock.style.display = 'none';
-  document.getElementById('uploadZone').style.display = 'block';
+  document.body.classList.remove('result-started');
+  const uploadZoneReset = document.getElementById('uploadZone');
+  if (uploadZoneReset) {
+    uploadZoneReset.removeAttribute('hidden');
+    uploadZoneReset.removeAttribute('aria-hidden');
+    uploadZoneReset.style.display = 'block';
+  }
   document.getElementById('result').style.display = 'none';
   window.scrollTo(0, 0);
 }
@@ -1964,7 +1996,13 @@ function showStep2() {
 // ── После расчёта — показать планеты/аспекты, потом Шаг 3 ────────────────────
 function showResultWithStep3() {
   // Скрываем uploadZone, показываем result
-  document.getElementById('uploadZone').style.display = 'none';
+  const uploadZoneEl = document.getElementById('uploadZone');
+  if (uploadZoneEl) {
+    uploadZoneEl.style.display = 'none';
+    uploadZoneEl.setAttribute('hidden', 'hidden');
+    uploadZoneEl.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.add('result-started');
   const resultEl = document.getElementById('result');
   resultEl.classList.remove('step3-active');
   resultEl.style.display = 'block';
