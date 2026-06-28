@@ -1757,6 +1757,49 @@ body,
   #productsPage .status-forb{font-size:.68rem!important;padding:.2rem .44rem!important;}
 }
 
+
+
+/* Резервная загрузка HTML Сотиса, когда браузер/Telegram блокирует чтение ссылки */
+.sotis-file-fallback {
+  margin-top: 1rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid rgba(255,255,255,.12) !important;
+}
+.sotis-file-note {
+  color: rgba(255,255,255,.72) !important;
+  font-size: .98rem !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+  margin: 0 0 .75rem !important;
+}
+.sotis-file-label {
+  width: min(100%, 420px) !important;
+  min-height: 54px !important;
+  margin: .5rem auto 0 !important;
+  padding: 13px 22px !important;
+  border: 1.5px solid rgba(255,255,255,.28) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.06) !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  font-weight: 700 !important;
+  letter-spacing: .04em !important;
+}
+.sotis-file-label:hover { border-color: #FC9FBC !important; }
+.sotis-file-name {
+  display:block !important;
+  color: rgba(255,255,255,.68) !important;
+  font-size: .92rem !important;
+  text-align:center !important;
+  margin-top:.45rem !important;
+  overflow-wrap:anywhere !important;
+}
+
 </style>
 
 
@@ -1839,6 +1882,13 @@ text-align:center!important;
         <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
       </div>
       <div class="sotis-link-wrap"><button type="button" class="sotis-btn-style" onclick="calculateFromUrl(event)">✦ Рассчитать</button></div>
+
+      <div class="sotis-file-fallback">
+        <p class="sotis-file-note">Если ссылка не читается в Telegram или на ПК, сохраните страницу карты Сотиса как HTML и загрузите файл сюда.</p>
+        <input type="file" id="sotisHtmlFileInput" accept=".html,.htm,text/html" style="display:none">
+        <label for="sotisHtmlFileInput" class="sotis-file-label">✦ Загрузить HTML карты</label>
+        <span id="sotisHtmlFileName" class="sotis-file-name"></span>
+      </div>
     </div>
 
     </div>
@@ -3098,7 +3148,7 @@ const SOTIS_OVERALL_TIMEOUT_MS = 12000;
 // На сервере должен быть endpoint, который принимает ?url=<encoded sotis url>
 // и возвращает HTML страницы Sotis. Если endpoint не настроен, код автоматически
 // попробует старые способы ниже: direct / allorigins / corsproxy.
-const CUSTOM_SOTIS_PROXY = '/api/sotis?url=';
+const CUSTOM_SOTIS_PROXY = '';
 
 const SOTIS_LOADERS = [
   {
@@ -3117,9 +3167,24 @@ const SOTIS_LOADERS = [
     build: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
   },
   {
+    name: 'allorigins-get',
+    enabled: () => true,
+    build: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+  },
+  {
+    name: 'jina-reader',
+    enabled: () => true,
+    build: url => 'https://r.jina.ai/http://' + url.replace(/^https?:\/\//i, '')
+  },
+  {
     name: 'corsproxy',
     enabled: () => true,
     build: url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+  },
+  {
+    name: 'codetabs',
+    enabled: () => true,
+    build: url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
   }
 ];
 
@@ -3150,7 +3215,7 @@ function extractSotisUrl(value) {
 
 function looksLikeSotisChartHtml(html) {
   const text = String(html || '');
-  return text.includes('table') && (text.includes('coord') || text.includes('g.asp') || text.includes('vsbl'));
+  return text.length > 1000 && /sotis|coord|g\.asp|vsbl|Солнце|Луна|Меркурий|Венера|Марс/i.test(text);
 }
 
 async function readProxyResponse(resp) {
@@ -3238,6 +3303,57 @@ async function fetchViaProxy(url) {
   });
 }
 
+
+function showSotisLoadError(message) {
+  const urlErr = document.getElementById('urlErr');
+  if (urlErr) {
+    urlErr.textContent = message;
+    urlErr.style.display = 'block';
+  }
+}
+
+function processSotisHtml(html) {
+  if (typeof parseHTML !== 'function' || typeof render !== 'function') {
+    throw new Error('Логика расчёта не загрузилась. Обновите файл полностью и попробуйте снова.');
+  }
+  currentData = parseHTML(html);
+  if (!currentData || !currentData.planets || currentData.planets.length === 0) {
+    throw new Error('HTML прочитан, но координаты планет не найдены. Сохраните именно страницу уже построенной карты Сотиса.');
+  }
+  render();
+  showResultWithStep3();
+}
+
+async function calculateFromSotisHtmlFile(file) {
+  if (!file) return;
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingTxt = document.getElementById('loadingText');
+  const nameEl = document.getElementById('sotisHtmlFileName');
+  const urlErr = document.getElementById('urlErr');
+  if (urlErr) urlErr.style.display = 'none';
+  if (nameEl) nameEl.textContent = '✓ ' + file.name;
+  if (overlay) overlay.classList.add('active');
+  if (loadingTxt) loadingTxt.textContent = 'Читаем HTML карты...';
+  try {
+    const html = await file.text();
+    if (loadingTxt) loadingTxt.textContent = 'Рассчитываем показатели...';
+    processSotisHtml(html);
+  } catch (e) {
+    showSotisLoadError('Не удалось прочитать HTML-файл: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (overlay) overlay.classList.remove('active');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const sotisHtmlInput = document.getElementById('sotisHtmlFileInput');
+  if (sotisHtmlInput) {
+    sotisHtmlInput.addEventListener('change', function(e) {
+      calculateFromSotisHtmlFile(e.target.files && e.target.files[0]);
+    });
+  }
+});
+
 // ── Главная функция — загрузить карту по ссылке ───────────────────────────────
 async function calculateFromUrl(event) {
   if (event) { event.preventDefault(); event.stopPropagation(); }
@@ -3283,23 +3399,12 @@ async function calculateFromUrl(event) {
     // Без отдельного выбора пола на первом экране: данные пола вводятся на следующем шаге.
     selectedGender = '';
 
-    // Вызываем оригинальный парсер и рендер
-    if (typeof parseHTML !== 'function' || typeof render !== 'function') {
-      throw new Error('Логика расчёта не загрузилась. Обновите файл полностью и попробуйте снова.');
-    }
-    currentData = parseHTML(html);
-    if (!currentData || !currentData.planets || currentData.planets.length === 0) {
-      throw new Error('Ссылка прочитана, но координаты планет не найдены. Скопируйте ссылку в браузере и вставьте её в поле Шага 2.');
-    }
-    render();
+    processSotisHtml(html);
 
     overlay.classList.remove('active');
-
-    // Показываем результат со встроенным шагом 3
-    showResultWithStep3();
   } catch(e) {
     overlay.classList.remove('active');
-    alert('Ошибка: ' + e.message);
+    showSotisLoadError('Не удалось прочитать ссылку автоматически. Это ограничение CORS у Сотиса/браузера. Сохраните страницу построенной карты как HTML и загрузите её через кнопку ниже. Детали: ' + (e && e.message ? e.message : e));
   } finally {
     if (calcBtn) { calcBtn.disabled = false; calcBtn.style.opacity = ''; }
   }
