@@ -321,3 +321,49 @@ html,body{overflow-x:hidden!important;}
   #result .energy-card{min-height:74px!important;}
   #foodDataBlock{padding:1rem!important;margin-bottom:2.5rem!important;}
 }
+
+
+/* User requested adjustments */
+#result .planet-card,
+#result .kbju-card{
+  width:315px!important;
+  max-width:315px!important;
+  height:315px!important;
+  aspect-ratio:auto!important;
+}
+#result .planets-grid,
+#result .kbju-grid{
+  justify-content:center!important;
+}
+#result .planet-name{font-size:1.2rem!important;}
+#result .planet-pos,
+#result .planet-sign{font-size:0.8rem!important;}
+#result .aspect-row .asp-planets{
+  font-size:0.8rem!important;
+  color:#D8C3A5!important;
+  text-transform:uppercase!important;
+}
+.recommended-title,.recommended-header{
+ color:inherit!important;
+ background:inherit!important;
+}
+#result .kbju-grid{
+ display:grid!important;
+ grid-template-columns:repeat(2,315px)!important;
+ gap:1rem!important;
+}
+#result .kbju-card{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;
+ justify-content:center!important;
+ text-align:center!important;
+}
+#result .kbju-card .title{
+ color:#fff!important;
+ font-size:0.8rem!important;
+}
+#result .kbju-card .value{
+ color:#FC9FBC!important;
+ font-size:1.3rem!important;
+}
