@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5375,5 +5374,451 @@ window.startExportDocx = async function(event) {
   color: #FF99BE !important;
 }
 </style>
+
+<!-- === CLIENT REQUEST PATCH: status badges, KBJU, product columns, full PDF export === -->
+<style id="client-request-final-patch">
+:root{
+  --patch-bg:#0D1935;
+  --patch-pink:#FC9FBC;
+  --patch-green:#00B5A6;
+  --patch-card:rgba(255,255,255,.06);
+  --patch-border:rgba(255,255,255,.12);
+  --patch-border-strong:rgba(255,255,255,.18);
+}
+
+/* 1. Плашки статуса: строго 0.7rem */
+.badge-rec,
+.status-rec,
+.badge-forb,
+.status-forb,
+.badge-neut,
+.status-neut{
+  font-size:.7rem!important;
+  line-height:1.15!important;
+}
+
+/* 2. Цвета заголовков */
+.sum-card.rec .cs-title,
+.rec .cs-title,
+#rRecBox .cs-title,
+#rRecBox h2,
+#rRecBox h3,
+.report-section.products-rec > h2{
+  color:var(--patch-green)!important;
+}
+.sum-card.forb .cs-title,
+.forb .cs-title,
+#rForbBox .cs-title,
+#rForbBox h2,
+#rForbBox h3,
+.report-section.products-forb > h2{
+  color:var(--patch-pink)!important;
+}
+
+/* 3. КБЖУ как блок Стихии */
+.kbju-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:1rem!important;
+  margin:0 0 1.25rem!important;
+}
+.kbju-card{
+  background:var(--patch-card)!important;
+  border:1px solid var(--patch-border)!important;
+  border-radius:16px!important;
+  min-height:112px!important;
+  padding:1rem .75rem!important;
+  text-align:center!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.kbju-name{
+  color:var(--app-white,#fff)!important;
+  font-size:1rem!important;
+  line-height:1.15!important;
+  text-transform:uppercase!important;
+  letter-spacing:.04em!important;
+  font-weight:800!important;
+  margin:0 0 .45rem!important;
+}
+.kbju-value,
+.kbju-unit-inline{
+  color:var(--patch-pink)!important;
+  font-size:clamp(2rem,5vw,3rem)!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+.kbju-unit-inline{
+  font-size:1.25rem!important;
+  margin-left:.22rem!important;
+}
+@media(max-width:600px){
+  .kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+
+/* 4. Рекомендовано / Запрещено: таблица 2 колонки — категория, продукт */
+.product-two-col-table{
+  width:100%!important;
+  border-collapse:collapse!important;
+  margin:0!important;
+  background:transparent!important;
+  border:0!important;
+}
+.product-two-col-table th,
+.product-two-col-table td{
+  padding:.55rem .45rem!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.14)!important;
+  background:transparent!important;
+  text-align:left!important;
+  vertical-align:top!important;
+}
+.product-two-col-table tr:last-child td{border-bottom:0!important;}
+.product-two-col-table th{
+  color:var(--patch-pink)!important;
+  font-size:.82rem!important;
+  text-transform:uppercase!important;
+  letter-spacing:.055em!important;
+}
+.product-two-col-table td:first-child{
+  width:38%!important;
+  color:rgba(255,255,255,.76)!important;
+  font-weight:800!important;
+}
+.product-two-col-table td:last-child{
+  color:#fff!important;
+  font-weight:800!important;
+}
+</style>
+
+<script id="client-request-final-patch-script">
+(function(){
+  var DARK = '#0D1935';
+  var PINK = '#FC9FBC';
+  var GREEN = '#00B5A6';
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
+    });
+  }
+  function raw(v){ return v == null || v === '' ? '—' : String(v); }
+  function val(v){ return esc(raw(v)).replace(/\n/g, '<br>'); }
+  function num(v){ return Number(v || 0).toLocaleString('ru-RU'); }
+  function pct(v,total){ return total ? Math.round((Number(v)||0) / total * 100) + '%' : '0%'; }
+  function cleanList(value){
+    var arr = String(value == null ? '' : value)
+      .replace(/•/g,'')
+      .split(/\n|;/)
+      .map(function(x){ return x.trim().replace(/[.]+$/, ''); })
+      .filter(Boolean);
+    return arr.length ? arr.join(', ') : '—';
+  }
+  function normalizeStatus(status){
+    status = String(status || '').toUpperCase().replace('Ё','Е').trim();
+    if (status.indexOf('РЕКОМЕНД') !== -1) return 'РЕКОМЕНДОВАНО';
+    if (status.indexOf('ЗАПРЕЩ') !== -1) return 'ЗАПРЕЩЕНО';
+    return 'НЕЙТРАЛЬНО';
+  }
+  function getProducts(){
+    try {
+      if (typeof window.runProductCalculations === 'function') {
+        window.productResults = window.productResults || window.runProductCalculations() || [];
+      }
+    } catch(e) {}
+    return (window.productResults || []).slice();
+  }
+  function getFood(){
+    return window.foodResult || {};
+  }
+  function getData(){
+    return window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+  }
+  function section(title, html, extra){
+    return '<section class="report-section '+(extra || '')+'"><h2>'+esc(title)+'</h2><div class="section-body">'+html+'</div></section>';
+  }
+  function rows(list){
+    return '<div class="report-rows">'+list.map(function(r){
+      return '<div class="report-row"><div class="row-label">'+esc(r[0])+'</div><div class="row-value">'+val(r[1])+'</div></div>';
+    }).join('')+'</div>';
+  }
+  function signSymbol(ch){
+    var map={';':'♈','<':'♉','=':'♊','>':'♋','?':'♌','@':'♍','A':'♎','B':'♏','C':'♐','D':'♑','E':'♒','F':'♓'};
+    return map[ch] || ch || '';
+  }
+  function planetSymbol(sym){
+    return (window.PLANET_SYMBOLS && window.PLANET_SYMBOLS[sym]) || sym || '';
+  }
+  function planetGlyphByName(name){
+    var m={'Солнце':'☉','Луна':'☽','Меркурий':'☿','Венера':'♀','Марс':'♂','Юпитер':'♃','Сатурн':'♄','Уран':'♅','Нептун':'♆','Плутон':'♇','Хирон':'⚷'};
+    return m[name] || name || '';
+  }
+  function planetLabel(p){
+    var name = (window.PLANET_NAMES && window.PLANET_NAMES[p.sym]) || p.name || p.sym || '';
+    var glyph = planetSymbol(p.sym);
+    return (glyph ? '<span class="astro-symbol">'+esc(glyph)+'</span> ' : '') + esc(name);
+  }
+  function planetsRows(d){
+    var out = [];
+    (d.planets || []).forEach(function(p){
+      var name = (window.PLANET_NAMES && window.PLANET_NAMES[p.sym]) || p.name || p.sym || '';
+      if (!name) return;
+      var sign = (window.SIGN_PLAIN && window.SIGN_PLAIN[p.signChar]) || p.sign || '';
+      var signGlyph = signSymbol(p.signChar);
+      out.push([
+        planetLabel(p),
+        (signGlyph ? '<span class="astro-symbol">'+esc(signGlyph)+'</span> ' : '') + esc(sign || p.signChar || '') + (p.pos ? ' · '+esc(p.pos) : '') + (p.isRetro ? ' R' : '')
+      ]);
+    });
+    if (d.asc) {
+      out.push(['ASC', '<span class="astro-symbol">'+esc(signSymbol(d.asc.signChar))+'</span> '+esc((window.SIGN_PLAIN && window.SIGN_PLAIN[d.asc.signChar]) || '')+(d.asc.pos ? ' · '+esc(d.asc.pos) : '')]);
+    }
+    if (d.mc) {
+      out.push(['MC', '<span class="astro-symbol">'+esc(signSymbol(d.mc.signChar))+'</span> '+esc((window.SIGN_PLAIN && window.SIGN_PLAIN[d.mc.signChar]) || '')+(d.mc.pos ? ' · '+esc(d.mc.pos) : '')]);
+    }
+    return rows(out.length ? out : [['Планеты','—']]);
+  }
+  function aspectsRows(d){
+    var list = (d.aspects || []).filter(function(a){
+      try { return typeof shouldShowAspect === 'function' ? shouldShowAspect(a.p1, a.p2, a.orb) : true; }
+      catch(e){ return true; }
+    });
+    if (!list.length) return rows([['Аспекты','В заданных орбисах не найдены']]);
+    return rows(list.map(function(a){
+      var info = (window.ASPECT_NAMES && window.ASPECT_NAMES[a.type]) || {};
+      var title = info.name || a.typeName || a.type || 'Аспект';
+      var p1 = '<span class="astro-symbol">'+esc(planetGlyphByName(a.p1))+'</span>';
+      var p2 = '<span class="astro-symbol">'+esc(planetGlyphByName(a.p2))+'</span>';
+      return [title, p1+' — '+p2+(a.orb ? ' · '+esc(a.orb) : '')];
+    }));
+  }
+  function elementGrid(elements,total){
+    var list=[['🔥 Огонь','Огонь'],['🌍 Земля','Земля'],['💨 Воздух','Воздух'],['💧 Вода','Вода']];
+    return '<div class="element-grid">'+list.map(function(x){
+      var v=elements[x[1]]||0;
+      return '<div class="element-box"><div class="element-title">'+esc(x[0])+'</div><div class="element-num">'+num(v)+'</div><div class="element-pct">'+pct(v,total)+'</div></div>';
+    }).join('')+'</div>';
+  }
+  function energyGrid(calc){
+    var list=[
+      ['Тепло',calc.teplo||0],
+      ['Сухость',calc.suhost||0],
+      ['Эмоциональность',calc.emotsionalnost||0],
+      ['Холод',calc.holod||0],
+      ['Влажность',calc.vlazhnost||0],
+      ['Рациональность',calc.racionalnost||0]
+    ];
+    return '<div class="energy-grid">'+list.map(function(x){
+      return '<div class="energy-box"><div class="energy-title">'+esc(x[0])+'</div><div class="energy-num">'+num(x[1])+'</div></div>';
+    }).join('')+'</div>';
+  }
+  function macroCards(food){
+    var source = (food && typeof food === 'object') ? food : { bmr: food };
+    var kcal = Number(source.kcal || source.calories || source.bmr || 0);
+    kcal = isFinite(kcal) && kcal > 0 ? Math.round(kcal) : 0;
+    var protein = Number(source.protein || source.proteins || 0);
+    var fats = Number(source.fat || source.fats || 0);
+    var carbs = Number(source.carbs || source.carbohydrates || 0);
+    if (!protein && kcal) protein = Math.round(kcal * 0.25 / 4);
+    if (!fats && kcal) fats = Math.round(kcal * 0.35 / 9);
+    if (!carbs && kcal) carbs = Math.round(kcal * 0.40 / 4);
+    function fmt(v){ v = Number(v || 0); return v ? Math.round(v).toLocaleString('ru-RU') : '—'; }
+    function card(name, value, unit){
+      return '<div class="kbju-card"><div class="kbju-name">'+esc(name)+'</div><div class="kbju-value">'+esc(value)+(unit ? '<span class="kbju-unit-inline"> '+esc(unit)+'</span>' : '')+'</div></div>';
+    }
+    return '<div class="kbju-grid">'+
+      card('Калорийность', fmt(kcal), 'ккал')+
+      card('Белки', fmt(protein), 'г')+
+      card('Жиры', fmt(fats), 'г')+
+      card('Углеводы', fmt(carbs), 'г')+
+      '</div>';
+  }
+  function productTwoColTable(products){
+    if (!products || !products.length) {
+      return '<table class="product-two-col-table"><thead><tr><th>Категория</th><th>Продукт</th></tr></thead><tbody><tr><td>—</td><td>—</td></tr></tbody></table>';
+    }
+    return '<table class="product-two-col-table"><thead><tr><th>Категория</th><th>Продукт</th></tr></thead><tbody>'+
+      products.map(function(x){
+        return '<tr><td>'+esc(x.category || 'Без категории')+'</td><td>'+esc(x.product || x.name || '—')+'</td></tr>';
+      }).join('')+
+      '</tbody></table>';
+  }
+  function categoryTables(products){
+    if (!products || !products.length) return '<div class="product-category"><h3 class="product-category-title">Продукты</h3>'+productTwoColTable([])+'</div>';
+    var order = ['Напитки','Соки','Алкоголь','Мясо','Рыба','Супы','Крупы','Углеводы','Тесто','Овощи','Фрукты / ягоды','Орехи'];
+    var groups = {};
+    products.forEach(function(x){
+      var key = x.category || 'Без категории';
+      (groups[key] || (groups[key]=[])).push(x);
+    });
+    Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
+    return order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
+      return '<div class="product-category"><h3 class="product-category-title">'+esc(cat.toUpperCase())+'</h3>'+
+        productTwoColTable(groups[cat])+'</div>';
+    }).join('');
+  }
+  function pdfStyle(){
+    return '<style>'+
+      ':root{--pdf-dark:'+DARK+';--pdf-pink:'+PINK+';--pdf-green:'+GREEN+';}'+
+      '.pdf-export-root{background:transparent!important;color:'+DARK+'!important;font-family:"Roboto Condensed",Roboto,"Helvetica Neue",Arial,sans-serif!important;max-width:960px;margin:0 auto;padding:0!important;box-sizing:border-box;}'+
+      '.pdf-export-root *{box-sizing:border-box;max-width:100%;overflow-wrap:break-word;word-break:normal;color:'+DARK+';}'+
+      '.pdf-export-root h1{color:'+PINK+'!important;text-align:center;text-transform:uppercase;letter-spacing:.065em;font-size:25pt;line-height:1.05;margin:0 0 10pt;font-weight:800;}'+
+      '.report-section{break-inside:avoid;page-break-inside:avoid;border:1.2pt solid rgba(13,25,53,.18)!important;border-radius:14pt!important;background:rgba(13,25,53,.035)!important;padding:10pt 11pt 8pt!important;margin:0 0 8pt!important;box-shadow:none!important;}'+
+      '.report-section h2{color:'+PINK+'!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.045em!important;font-size:12pt!important;line-height:1.15!important;margin:0 0 7pt!important;font-weight:800!important;}'+
+      '.report-section.products-rec{border-color:'+GREEN+'!important}.report-section.products-rec h2{color:'+GREEN+'!important}.report-section.products-forb{border-color:'+PINK+'!important}.report-section.products-forb h2{color:'+PINK+'!important}'+
+      '.report-rows,.product-list{display:block!important;width:100%!important}.report-row{display:grid!important;grid-template-columns:minmax(115pt,.62fr) minmax(0,1fr)!important;gap:8pt!important;align-items:start!important;border-bottom:1pt solid rgba(13,25,53,.13)!important;padding:4.5pt 0!important;min-height:0!important}.report-row:last-child{border-bottom:0!important}'+
+      '.row-label{color:rgba(13,25,53,.72)!important;text-transform:uppercase!important;letter-spacing:.035em!important;font-weight:800!important;font-size:9.2pt!important;line-height:1.25!important;text-align:left!important}.row-value{color:'+DARK+'!important;font-weight:700!important;font-size:10pt!important;line-height:1.3!important;text-align:left!important;min-width:0!important}'+
+      '.element-grid,.kbju-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7pt!important;margin:0!important}.energy-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7pt!important;margin:0!important}'+
+      '.element-box,.energy-box,.kbju-card{border:1.1pt solid rgba(13,25,53,.18)!important;border-radius:13pt!important;background:rgba(13,25,53,.035)!important;min-height:66pt!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:7pt!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid}'+
+      '.element-title,.energy-title,.kbju-name{font-size:8.5pt!important;color:rgba(13,25,53,.82)!important;text-transform:uppercase!important;letter-spacing:.035em!important;font-weight:800!important;line-height:1.15!important;text-align:center!important}.element-num,.energy-num,.kbju-value{color:'+PINK+'!important;font-size:23pt!important;font-weight:900!important;line-height:1!important;text-align:center!important;margin-top:4pt!important}.kbju-unit-inline{color:'+PINK+'!important;font-size:10pt!important;font-weight:900!important}.element-pct{color:rgba(13,25,53,.7)!important;font-size:8.5pt!important;font-weight:700!important;margin-top:2pt!important}'+
+      '.product-category{margin:0 0 8pt!important;break-inside:avoid;page-break-inside:avoid}.product-category:last-child{margin-bottom:0!important}.product-category-title{color:'+PINK+'!important;text-align:left!important;text-transform:uppercase!important;letter-spacing:.045em!important;font-size:10.5pt!important;margin:0 0 5pt!important;font-weight:900!important}'+
+      '.product-two-col-table{width:100%!important;border-collapse:collapse!important;margin:0!important;background:transparent!important;border:0!important}.product-two-col-table th,.product-two-col-table td{padding:4pt 5pt!important;border:0!important;border-bottom:1pt solid rgba(13,25,53,.13)!important;background:transparent!important;text-align:left!important;vertical-align:top!important}.product-two-col-table th{color:'+PINK+'!important;font-size:8pt!important;text-transform:uppercase!important;letter-spacing:.045em!important}.product-two-col-table td:first-child{width:38%!important;color:rgba(13,25,53,.72)!important;font-weight:800!important}.product-two-col-table td:last-child{color:'+DARK+'!important;font-weight:800!important}.product-two-col-table tr:last-child td{border-bottom:0!important}'+
+      '.status-rec,.status-forb,.status-neut,.badge-rec,.badge-forb,.badge-neut{font-size:.7rem!important}'+
+      '.astro-symbol{font-family:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","Noto Sans Symbols","Arial Unicode MS",sans-serif!important;font-weight:400!important;color:'+DARK+'!important}'+
+      '@page{margin:8mm}'+
+      '</style>';
+  }
+
+  window.buildPdfHtml = function(){
+    var d = getData();
+    var food = getFood();
+    var calc = typeof calcElements === 'function' ? calcElements(d.planets || [], d.asc, d.mc) : {elements:{}};
+    var elements = calc.elements || {};
+    var total = (elements['Огонь']||0)+(elements['Земля']||0)+(elements['Воздух']||0)+(elements['Вода']||0);
+    var products = getProducts();
+    var rec = products.filter(function(x){ return normalizeStatus(x.status) === 'РЕКОМЕНДОВАНО'; });
+    var forb = products.filter(function(x){ return normalizeStatus(x.status) === 'ЗАПРЕЩЕНО'; });
+
+    return '<div class="pdf-export-root">'+pdfStyle()+
+      '<h1>Питание по натальной карте</h1>'+
+      section('Данные пользователя', rows([
+        ['Имя', d.chartName || '—'],
+        ['Дата', d.chartDate || '—'],
+        ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')],
+        ['Возраст', food.age ? food.age + ' лет' : '—'],
+        ['Рост', food.height ? food.height + ' см' : '—'],
+        ['Вес', food.weight ? food.weight + ' кг' : '—']
+      ]))+
+      section('Планеты в знаках', planetsRows(d))+
+      section('Аспекты', aspectsRows(d))+
+      section('Стихии', elementGrid(elements,total))+
+      section('Энергии', energyGrid(calc))+
+      section('Режим питания', rows([
+        ['Количество приемов', food.meals || '—'],
+        ['Завтрак', food.breakfast || '—'],
+        ['Обед', food.lunch || '—'],
+        ['Ужин', food.dinner || '—'],
+        ['Метаболизм', food.metabolism || '—']
+      ]))+
+      section('КБЖУ', macroCards(food))+
+      section('Водно-солевой баланс', rows([
+        ['Соль', food.salt || '—'],
+        ['Вода', food.water || '—'],
+        ['Жидкость', food.liquid || '—'],
+        ['Запивать пищу', food.drinkFood || '—']
+      ]))+
+      section('Белковый обмен', rows([
+        ['Источники белка', food.proteinSource || '—'],
+        ['Вегетарианство', food.vegetarian || '—']
+      ]))+
+      section('Жировой обмен', rows([
+        ['Источники жиров', food.fatSource || '—'],
+        ['Соотношение жиров', food.fatProportion || '—'],
+        ['Накопление жира', food.fatAccumulation || '—'],
+        ['Холестерин', food.cholesterol || '—'],
+        ['Склонность к полноте', food.fullness || '—']
+      ]))+
+      section('Углеводный обмен', rows([
+        ['Сахар', food.sugarRules || '—'],
+        ['Гиперинсулинемия', food.hyperinsulin || '—']
+      ]))+
+      section('Витамины и минералы', rows([
+        ['Нехватка витаминов', cleanList(food.vitamins || '—')],
+        ['Нехватка минералов', cleanList(food.minerals || '—')]
+      ]))+
+      section('Рекомендовано', productTwoColTable(rec), 'products-rec')+
+      section('Запрещено', productTwoColTable(forb), 'products-forb')+
+      section('Итоговый список', categoryTables(products))+
+      '</div>';
+  };
+
+  window.exportPdf = async function(event){
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
+    var d = getData();
+    if (!d || !Object.keys(d).length) return alert('Сначала выполните расчёт.');
+    if (!window.foodResult) {
+      try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e){}
+    }
+    var wrap = document.createElement('div');
+    wrap.style.position = 'fixed';
+    wrap.style.left = '-99999px';
+    wrap.style.top = '0';
+    wrap.style.width = '960px';
+    wrap.style.background = 'transparent';
+    wrap.innerHTML = window.buildPdfHtml();
+    document.body.appendChild(wrap);
+
+    var name = (d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
+    var opt = {
+      margin: [8,8,8,8],
+      filename: 'pitanie_' + name + '.pdf',
+      image: { type: 'png', quality: 1 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: null, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['.report-section','.product-category','.element-box','.energy-box','.kbju-card'] }
+    };
+    try {
+      if (typeof html2pdf === 'undefined') throw new Error('html2pdf не загрузился');
+      await html2pdf().set(opt).from(wrap.firstElementChild).save();
+    } catch(e) {
+      alert('Не удалось автоматически скачать PDF. Откроется печать текущей страницы: выберите «Сохранить как PDF».');
+      window.print();
+    } finally {
+      setTimeout(function(){ wrap.remove(); }, 800);
+    }
+  };
+  window.startExportDocx = window.exportPdf;
+
+  /* Обновление кнопки и видимых блоков после расчета */
+  function applyVisibleProductColumns(){
+    var products = getProducts();
+    var rec = products.filter(function(x){ return normalizeStatus(x.status) === 'РЕКОМЕНДОВАНО'; });
+    var forb = products.filter(function(x){ return normalizeStatus(x.status) === 'ЗАПРЕЩЕНО'; });
+    var recBox = document.getElementById('rRecBox');
+    var forbBox = document.getElementById('rForbBox');
+    if (recBox) recBox.innerHTML = productTwoColTable(rec);
+    if (forbBox) forbBox.innerHTML = productTwoColTable(forb);
+    var btn = document.getElementById('exportDocxBtn');
+    if (btn) {
+      btn.textContent = '✦ Выгрузить PDF';
+      btn.onclick = window.exportPdf;
+    }
+  }
+
+  var oldShowFoodPage = window.showFoodPage || (typeof showFoodPage === 'function' ? showFoodPage : null);
+  if (oldShowFoodPage && !oldShowFoodPage.__clientPatchWrapped) {
+    var wrapped = function(event){
+      var res = oldShowFoodPage.call(this, event);
+      setTimeout(applyVisibleProductColumns, 0);
+      return res;
+    };
+    wrapped.__clientPatchWrapped = true;
+    window.showFoodPage = wrapped;
+    try { showFoodPage = wrapped; } catch(e) {}
+  }
+  document.addEventListener('click', function(e){
+    var t = e.target && e.target.closest && e.target.closest('#exportDocxBtn,[onclick*="startExportDocx"],[onclick*="exportPdf"]');
+    if (t) {
+      t.onclick = window.exportPdf;
+    }
+  }, true);
+  document.addEventListener('DOMContentLoaded', applyVisibleProductColumns);
+  setTimeout(applyVisibleProductColumns, 500);
+})();
+</script>
+
 </body>
 </html>
