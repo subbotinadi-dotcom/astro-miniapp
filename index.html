@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -5021,11 +5022,8 @@ var fatSources={'Овен':'подсолнечное и оливковое ма�
 var fatSource=jupiterSign?(fatSources[jupiterSign]||'не определено'):'Не удалось определить знак Юпитера.';
 
 var fixed=['Телец','Лев','Скорпион','Водолей'], hyper=[];
-if(['Овен','Дева','Скорпион'].indexOf(venusSign)!==-1) hyper.push('Венера в знаке '+venusSign);
 if(aspectBetween('Венера','Солнце',[0])) hyper.push('Венера соединение Солнце');
 if(fixed.indexOf(venusSign)!==-1 && fixed.indexOf(jupiterSign)!==-1) hyper.push('Венера и Юпитер в знаках: '+venusSign+' / '+jupiterSign);
-if(aspectBetween('Венера','Юпитер',[90,180])) hyper.push('Венера квадрат / оппозиция Юпитер');
-if(aspectBetween('Венера','Нептун',[90,180])) hyper.push('Венера квадрат / оппозиция Нептун');
 if(aspectBetween('Юпитер','Нептун',[90,180])) hyper.push('Юпитер квадрат / оппозиция Нептун');
 var hyperinsulin=hyper.length?('Присутствует.\n'+hyper.map(function(x){return '• '+x;}).join('\n')):'Не выражено.';
 var sugar=[];
@@ -5574,10 +5572,10 @@ function productRows(products){
 }
 function summaryProductRows(products){
   if (!products || !products.length) {
-    return '<div class="summary-product-list"><div class="summary-product-row"><div class="summary-product-category">—</div><div class="summary-product-name">—</div></div></div>';
+    return '<div class="summary-product-list"><div class="summary-product-line">—</div></div>';
   }
   return '<div class="summary-product-list">' + products.map(function(x){
-    return '<div class="summary-product-row"><div class="summary-product-category">'+esc(x.category || 'Без категории')+'</div><div class="summary-product-name">'+esc(x.product || x.name || '—')+'</div></div>';
+    return '<div class="summary-product-line"><span class="summary-product-category-inline">'+esc((x.category || 'Без категории').toUpperCase())+':</span> <span class="summary-product-name-inline">'+esc(x.product || x.name || '—')+'</span></div>';
   }).join('') + '</div>';
 }
 function productList(products){ return '<div class="product-list">'+productRows(products)+'</div>'; }
@@ -5704,5 +5702,45 @@ window.buildPdfHtml = function(){
 })();
 </script>
 
+
+<style id="astrodis-final-user-fixes">
+#result .planets-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:1.25rem!important;margin:1.25rem 0 1.8rem!important;}
+#result .planet-card{min-height:132px!important;padding:1.35rem 2rem!important;border:1.5px solid rgba(254,220,209,.34)!important;border-radius:20px!important;background:rgba(255,255,255,.055)!important;display:grid!important;grid-template-columns:78px minmax(0,1fr)!important;align-items:center!important;gap:1.1rem!important;box-shadow:none!important;}
+#result .planet-symbol{font-size:3.15rem!important;line-height:1!important;color:#FAF3EB!important;display:flex!important;align-items:center!important;justify-content:center!important;width:70px!important;min-width:70px!important;text-align:center!important;}
+#result .planet-info{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;min-width:0!important;}
+#result .planet-name{color:#FEDCD1!important;font-size:1.18rem!important;line-height:1!important;font-weight:900!important;letter-spacing:.18em!important;text-transform:uppercase!important;margin:0 0 .55rem!important;}
+#result .planet-pos{color:#fff!important;font-size:2.55rem!important;line-height:1!important;font-weight:900!important;letter-spacing:.02em!important;margin:0 0 .55rem!important;}
+#result .planet-sign{color:#fff!important;font-size:1.35rem!important;line-height:1!important;font-weight:900!important;letter-spacing:.035em!important;text-transform:uppercase!important;}
+#result .retrograde{color:#FC9FBC!important;margin-left:.35rem!important;}
+#result .aspect-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"type type" "planets orb"!important;align-items:center!important;gap:.65rem 1rem!important;width:100%!important;padding:1.15rem 1.35rem!important;border:1.5px solid rgba(254,220,209,.34)!important;border-radius:18px!important;background:rgba(255,255,255,.055)!important;text-align:left!important;}
+#result .aspect-row .asp-type{grid-area:type!important;justify-self:center!important;width:auto!important;max-width:100%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:.34rem 1.25rem!important;min-width:9.5rem!important;border-radius:999px!important;border:1.5px solid rgba(254,220,209,.42)!important;background:rgba(254,220,209,.12)!important;color:#fff!important;text-align:center!important;font-size:1rem!important;line-height:1.05!important;font-weight:900!important;letter-spacing:.07em!important;text-transform:uppercase!important;margin:0!important;white-space:nowrap!important;}
+#result .aspect-row .asp-planets{grid-area:planets!important;justify-self:start!important;text-align:left!important;width:auto!important;color:#fff!important;font-size:1.25rem!important;line-height:1.15!important;font-weight:900!important;letter-spacing:.04em!important;text-transform:uppercase!important;margin:0!important;}
+#result .aspect-row .asp-orb{grid-area:orb!important;justify-self:end!important;text-align:right!important;width:auto!important;color:#FEDCD1!important;font-size:1.05rem!important;line-height:1.15!important;font-weight:900!important;letter-spacing:.035em!important;margin:0!important;white-space:nowrap!important;}
+#result .elements-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:1rem!important;margin:1rem 0 1.4rem!important;}
+#result .element-card{min-height:178px!important;padding:1.25rem 1rem!important;border:1.5px solid rgba(254,220,209,.34)!important;border-radius:18px!important;background:rgba(255,255,255,.055)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;}
+#result .element-name{color:#FEDCD1!important;font-size:1.15rem!important;line-height:1.15!important;font-weight:900!important;letter-spacing:.16em!important;text-transform:uppercase!important;margin:0 0 .8rem!important;}
+#result .element-score{color:#fff!important;font-size:3.4rem!important;line-height:1!important;font-weight:900!important;margin:0!important;}
+#result .element-card div[style]{color:#FEDCD1!important;font-size:1.22rem!important;line-height:1!important;font-weight:900!important;margin-top:.75rem!important;}
+#result .element-detail{display:none!important;}
+#result .energies-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:1rem!important;margin:1rem 0 1.6rem!important;}
+#result .energy-card{min-height:108px!important;padding:1.15rem 1.35rem!important;border:1.5px solid rgba(254,220,209,.34)!important;border-radius:18px!important;background:rgba(255,255,255,.055)!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:1rem!important;text-align:left!important;}
+#result .energy-label{color:#fff!important;font-size:1.28rem!important;line-height:1.1!important;font-weight:900!important;letter-spacing:.035em!important;text-transform:uppercase!important;}
+#result .energy-formula{display:none!important;}
+#result .energy-score{color:#fff!important;font-size:3.1rem!important;line-height:1!important;font-weight:900!important;min-width:3.2rem!important;text-align:right!important;}
+#inlineResultContent .kbju-grid,#productsPage .kbju-grid,#result .kbju-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:1rem!important;margin:1rem 0 1.35rem!important;}
+#inlineResultContent .kbju-card,#productsPage .kbju-card,#result .kbju-card{min-height:108px!important;padding:1.15rem 1.1rem!important;border:1.5px solid rgba(254,220,209,.34)!important;border-radius:18px!important;background:rgba(255,255,255,.055)!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;text-align:center!important;}
+#inlineResultContent .kbju-name,#productsPage .kbju-name,#result .kbju-name{color:#FEDCD1!important;font-size:1rem!important;line-height:1.15!important;font-weight:900!important;letter-spacing:.08em!important;text-transform:uppercase!important;margin:0 0 .55rem!important;}
+#inlineResultContent .kbju-value,#inlineResultContent .kbju-unit-inline,#productsPage .kbju-value,#productsPage .kbju-unit-inline,#result .kbju-value,#result .kbju-unit-inline{color:#fff!important;font-size:2.3rem!important;line-height:1!important;font-weight:900!important;}
+.pdf-export-root .report-row,#inlineResultContent .report-row,#productsPage .report-row{grid-template-columns:minmax(190px,.74fr) minmax(0,1fr)!important;}
+.pdf-export-root .row-label{white-space:nowrap!important;}
+.pdf-export-root .summary-product-list{display:block!important;width:100%!important;}
+.pdf-export-root .summary-product-line{color:#fff!important;font-weight:800!important;line-height:1.35!important;padding:.48rem 0!important;border-bottom:1px solid rgba(255,255,255,.14)!important;text-align:left!important;}
+.pdf-export-root .summary-product-line:last-child{border-bottom:0!important;}
+.pdf-export-root .summary-product-category-inline{color:#FEDCD1!important;text-transform:uppercase!important;letter-spacing:.04em!important;white-space:nowrap!important;}
+.pdf-export-root .summary-product-name-inline{color:#fff!important;}
+.pdf-export-root .report-section.products-rec h2{color:#00B5A6!important;}
+.pdf-export-root .report-section.products-forb h2{color:#FF99BE!important;}
+@media(max-width:700px){#result .planets-grid{grid-template-columns:1fr!important;gap:1rem!important;}#result .planet-card{grid-template-columns:64px minmax(0,1fr)!important;padding:1.05rem 1.15rem!important;min-height:118px!important;}#result .planet-symbol{font-size:2.55rem!important;width:58px!important;min-width:58px!important;}#result .planet-pos{font-size:2.2rem!important;}#result .planet-name{font-size:1.05rem!important;}#result .planet-sign{font-size:1.15rem!important;}#result .aspect-row{grid-template-columns:1fr!important;grid-template-areas:"type" "planets" "orb"!important;padding:1rem!important;}#result .aspect-row .asp-type{justify-self:center!important;font-size:.95rem!important;}#result .aspect-row .asp-planets,#result .aspect-row .asp-orb{justify-self:start!important;text-align:left!important;}#result .elements-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}#result .energies-grid{grid-template-columns:1fr!important;}#inlineResultContent .kbju-grid,#productsPage .kbju-grid,#result .kbju-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}.pdf-export-root .report-row,#inlineResultContent .report-row,#productsPage .report-row{grid-template-columns:1fr!important;}.pdf-export-root .row-label{white-space:normal!important;}}
+</style>
 </body>
 </html>
