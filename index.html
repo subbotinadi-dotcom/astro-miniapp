@@ -6873,6 +6873,7 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
   return new Blob([zip(files)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 }
 window.exportPdf = window.startExportDocx;
+window.buildRealDocxBlobFromHtml = buildRealDocxBlobFromHtml;
 })();
 </script>
 
