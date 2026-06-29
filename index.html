@@ -4078,7 +4078,7 @@ const foodRows = rows([
 ['Количество приемов еды', food.meals || '—'], ['Завтрак', food.breakfast || '—'],
 ['Обед', food.lunch || '—'], ['Ужин', food.dinner || '—'], ['Метаболизм', food.metabolism || '—']
 ]);
-return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Данные для расчета</h2><table>${rows([['Имя',d.chartName||'—'],['Дата',d.chartDate||'—'],['Время',d.birthTime||d.time||'—'],['Место',d.birthPlace||d.place||d.city||'—'],['Пол',food.gender||selectedGender||'—'],['Возраст',food.age?food.age+' лет':'—'],['Рост',food.height?food.height+' см':'—'],['Вес',food.weight?food.weight+' кг':'—']])}</table><h2>Стихия</h2><table><tr><th>Стихия</th><th>Балл</th><th>%</th></tr>${elementRows}</table><h2>Энергия</h2><table>${energyRows}</table><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr>${aspectRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
+return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Расчёт питания</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt}div.WordSection1{page:WordSection1}body{font-family:Arial,sans-serif;color:#111;font-size:10.5pt;line-height:1.25}h1{color:#0B1957;font-size:22pt;margin:0 0 8pt;text-align:center}h2{color:#0B1957;font-size:16pt;margin:18pt 0 8pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt}.meta{color:#555;margin-bottom:16pt;font-size:10pt;text-align:center}table{border-collapse:collapse;width:100%;table-layout:fixed;margin-bottom:7pt}th,td{border:1pt solid #ccc;padding:3pt 5pt;text-align:left;vertical-align:top}th{background:#f2f2f2}</style></head><body><div class="WordSection1"><h1>Питание по натальной карте</h1><div class="meta">${escapeHtmlSafe([d.chartName, d.chartDate].filter(Boolean).join(' · '))}</div><h2>Данные для расчета</h2><table>${rows([['Имя',d.chartName||'—'],['Дата',String(d.chartDate||'—').replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/,'')],['Пол',food.gender||selectedGender||'—'],['Возраст',food.age?food.age+' лет':'—'],['Рост',food.height?food.height+' см':'—'],['Вес',food.weight?food.weight+' кг':'—']])}</table><h2>Стихия</h2><table><tr><th>Стихия</th><th>Балл</th><th>%</th></tr>${elementRows}</table><h2>Энергия</h2><table>${energyRows}</table><h2>Планеты в знаках</h2><table>${rows(planets)}</table><h2>Аспекты</h2><table><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr>${aspectRows}</table><h2>Режим питания</h2><table>${foodRows}</table></div>
 
 
 </body></html>`;
@@ -5358,7 +5358,7 @@ var rec = products.filter(function(x){ return x.status === 'РЕКОМЕНДОВ
 var forb = products.filter(function(x){ return x.status === 'ЗАПРЕЩЕНО' || x.status === 'ЗАПРЕЩЁН'; });
 return '<div class="pdf-export-root">'+resultStyle()+
 '<h1>Питание по натальной карте</h1>'+ '<h2>Данные для расчета</h2>'+dataGrid([
-['Имя', d.chartName || '—'], ['Дата', d.chartDate || '—'],
+['Имя', d.chartName || '—'], ['Дата', String(d.chartDate || '—').replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/, '')],
 ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')], ['Возраст', food.age ? food.age + ' лет' : '—'], ['Рост', food.height ? food.height + ' см' : '—'], ['Вес', food.weight ? food.weight + ' кг' : '—']
 ])+
 '<h2>Стихия</h2>'+elementGrid(elements,total)+
@@ -5628,7 +5628,7 @@ return '<div class="pdf-export-root">'+finalResultStyle()+
 '<h1>Питание по натальной карте</h1>'+ 
 section('Данные для расчета', rows([
 ['Имя', d.chartName || '—'],
-['Дата', d.chartDate || '—'],
+['Дата', String(d.chartDate || '—').replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/, '')],
 ['Пол', food.gender || (typeof selectedGender !== 'undefined' ? selectedGender : '—')],
 ['Возраст', food.age ? food.age + ' лет' : '—'],
 ['Рост', food.height ? food.height + ' см' : '—'],
@@ -6192,6 +6192,10 @@ function cleanList(value){
     .filter(Boolean);
   return arr.length ? arr.join(', ') : '—';
 }
+
+function dateOnly(value){
+  return String(value || '—').replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/, '');
+}
 function tableRows(list){
   return '<table class="data-table"><tbody>'+list.map(function(r){
     return '<tr><td class="label">'+esc(r[0])+'</td><td>'+val(r[1])+'</td></tr>';
@@ -6322,9 +6326,7 @@ window.makeWordHtml = function(){
   html += '<h1>Питание по натальной карте</h1>';
   html += section('Данные для расчета', tableRows([
     ['Имя', d.chartName || '—'],
-    ['Дата', d.chartDate || '—'],
-    ['Время', d.birthTime || d.time || '—'],
-    ['Место', d.birthPlace || d.place || d.city || '—'],
+    ['Дата', dateOnly(d.chartDate || '—')],
     ['Пол', gender || '—'],
     ['Возраст', food.age ? food.age + ' лет' : '—'],
     ['Рост', food.height ? food.height + ' см' : '—'],
@@ -6411,7 +6413,11 @@ window.startExportDocx = async function(event){
       '.telegram-pdf-render{width:794px;max-width:794px;background:#fff;color:#18304F;padding:28px 26px;box-sizing:border-box;font-family:Arial,"Roboto Condensed",sans-serif;}\n' +
       '.telegram-pdf-render *{box-sizing:border-box;}\n' +
       '.telegram-pdf-render table{page-break-inside:auto;}\n' +
-      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3{page-break-inside:avoid;}';
+      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3{page-break-inside:avoid;}\n' +
+      '.telegram-pdf-render,.telegram-pdf-render *{color:#18304F!important;text-shadow:none!important;-webkit-text-fill-color:#18304F!important;}\n' +
+      '.telegram-pdf-render h1{color:#00AFA5!important;-webkit-text-fill-color:#00AFA5!important;}\n' +
+      '.telegram-pdf-render h2,.telegram-pdf-render h3,.telegram-pdf-render th,.telegram-pdf-render td,.telegram-pdf-render .label,.telegram-pdf-render .big{color:#18304F!important;-webkit-text-fill-color:#18304F!important;}\n' +
+      '.telegram-pdf-render .status-rec,.telegram-pdf-render .status-forb,.telegram-pdf-render .status-neut,.telegram-pdf-render .badge-rec,.telegram-pdf-render .badge-forb,.telegram-pdf-render .badge-neut{color:#18304F!important;-webkit-text-fill-color:#18304F!important;}';
     document.head.appendChild(tmpStyle);
 
     wrap = document.createElement('div');
