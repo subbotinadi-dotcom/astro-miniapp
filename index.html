@@ -6531,7 +6531,7 @@ window.startExportDocx = async function(event) {
     if (chatId) {
       // Отправка напрямую через Telegram Bot API (без промежуточного сервера)
       if (loadingTxt) loadingTxt.textContent = 'Отправляем файл в Telegram...';
-      var BOT_TOKEN = '8829330658:AAEyGys2M560v56h35TCX82pdhnQco_HgeY';
+      var BOT_TOKEN = '8829330658:AAH1owiZzvW-Y4ozadUYNtL037yCy0FbodQ';
       var formData = new FormData();
       formData.append('chat_id', chatId);
       formData.append('document', new File([docxBlob], filename, { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
