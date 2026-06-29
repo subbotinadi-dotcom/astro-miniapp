@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -6369,253 +6370,84 @@ window.makeWordHtml = function(){
 };
 window.startExportDocx = async function(event){
   if (event) { event.preventDefault(); event.stopPropagation(); }
+
   var overlay = document.getElementById('loadingOverlay');
   var loadingTxt = document.getElementById('loadingText');
   if (overlay) overlay.classList.add('active');
-  if (loadingTxt) loadingTxt.textContent = 'Загружаем шрифт...';
+  if (loadingTxt) loadingTxt.textContent = 'Формируем PDF...';
+
+  var wrap = null;
+  var tmpStyle = null;
+
   try {
+    if (typeof html2pdf === 'undefined') throw new Error('html2pdf не загружен');
+
     var tg = window.Telegram && window.Telegram.WebApp;
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
-    if (!chatId) { alert('Откройте приложение через Telegram-бота'); return; }
+    if (!chatId) throw new Error('Откройте приложение через Telegram-бота');
 
-    // ── Load Cyrillic font ───────────────────────────────────────────────────
-    var { jsPDF } = window.jspdf || {};
-    if (!jsPDF) throw new Error('jsPDF не загружен');
-
-    // Fetch PTSans TTF (has Cyrillic) and register with jsPDF
-    var fontName = 'PTSans';
-    var fontResp = await fetch('https://fonts.gstatic.com/s/ptsans/v17/jizaRExUiTo99u79D0e0x8mN.woff2');
-    // woff2 won't work directly — use TTF from jsDelivr
-    var fontTTF = await fetch('https://cdn.jsdelivr.net/npm/ptsans-font@1.0.0/fonts/pt-sans-regular.ttf');
-    var fontLoaded = false;
-    if (fontTTF.ok) {
-      var ab = await fontTTF.arrayBuffer();
-      var bytes = new Uint8Array(ab);
-      var binary = '';
-      for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      var b64 = btoa(binary);
-      // We'll add to every doc created
-      window._cyrFontB64 = b64;
-      fontLoaded = true;
-    }
-
-    if (loadingTxt) loadingTxt.textContent = 'Формируем PDF...';
-
-    // ── Collect data ─────────────────────────────────────────────────────────
     if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
-    var d = window.currentData || {};
-    if (!d || (!d.planets && !d.chartName)) throw new Error('Нет данных для экспорта');
-    try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e){}
-    var food = window.foodResult || {};
-    var calc = {};
-    try { calc = typeof calcElements === 'function' ? calcElements(d.planets||[], d.asc, d.mc) : {}; } catch(e){}
-    var products = [];
-    try { products = (typeof window.runProductCalculations==='function' ? (window.productResults||window.runProductCalculations()) : (window.productResults||[])) || []; } catch(e){ products = window.productResults||[]; }
-    var gender = food.gender || (typeof selectedGender!=='undefined' ? selectedGender : '—');
+    if (!window.currentData && typeof currentData === 'undefined') throw new Error('Сначала выполните расчёт');
 
-    // ── Create jsPDF doc with Cyrillic font ──────────────────────────────────
-    var doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
 
-    if (window._cyrFontB64) {
-      doc.addFileToVFS('PTSans-Regular.ttf', window._cyrFontB64);
-      doc.addFont('PTSans-Regular.ttf', 'PTSans', 'normal');
-      doc.addFileToVFS('PTSans-Bold.ttf', window._cyrFontB64);
-      doc.addFont('PTSans-Bold.ttf', 'PTSans', 'bold');
-      fontName = 'PTSans';
-    } else {
-      fontName = 'helvetica';
+    // ВАЖНО: не рисуем кириллицу через doc.text/jsPDF.
+    // jsPDF без встроенного Unicode-шрифта превращает русский текст в нечитаемые символы.
+    // Поэтому PDF собирается как снимок HTML через html2canvas/html2pdf: текст остаётся визуально читаемым.
+    var html = (typeof window.makeWordHtml === 'function')
+      ? window.makeWordHtml()
+      : (typeof window.buildPdfHtml === 'function' ? '<!doctype html><html><head><meta charset="utf-8"></head><body>' + window.buildPdfHtml() + '</body></html>' : '');
+    if (!html) throw new Error('Не удалось собрать HTML для PDF');
+
+    var parsed = new DOMParser().parseFromString(html, 'text/html');
+
+    tmpStyle = document.createElement('style');
+    tmpStyle.textContent = Array.from(parsed.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n') + '\n' +
+      '.telegram-pdf-render{width:794px;max-width:794px;background:#fff;color:#18304F;padding:28px 26px;box-sizing:border-box;font-family:Arial,"Roboto Condensed",sans-serif;}\n' +
+      '.telegram-pdf-render *{box-sizing:border-box;}\n' +
+      '.telegram-pdf-render table{page-break-inside:auto;}\n' +
+      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3{page-break-inside:avoid;}';
+    document.head.appendChild(tmpStyle);
+
+    wrap = document.createElement('div');
+    wrap.style.position = 'fixed';
+    wrap.style.left = '-100000px';
+    wrap.style.top = '0';
+    wrap.style.width = '794px';
+    wrap.style.background = '#ffffff';
+
+    var content = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.documentElement;
+    var node = document.importNode(content, true);
+    node.classList.add('telegram-pdf-render');
+    wrap.appendChild(node);
+    document.body.appendChild(wrap);
+
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch(e) {}
     }
 
-    var PW = 210, PH = 297;
-    var ML = 12, MR = 12, MT = 12, MB = 12;
-    var CW = PW - ML - MR;
-    var y = MT;
-    var LINE = 5.5;
-
-    function hexRgb(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
-    function setC(h){ var c=hexRgb(h); doc.setTextColor(c[0],c[1],c[2]); }
-    function setF(h){ var c=hexRgb(h); doc.setFillColor(c[0],c[1],c[2]); }
-    function setD(h){ var c=hexRgb(h); doc.setDrawColor(c[0],c[1],c[2]); }
-    function font(style,size){ doc.setFont(fontName,style||'normal'); if(size) doc.setFontSize(size); }
-
-    function checkY(need){ if(y+(need||LINE)+2 > PH-MB){ doc.addPage(); y=MT; } }
-
-    function h1(text){
-      checkY(12); font('bold',18); setC('#00AFA5');
-      doc.text(text.toUpperCase(), PW/2, y, {align:'center'}); y+=10;
-    }
-    function h2(text){
-      checkY(10); y+=4; font('bold',12); setC('#18304F');
-      doc.text(text.toUpperCase(), PW/2, y, {align:'center'}); y+=2;
-      setD('#FC9FBC'); doc.setLineWidth(0.4);
-      doc.line(ML, y, PW-MR, y); y+=5;
-    }
-    function row2(key, val){
-      val = String(val||'—');
-      var col1 = CW*0.38, col2 = CW*0.62;
-      font('normal',8.5);
-      var valLines = doc.splitTextToSize(val, col2-4);
-      var rh = Math.max(LINE, LINE*valLines.length)+2;
-      checkY(rh);
-      setD('#D8E0EA'); doc.setLineWidth(0.15);
-      // key
-      font('bold',8.5); setC('#18304F');
-      doc.text(String(key||''), ML+2, y);
-      // val
-      font('normal',8.5); setC('#18304F');
-      doc.text(valLines, ML+col1+2, y);
-      y += rh;
-    }
-    function tableN(headers, rows){
-      var n = headers.length, colW = CW/n, rh = LINE+2;
-      checkY(rh*(rows.length+1)+2);
-      // header
-      setF('#F0E8F5'); setD('#D8E0EA'); doc.setLineWidth(0.15);
-      doc.rect(ML, y-4, CW, rh, 'FD');
-      font('bold',8); setC('#18304F');
-      headers.forEach(function(h,i){ doc.text(String(h||''), ML+colW*i+colW/2, y, {align:'center'}); });
-      y += rh;
-      rows.forEach(function(row){
-        checkY(rh+1);
-        setD('#D8E0EA'); doc.rect(ML, y-4, CW, rh, 'S');
-        font('normal',8.5); setC('#18304F');
-        row.forEach(function(cell,i){ doc.text(String(cell||'—'), ML+colW*i+colW/2, y, {align:'center'}); });
-        y += rh;
-      });
-      y += 2;
-    }
-    function bullet(text, color){
-      checkY(LINE+1); font('normal',8); setC(color||'#18304F');
-      var lines = doc.splitTextToSize('• '+String(text||''), CW-6);
-      doc.text(lines, ML+4, y); y += LINE*lines.length;
-    }
-
-    // ── Content ──────────────────────────────────────────────────────────────
-    h1('Питание по натальной карте');
-
-    // Header info
-    checkY(8); font('bold',11); setC('#18304F');
-    var sub1 = (d.chartName||'') + (d.chartDate?' '+d.chartDate:'') + (d.birthTime||d.time?' '+(d.birthTime||d.time):'');
-    doc.text(sub1.trim(), PW/2, y, {align:'center'}); y+=6;
-    font('normal',9); setC('#18304F');
-    var sub2parts = [];
-    if(gender) sub2parts.push('ПОЛ: '+gender);
-    if(food.age) sub2parts.push('ВОЗРАСТ: '+food.age+' лет');
-    if(food.height) sub2parts.push('РОСТ: '+food.height+' см');
-    if(food.weight) sub2parts.push('ВЕС: '+food.weight+' кг');
-    doc.text(sub2parts.join(',  '), PW/2, y, {align:'center'}); y+=8;
-
-    // Elements
-    h2('✦ Расчёт показателей ✦');
-    var el = (calc&&calc.elements)||{};
-    var tot = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
-    tableN(
-      ['Огонь','Земля','Воздух','Вода'],
-      [
-        ['Огонь','Земля','Воздух','Вода'].map(function(k){return el[k]||0;}),
-        ['Огонь','Земля','Воздух','Вода'].map(function(k){return tot?Math.round((el[k]||0)/tot*100)+'%':'0%';})
-      ]
-    );
-    tableN(
-      ['Тепло','Холод','Сухость','Влажность','Эмоц.','Рацион.'],
-      [[calc.teplo||0, calc.holod||0, calc.suhost||0, calc.vlazhnost||0, calc.emotsionalnost||0, calc.racionalnost||0]]
-    );
-
-    // Planets
-    h2('✦ Планеты в знаках ✦');
-    var pN=(typeof PLANET_NAMES!=='undefined')?PLANET_NAMES:{};
-    var pS=(typeof PLANET_SYMBOLS!=='undefined')?PLANET_SYMBOLS:{};
-    function signTxt(sc){ try{return typeof signLabel==='function'?signLabel(sc):(sc||'');}catch(e){return sc||'';} }
-    var pRows=[];
-    (d.planets||[]).forEach(function(p){
-      var nm=(pS[p.sym]?pS[p.sym]+' ':''+(pN[p.sym]||p.name||p.sym||'—')+(p.isRetro?' R':''));
-      var pos=[p.pos||'',signTxt(p.signChar)].filter(Boolean).join(' ');
-      pRows.push([nm,pos]);
-    });
-    if(d.asc) pRows.push(['ASC',[d.asc.pos||'',signTxt(d.asc.signChar)].filter(Boolean).join(' ')]);
-    if(d.mc) pRows.push(['MC',[d.mc.pos||'',signTxt(d.mc.signChar)].filter(Boolean).join(' ')]);
-    var half=Math.ceil(pRows.length/2), pairRows=[];
-    for(var i=0;i<half;i++){
-      var l=pRows[i]||['',''], r=pRows[i+half]||['',''];
-      pairRows.push([l[0],l[1],r[0],r[1]]);
-    }
-    tableN(['Планета','Положение','Планета','Положение'], pairRows);
-
-    // Aspects
-    h2('✦ Аспекты ✦');
-    var aspects=d.aspects||[];
-    try{if(typeof shouldShowAspect==='function')aspects=aspects.filter(function(a){return shouldShowAspect(a.p1,a.p2,a.orb);});}catch(e){}
-    var aN=(typeof ASPECT_NAMES!=='undefined')?ASPECT_NAMES:{};
-    tableN(
-      ['Аспект','Планеты','Орбис'],
-      aspects.map(function(a){
-        var inf=aN[a.type]||null;
-        return [(inf&&inf.name)||a.typeName||a.type||'—',(a.p1||'—')+' — '+(a.p2||'—'),a.orb||'—'];
-      })
-    );
-
-    // Питание
-    h2('✦ Режим питания ✦');
-    row2('Количество приёмов', food.meals);
-    row2('Завтрак', food.breakfast);
-    row2('Обед', food.lunch);
-    row2('Ужин', food.dinner);
-    row2('Метаболизм', food.metabolism);
-
-    h2('✦ КБЖУ ✦');
-    tableN(
-      ['Калорийность','Белки','Жиры','Углеводы'],
-      [[food.calories||'—',(food.proteins||food.protein||'—')+' г',(food.fats||food.fat||'—')+' г',(food.carbs||food.carbohydrates||'—')+' г']]
-    );
-
-    h2('✦ Водно-солевой баланс ✦');
-    row2('Соль', food.salt); row2('Вода', food.water);
-    row2('Жидкость', food.liquid); row2('Запивать пищу', food.drinkFood);
-
-    h2('✦ Белковый обмен ✦');
-    row2('Источники белка', food.proteinSource); row2('Вегетарианство', food.vegetarian);
-
-    h2('✦ Жировой обмен ✦');
-    row2('Источники жиров', food.fatSource); row2('Соотношение жиров', food.fatProportion);
-    row2('Накопление жира', food.fatAccumulation); row2('Холестерин', food.cholesterol);
-    row2('Склонность к полноте', food.fullness);
-
-    h2('✦ Углеводный обмен ✦');
-    row2('Сахар', food.sugarRules); row2('Гиперинсулинемия', food.hyperinsulin);
-
-    h2('✦ Витамины и минералы ✦');
-    row2('Нехватка витаминов', food.vitamins); row2('Нехватка минералов', food.minerals);
-
-    var rec=products.filter(function(x){return x.status==='РЕКОМЕНДОВАНО';});
-    var forb=products.filter(function(x){return x.status==='ЗАПРЕЩЕНО'||x.status==='ЗАПРЕЩЁН';});
-
-    h2('✦ Рекомендовано ✦');
-    if(rec.length){rec.forEach(function(p){bullet((p.name||p.product||'')+(p.comment?' — '+p.comment:''),'#00AFA5');});}
-    else{font('normal',9);setC('#18304F');checkY(LINE);doc.text('—',ML,y);y+=LINE;}
-
-    h2('✦ Запрещено ✦');
-    if(forb.length){forb.forEach(function(p){bullet((p.name||p.product||'')+(p.comment?' — '+p.comment:''),'#C01870');});}
-    else{font('normal',9);setC('#18304F');checkY(LINE);doc.text('—',ML,y);y+=LINE;}
-
-    h2('✦ Итоговый список ✦');
-    var bycat={};
-    products.forEach(function(p){ var c=p.category||'Прочее'; if(!bycat[c]) bycat[c]=[]; bycat[c].push(p); });
-    Object.keys(bycat).forEach(function(cat){
-      checkY(8); font('bold',9); setC('#C01870');
-      doc.text(cat.toUpperCase(), ML, y); y+=LINE+1;
-      bycat[cat].forEach(function(p){
-        var st=p.status||'';
-        var sc=st==='РЕКОМЕНДОВАНО'?'#00AFA5':(st==='ЗАПРЕЩЕНО'||st==='ЗАПРЕЩЁН'?'#C01870':'#555555');
-        bullet((p.name||p.product||'')+(p.comment?' — '+p.comment:'')+'  ['+st+']', sc);
-      });
-      y+=1;
-    });
-
-    // ── Send ─────────────────────────────────────────────────────────────────
-    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
-    var safeName = (d.chartName||'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g,'_');
+    var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+    var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.pdf';
-    var pdfBlob = doc.output('blob');
+
+    var opt = {
+      margin: [8, 8, 8, 8],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowWidth: 794
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    var pdfBlob = await html2pdf().set(opt).from(node).toPdf().outputPdf('blob');
+
+    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
 
     var base64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
@@ -6629,19 +6461,21 @@ window.startExportDocx = async function(event){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: filename })
     });
+
     var result = await resp.json();
-    if (result.ok) {
-      if (loadingTxt) loadingTxt.textContent = 'PDF отправлен в Telegram!';
-      setTimeout(function(){
-        if (overlay) overlay.classList.remove('active');
-        if (tg && typeof tg.close === 'function') tg.close();
-      }, 1500);
-    } else {
-      throw new Error(result.description || result.error || 'Ошибка сервера');
-    }
+    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера');
+
+    if (loadingTxt) loadingTxt.textContent = 'PDF отправлен в Telegram!';
+    setTimeout(function(){
+      if (overlay) overlay.classList.remove('active');
+      if (tg && typeof tg.close === 'function') tg.close();
+    }, 1500);
   } catch(e) {
-    alert('Ошибка отправки файла: ' + e.message);
+    alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
     if (overlay) overlay.classList.remove('active');
+  } finally {
+    if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    if (tmpStyle && tmpStyle.parentNode) tmpStyle.parentNode.removeChild(tmpStyle);
   }
 };
 window.exportPdf = window.startExportDocx;
