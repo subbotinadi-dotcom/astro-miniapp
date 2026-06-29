@@ -2901,6 +2901,7 @@ return raw.replace(/\s+/g, '').charAt(0);
 function parseHTML(html) {
 const doc = new DOMParser().parseFromString(html, 'text/html');
 
+// Имя и дата карты
 const vsbl = doc.querySelector('.vsbl text[data-t]');
 let chartName = '', chartDate = '';
 if (vsbl) {
@@ -2910,25 +2911,73 @@ if (nm) chartName = nm[1].replace(/\s*\([a-zA-Zа-яА-Я]\)\s*$/, '').trim();
 const dm = raw.match(/(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})/);
 chartDate = dm ? dm[1] : '';
 }
+// Альтернативный поиск имени/даты если .vsbl не нашёлся
+if (!chartName) {
+const allDataT = doc.querySelectorAll('[data-t]');
+allDataT.forEach(function(el) {
+const raw = el.getAttribute('data-t') || '';
+if (!chartName) {
+const nm = raw.match(/<b>(.+?)<\/b>/i);
+if (nm) chartName = nm[1].replace(/\s*\([a-zA-Zа-яА-Я]\)\s*$/, '').trim();
+}
+if (!chartDate) {
+const dm = raw.match(/(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})/);
+if (dm) chartDate = dm[1];
+}
+});
+}
 
 const planets = [];
-doc.querySelectorAll('table.coord tbody:not(.house) tr').forEach(tr => {
+
+// Способ 1: стандартная таблица table.coord
+doc.querySelectorAll('table.coord tbody:not(.house) tr').forEach(function(tr) {
 const cells = tr.querySelectorAll('td');
 if (cells.length < 2) return;
 const symEl = tr.querySelector('th .asmb') || tr.querySelector('th');
 if (!symEl) return;
 const sym = symEl.textContent.trim();
 const posRaw = cells[0].textContent.trim();
-// signChar — декодируем entities и берём первый символ
 const signChar = decodeChar(cells[1]);
 const isRetro = posRaw.startsWith('R');
 const pos = posRaw.replace(/^R\s*/, '').trim();
 planets.push({ sym, pos, signChar, isRetro });
 });
 
+// Способ 2: если таблица есть, но без класса coord (Safari может убирать классы при сохранении)
+if (planets.length === 0) {
+doc.querySelectorAll('table tbody tr').forEach(function(tr) {
+const cells = tr.querySelectorAll('td');
+if (cells.length < 2) return;
+const symEl = tr.querySelector('th .asmb') || tr.querySelector('th');
+if (!symEl) return;
+const sym = symEl.textContent.trim();
+if (!sym || sym.length > 5) return; // символы планет короткие
+const posRaw = cells[0].textContent.trim();
+if (!/^R?\d+/.test(posRaw)) return; // позиция должна начинаться с цифры или R
+const signChar = decodeChar(cells[1]);
+const isRetro = posRaw.startsWith('R');
+const pos = posRaw.replace(/^R\s*/, '').trim();
+planets.push({ sym, pos, signChar, isRetro });
+});
+}
+
+// Способ 3: парсинг из data-t атрибутов напрямую (если таблица не распознаётся)
+if (planets.length === 0) {
+const planetSymbols = new Set(['n','o','p','q','r','s','t','u','v','w','x','y','A','B','D','E','J','K']);
+doc.querySelectorAll('[data-t]').forEach(function(el) {
+const raw = el.getAttribute('data-t') || '';
+// Ищем паттерн планеты: символ + позиция + знак
+const m = raw.match(/^([^\s]+)\s+(R?\d+[^\s]*)\s+([^\s]{1,3})/);
+if (!m) return;
+const sym = m[1];
+if (!planetSymbols.has(sym)) return;
+planets.push({ sym: sym, pos: m[2].replace(/^R/, ''), signChar: m[3], isRetro: m[2].startsWith('R') });
+});
+}
+
 const aspects = [];
 const seen = new Set();
-doc.querySelectorAll('g.asp path[data-t]').forEach(p => {
+doc.querySelectorAll('g.asp path[data-t]').forEach(function(p) {
 const raw = p.getAttribute('data-t') || '';
 if (!raw || seen.has(raw)) return;
 seen.add(raw);
@@ -2942,19 +2991,46 @@ p2: m[4].trim(),
 orb: m[5].trim()
 });
 });
+// Альтернативный поиск аспектов (path без g.asp)
+if (aspects.length === 0) {
+doc.querySelectorAll('path[data-t]').forEach(function(p) {
+const raw = p.getAttribute('data-t') || '';
+if (!raw || seen.has(raw)) return;
+seen.add(raw);
+const m = raw.match(/^(.+?)\s*\((\d+)\)\s+(.+?)\s*[<>]+\s*(.+?)\s*\((.+?)\)\s*$/);
+if (!m) return;
+aspects.push({
+type: parseInt(m[2]),
+typeName: m[1].trim(),
+p1: m[3].trim(),
+p2: m[4].trim(),
+orb: m[5].trim()
+});
+});
+}
 
 // Дома — берём ASC (дом 1) и MC (дом 10)
 let asc = null, mc = null;
 const houseRows = doc.querySelectorAll('table.coord tbody.house tr');
-houseRows.forEach((tr, i) => {
+houseRows.forEach(function(tr, i) {
 const cells = tr.querySelectorAll('td');
 if (cells.length < 2) return;
 const pos = cells[0].textContent.trim();
-// signChar — декодируем entities и берём первый символ
 const signChar = decodeChar(cells[1]);
-if (i === 0) asc = { pos, signChar }; // Дом 1 = ASC
-if (i === 9) mc = { pos, signChar }; // Дом 10 = MC
+if (i === 0) asc = { pos, signChar };
+if (i === 9) mc = { pos, signChar };
 });
+// Альтернативный поиск домов
+if (!asc) {
+doc.querySelectorAll('table tbody.house tr').forEach(function(tr, i) {
+const cells = tr.querySelectorAll('td');
+if (cells.length < 2) return;
+const pos = cells[0].textContent.trim();
+const signChar = decodeChar(cells[1]);
+if (i === 0) asc = { pos, signChar };
+if (i === 9) mc = { pos, signChar };
+});
+}
 
 return { chartName, chartDate, planets, aspects, asc, mc };
 }
