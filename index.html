@@ -6529,25 +6529,22 @@ window.startExportDocx = async function(event) {
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
 
     if (chatId) {
-      // Отправка через Telegram-бота (без диалога "Перейти по ссылке")
+      // Отправка напрямую через Telegram Bot API (без промежуточного сервера)
       if (loadingTxt) loadingTxt.textContent = 'Отправляем файл в Telegram...';
-      var reader = new FileReader();
-      var base64 = await new Promise(function(resolve, reject) {
-        reader.onload = function() { resolve(reader.result.split(',')[1]); };
-        reader.onerror = reject;
-        reader.readAsDataURL(docxBlob);
-      });
-      var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
+      var BOT_TOKEN = '8829330658:AAEyGys2M560v56h35TCX82pdhnQco_HgeY';
+      var formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('document', new File([docxBlob], filename, { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+      var resp = await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendDocument', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: filename })
+        body: formData
       });
       var result = await resp.json();
       if (result.ok) {
         if (loadingTxt) loadingTxt.textContent = 'Файл отправлен в Telegram!';
         setTimeout(function() { if (overlay) overlay.classList.remove('active'); }, 2000);
       } else {
-        throw new Error(result.description || result.error || 'Ошибка сервера');
+        throw new Error(result.description || 'Ошибка отправки в Telegram');
       }
     } else {
       // Обычный браузер — скачиваем через data URL (не blob URL, чтобы не было диалога)
