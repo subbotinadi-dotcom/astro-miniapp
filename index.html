@@ -2402,6 +2402,24 @@ margin:0 0 24px!important;
 text-align:center!important;
 }
 </style>
+
+<style id="final-docx-button-fix">
+#exportDocxBtn,
+button#exportDocxBtn.export-btn {
+  background: #FFFFFF !important;
+  color: #0D1935 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+}
+#exportDocxBtn *,
+button#exportDocxBtn.export-btn * {
+  color: #0D1935 !important;
+}
+</style>
+
 </head>
 <body>
 <!-- Оверлей загрузки -->
@@ -2480,7 +2498,7 @@ text-align:center!important;
 <div class="salt-grid" id="saltGrid"></div>
 <div class="bottom-btns">
 <button class="export-btn" id="exportDocxBtn" onclick="startExportDocx()" type="button">
-✦ Получить файл
+✦ ПОЛУЧИТЬ ФАЙЛ
 </button>
 </div>
 </div>
@@ -2525,7 +2543,7 @@ text-align:center!important;
 <h2 style="color:var(--pink); font-size:2.2rem; margin-bottom:1.5rem">Рекомендуемые продукты</h2>
 <div id="productsBox"></div>
 <div class="bottom-btns" style="margin-top:2rem;">
-<button class="export-btn" onclick="startExportDocx()" type="button">✦ Получить файл</button>
+<button class="export-btn" onclick="startExportDocx()" type="button">✦ ПОЛУЧИТЬ ФАЙЛ</button>
 </div>
 <div id="productsMeta" style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:0.5rem"></div>
 </div>
@@ -3564,7 +3582,7 @@ const foodPage = document.getElementById('foodPage');
 if (foodPage) {
 foodPage.innerHTML = `
 <div class="sotis-link-wrap" style="margin-top:2rem">
-<button type="button" class="export-btn sotis-btn-style" id="exportDocxBtn" onclick="startExportDocx(event)">✦ Получить файл</button>
+<button type="button" class="export-btn sotis-btn-style" id="exportDocxBtn" onclick="startExportDocx(event)">✦ ПОЛУЧИТЬ ФАЙЛ</button>
 </div>`;
 foodPage.style.display = 'block';
 foodPage.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -4484,7 +4502,7 @@ var res = oldShowFoodPage(event);
 try { window.runProductCalculations(); } catch(e) { console.warn('product calc failed', e); }
 var btn = document.getElementById('exportDocxBtn');
 if (btn) {
-btn.textContent = '✦ Получить файл';
+btn.textContent = '✦ ПОЛУЧИТЬ ФАЙЛ';
 btn.onclick = window.exportPdf;
 }
 return res;
@@ -5084,7 +5102,7 @@ return '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="v
 '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap" rel="stylesheet">'+
 '<style>'+resultPageCss()+'</style></head><body><div class="wrap">'+
 '<div id="pdfContent">'+content+'</div>'+
-'<div class="download-zone"><button class="btn bp" onclick="downloadPdf()">✦ Получить файл</button></div>'+
+'<div class="download-zone"><button class="btn bp" onclick="downloadPdf()">✦ ПОЛУЧИТЬ ФАЙЛ</button></div>'+
 '</div><scr'+'ipt>'+downloadScript()+'</scr'+'ipt></body></html>';
 }
 window.buildStandaloneResultHtml = buildStandaloneResultHtml;
@@ -5119,7 +5137,7 @@ foodPage.style.display = 'block';
 foodPage.innerHTML =
 '<div id="inlineResultContent">' + content + '</div>' +
 '<div class="bottom-btns" style="margin-top:2rem;">' +
-'<button type="button" class="export-btn sotis-btn-style" onclick="startExportDocx(event)">✦ Получить файл</button>' +
+'<button type="button" class="export-btn sotis-btn-style" onclick="startExportDocx(event)">✦ ПОЛУЧИТЬ ФАЙЛ</button>' +
 '</div>';
 foodPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }catch(e){ alert('Не удалось создать итоговый результат: ' + (e && e.message ? e.message : e)); }
@@ -6388,15 +6406,12 @@ window.startExportDocx = async function(event){
 
   var overlay = document.getElementById('loadingOverlay');
   var loadingTxt = document.getElementById('loadingText');
-  if (overlay) overlay.classList.add('active');
-  if (loadingTxt) loadingTxt.textContent = 'Формируем PDF...';
 
-  var wrap = null;
-  var tmpStyle = null;
+  // После нажатия показываем только экран загрузки, без вывода выгружаемого файла на страницу.
+  if (overlay) overlay.classList.add('active');
+  if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
 
   try {
-    if (typeof html2pdf === 'undefined') throw new Error('html2pdf не загружен');
-
     var tg = window.Telegram && window.Telegram.WebApp;
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
     if (!chatId) throw new Error('Откройте приложение через Telegram-бота');
@@ -6406,139 +6421,46 @@ window.startExportDocx = async function(event){
 
     try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
 
-    // ВАЖНО: не рисуем кириллицу через doc.text/jsPDF.
-    // jsPDF без встроенного Unicode-шрифта превращает русский текст в нечитаемые символы.
-    // Поэтому PDF собирается как снимок HTML через html2canvas/html2pdf: текст остаётся визуально читаемым.
-    var html = (typeof window.makeWordHtml === 'function')
+    var wordHtml = (typeof window.makeWordHtml === 'function')
       ? window.makeWordHtml()
-      : (typeof window.buildPdfHtml === 'function' ? '<!doctype html><html><head><meta charset="utf-8"></head><body>' + window.buildPdfHtml() + '</body></html>' : '');
-    if (!html) throw new Error('Не удалось собрать HTML для PDF');
+      : (typeof window.buildPdfHtml === 'function'
+        ? '<!doctype html><html><head><meta charset="utf-8"></head><body>' + window.buildPdfHtml() + '</body></html>'
+        : '');
 
-    var parsed = new DOMParser().parseFromString(html, 'text/html');
-
-    tmpStyle = document.createElement('style');
-    tmpStyle.textContent = Array.from(parsed.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n') + '\n' +
-      '.telegram-pdf-render{width:760px;max-width:760px;background:#fff;color:#18304F;padding:24px 10px 42px 6px;margin:0!important;box-sizing:border-box;font-family:Arial,"Roboto Condensed",sans-serif;font-size:10pt;line-height:1.22;overflow:visible!important;}\n' +
-      '.telegram-pdf-render *{box-sizing:border-box;max-width:100%;text-shadow:none!important;-webkit-text-fill-color:#18304F!important;color:#18304F!important;}\n' +
-      '.telegram-pdf-render table{page-break-inside:auto;width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}\n' +
-      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3,.telegram-pdf-render li,.telegram-pdf-render .product-category-block{page-break-inside:avoid!important;break-inside:avoid!important;}\n' +
-      '.telegram-pdf-render h1{color:#00AFA5!important;-webkit-text-fill-color:#00AFA5!important;}\n' +
-      '.telegram-pdf-render h2,.telegram-pdf-render h3,.telegram-pdf-render th,.telegram-pdf-render td,.telegram-pdf-render .label,.telegram-pdf-render .big{color:#18304F!important;-webkit-text-fill-color:#18304F!important;}\n' +
-      '.telegram-pdf-render h2{margin-top:18px!important;}\n' +
-      '.telegram-pdf-render .big{font-size:20pt!important;}\n' +
-      '.telegram-pdf-render .energy-table td{padding:6px 2px!important;font-size:9pt!important;}\n' +
-      '.telegram-pdf-render .energy-table .big{font-size:19pt!important;}\n' +
-      '.telegram-pdf-render .product-col{width:66%!important;}\n' +
-      '.telegram-pdf-render .status-col{width:34%!important;}\n' +
-      '.telegram-pdf-render .product-table th,.telegram-pdf-render .product-table td{border-bottom:1px solid #D8E0EA!important;}\n' +
-      '.telegram-pdf-render .product-name-cell,.telegram-pdf-render .status-cell{border-bottom:1px solid #D8E0EA!important;}\n' +
-      '.telegram-pdf-render .status-cell{width:34%!important;text-align:center!important;padding-left:4px!important;padding-right:4px!important;}\n' +
-      '.telegram-pdf-render .status-cell span{display:block!important;width:100%!important;border-radius:0!important;padding:3px 2px!important;border:0!important;background:transparent!important;font-weight:800!important;font-size:9.2pt!important;line-height:1.05!important;white-space:nowrap!important;letter-spacing:.2px!important;}\n' +
-      '.telegram-pdf-render .status-rec,.telegram-pdf-render .status-rec span,.telegram-pdf-render .badge-rec{color:#00B5A6!important;-webkit-text-fill-color:#00B5A6!important;background:transparent!important;border-color:transparent!important;}\n' +
-      '.telegram-pdf-render .status-forb,.telegram-pdf-render .status-forb span,.telegram-pdf-render .badge-forb{color:#FF99BE!important;-webkit-text-fill-color:#FF99BE!important;background:transparent!important;border-color:transparent!important;}\n' +
-      '.telegram-pdf-render .status-neut,.telegram-pdf-render .status-neut span,.telegram-pdf-render .badge-neut{color:#18304F!important;-webkit-text-fill-color:#18304F!important;background:transparent!important;border-color:transparent!important;}';
-    document.head.appendChild(tmpStyle);
-
-    wrap = document.createElement('div');
-    // html2canvas в Telegram WebView часто отдаёт белые страницы,
-    // если элемент для рендера стоит далеко за экраном через left:-100000px.
-    // Поэтому держим PDF-макет в реальном viewport на время снимка.
-    wrap.style.position = 'absolute';
-    wrap.style.left = '0';
-    wrap.style.top = String(window.scrollY || 0) + 'px';
-    wrap.style.width = '760px';
-    wrap.style.minHeight = '1123px';
-    wrap.style.background = '#ffffff';
-    wrap.style.zIndex = '2147483646';
-    wrap.style.pointerEvents = 'none';
-
-    var content = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.documentElement;
-    var node = document.importNode(content, true);
-    node.classList.add('telegram-pdf-render');
-    node.querySelectorAll('table.product-table').forEach(function(tbl){ if (!tbl.querySelector('colgroup')) tbl.insertAdjacentHTML('afterbegin','<colgroup><col class="product-col"><col class="status-col"></colgroup>'); });
-    node.style.display = 'block';
-    node.style.visibility = 'visible';
-    node.style.opacity = '1';
-    node.style.background = '#ffffff';
-    node.style.color = '#18304F';
-    wrap.appendChild(node);
-    document.body.appendChild(wrap);
-
-    if (document.fonts && document.fonts.ready) {
-      try { await document.fonts.ready; } catch(e) {}
-    }
-    await new Promise(function(resolve){
-      requestAnimationFrame(function(){ requestAnimationFrame(resolve); });
-    });
+    if (!wordHtml) throw new Error('Не удалось собрать файл');
 
     var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
-    var filename = 'pitanie_' + safeName + '.pdf';
+    var filename = 'pitanie_' + safeName + '.docx';
 
-    var opt = {
-      margin: [7, 2, 7, 8],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        windowWidth: 760,
-        windowHeight: Math.max(1123, node.scrollHeight || wrap.scrollHeight || 1123),
-        scrollX: 0,
-        scrollY: 0
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-      pagebreak: { mode: ['css', 'legacy'] }
-    };
-
-    var pdfBlob = await html2pdf().set(opt).from(node).toPdf().outputPdf('blob');
-
-    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
-
-    var base64 = await new Promise(function(resolve, reject){
-      var reader = new FileReader();
-      reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(pdfBlob);
+    // Отправляем один документ: Word-файл с расширением .docx.
+    var wordBlob = new Blob(['\ufeff' + wordHtml], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
     });
 
-    var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: filename })
-    });
-
-    var result = await resp.json();
-    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера при отправке PDF');
-
-    if (loadingTxt) loadingTxt.textContent = 'Отправляем Word в Telegram...';
-    var wordHtml = (typeof window.makeWordHtml === 'function') ? window.makeWordHtml() : html;
-    var wordBlob = new Blob(['\ufeff' + wordHtml], { type: 'application/msword;charset=utf-8' });
     var wordBase64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
       reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
       reader.onerror = reject;
       reader.readAsDataURL(wordBlob);
     });
-    var wordResp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
+
+    if (loadingTxt) loadingTxt.textContent = 'Отправляем файл в Telegram...';
+
+    var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, pdf_base64: wordBase64, filename: filename.replace(/\.pdf$/i, '.doc') })
+      body: JSON.stringify({ chat_id: chatId, pdf_base64: wordBase64, filename: filename })
     });
-    var wordResult = await wordResp.json();
-    if (!wordResult.ok) throw new Error(wordResult.description || wordResult.error || 'Ошибка сервера при отправке Word');
 
-    if (loadingTxt) loadingTxt.textContent = 'PDF и Word отправлены в Telegram!';
-    if (overlay) overlay.classList.remove('active');
+    var result = await resp.json();
+    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера при отправке файла');
+
+    if (loadingTxt) loadingTxt.textContent = 'Файл отправлен!';
     if (tg && typeof tg.close === 'function') tg.close();
   } catch(e) {
     alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
     if (overlay) overlay.classList.remove('active');
-  } finally {
-    if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
-    if (tmpStyle && tmpStyle.parentNode) tmpStyle.parentNode.removeChild(tmpStyle);
   }
 };
 window.exportPdf = window.startExportDocx;
