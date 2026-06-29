@@ -6379,34 +6379,59 @@ window.startExportDocx = async function(event){
 
     // Extract content from makeWordHtml (strip outer html/head, keep only body content + styles)
     var wordHtml = window.makeWordHtml();
-    // Parse out the style and body content
-    var styleMatch = wordHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+    // Parse out the body content only
     var bodyMatch = wordHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    var styleContent = styleMatch ? styleMatch[1] : '';
     var bodyContent = bodyMatch ? bodyMatch[1] : wordHtml;
 
-    // Create a hidden div on the SAME page (avoids cross-origin issues with iframe)
+    // Outer wrapper — positioned off-screen, not affected by html2canvas clip
+    var printWrap = document.createElement('div');
+    printWrap.style.cssText = 'position:absolute;left:-99999px;top:0;width:794px;overflow:visible;z-index:9999';
+    document.body.appendChild(printWrap);
+
+    // Inner div — carries ALL styles explicitly, overrides the global * {color:#fff}
     var printDiv = document.createElement('div');
     printDiv.id = 'pdf-print-area';
-    printDiv.style.cssText = [
-      'position:absolute',
-      'left:-99999px',
-      'top:0',
-      'width:794px',
-      'background:#fff',
-      'color:#18304F',
-      'font-family:Arial,sans-serif',
-      'font-size:10.5pt',
-      'line-height:1.25',
-      'z-index:-1'
-    ].join(';');
+    // Critical: all-color override must come AFTER global styles via !important
+    var scopedStyle = document.createElement('style');
+    scopedStyle.textContent = [
+      '#pdf-print-area, #pdf-print-area * {',
+      '  all: revert;',           // reset any inherited #FFF from global * rule
+      '  box-sizing: border-box;',
+      '}',
+      '#pdf-print-area {',
+      '  background: #fff !important;',
+      '  color: #18304F !important;',
+      '  font-family: Arial, sans-serif !important;',
+      '  font-size: 10.5pt !important;',
+      '  line-height: 1.25 !important;',
+      '  width: 794px;',
+      '  padding: 0;',
+      '}',
+      '#pdf-print-area h1 { color:#00AFA5 !important; font-size:24pt !important; text-align:center !important; text-transform:uppercase !important; letter-spacing:1pt !important; margin:0 0 28pt !important; font-weight:bold !important; }',
+      '#pdf-print-area h2 { color:#18304F !important; font-size:18pt !important; text-align:center !important; text-transform:uppercase !important; letter-spacing:.7pt !important; margin:24pt 0 10pt !important; border-bottom:1.5pt solid #FC9FBC !important; padding-bottom:5pt !important; font-weight:bold !important; }',
+      '#pdf-print-area h3 { color:#18304F !important; font-size:12.5pt !important; text-transform:uppercase !important; margin:16pt 0 4pt !important; border-left:3pt solid #C01870 !important; padding-left:6pt !important; font-weight:bold !important; }',
+      '#pdf-print-area table { border-collapse:collapse !important; width:100% !important; table-layout:fixed !important; margin:0 0 10pt !important; }',
+      '#pdf-print-area th, #pdf-print-area td { padding:4pt 6pt !important; vertical-align:top !important; color:#18304F !important; font-size:10pt !important; }',
+      '#pdf-print-area .data-table td, #pdf-print-area .data-table th, #pdf-print-area .product-table td, #pdf-print-area .product-table th { border-bottom:1pt solid #D8E0EA !important; }',
+      '#pdf-print-area .data-table th, #pdf-print-area .product-table th { background:#FFF3FA !important; text-align:left !important; font-weight:bold !important; }',
+      '#pdf-print-area .label { font-weight:bold !important; color:#18304F !important; }',
+      '#pdf-print-area .big { font-size:24pt !important; font-weight:bold !important; text-align:center !important; color:#18304F !important; }',
+      '#pdf-print-area .quad-table th, #pdf-print-area .quad-table td { text-align:center !important; }',
+      '#pdf-print-area .energy-table td { border:0 !important; padding:7pt 4pt !important; }',
+      '#pdf-print-area .status-rec { color:#00AFA5 !important; font-weight:bold !important; }',
+      '#pdf-print-area .status-forb { color:#C01870 !important; font-weight:bold !important; }',
+      '#pdf-print-area .status-neut { color:#18304F !important; font-weight:bold !important; }',
+      '#pdf-print-area ul { margin-top:0 !important; }',
+      '#pdf-print-area li { margin-bottom:3pt !important; color:#18304F !important; }',
+      '#pdf-print-area p { color:#18304F !important; }'
+    ].join('\n');
+    document.head.appendChild(scopedStyle);
 
-    // Inject scoped styles + body content
-    printDiv.innerHTML = '<style>' + styleContent + '</style>' + bodyContent;
-    document.body.appendChild(printDiv);
+    printDiv.innerHTML = bodyContent;
+    printWrap.appendChild(printDiv);
 
-    // Give browser a tick to paint the div
-    await new Promise(function(res){ setTimeout(res, 400); });
+    // Give browser time to paint
+    await new Promise(function(res){ setTimeout(res, 600); });
 
     var safeName = ((window.currentData || {}).chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.pdf';
@@ -6436,7 +6461,8 @@ window.startExportDocx = async function(event){
       .from(printDiv)
       .outputPdf('blob');
 
-    document.body.removeChild(printDiv);
+    document.body.removeChild(printWrap);
+    document.head.removeChild(scopedStyle);
 
     if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
 
