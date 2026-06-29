@@ -6880,22 +6880,6 @@ window.exportPdf = window.startExportDocx;
 (function(){
   var previousShowFoodPage = window.showFoodPage;
 
-  function setLoading(message) {
-    var overlay = document.getElementById('loadingOverlay');
-    var loadingTxt = document.getElementById('loadingText');
-    if (overlay) overlay.classList.add('active');
-    if (loadingTxt) loadingTxt.textContent = message || 'Рассчитываем показатели...';
-  }
-
-  function hideResultScreens() {
-    var foodPage = document.getElementById('foodPage');
-    var resultEl = document.getElementById('result');
-    var foodDataBlock = document.getElementById('foodDataBlock');
-    if (foodPage) foodPage.style.display = 'none';
-    if (resultEl) resultEl.style.display = 'none';
-    if (foodDataBlock) foodDataBlock.style.display = 'none';
-  }
-
   function showFormError(message) {
     var err = document.getElementById('foodDataErr');
     if (err) err.textContent = message;
@@ -6925,20 +6909,59 @@ window.exportPdf = window.startExportDocx;
       return;
     }
 
-    setLoading('Рассчитываем показатели...');
+    // Показываем оверлей загрузки
+    var overlay = document.getElementById('loadingOverlay');
+    var loadingTxt = document.getElementById('loadingText');
+    if (overlay) overlay.classList.add('active');
+    if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
 
     try {
+      // Рассчитываем данные
       if (typeof previousShowFoodPage === 'function') {
         await previousShowFoodPage.call(this, event);
       }
-      hideResultScreens();
-      setLoading('Отправляем файл в Telegram...');
-      if (typeof window.startExportDocx !== 'function') throw new Error('Функция отправки файла не найдена');
-      await window.startExportDocx(event);
+
+      if (typeof window.runProductCalculations === 'function') window.runProductCalculations();
+
+      var wordHtml = (typeof window.makeWordHtml === 'function')
+        ? window.makeWordHtml()
+        : '<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>';
+      if (!wordHtml) throw new Error('Не удалось собрать файл');
+
+      var d = window.currentData || {};
+      var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Za-яА-ЯёЁ0-9_-]+/g, '_');
+      var filename = 'pitanie_' + safeName + '.docx';
+
+      var docxBlob = await buildRealDocxBlobFromHtml(wordHtml);
+
+      var tg = window.Telegram && window.Telegram.WebApp;
+      var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+
+      if (!chatId) throw new Error('Откройте приложение через Telegram-бота');
+
+      if (loadingTxt) loadingTxt.textContent = 'Отправляем файл...';
+
+      var BOT_TOKEN = '8829330658:AAH1owiZzvW-Y4ozadUYNtL037yCy0FbodQ';
+      var formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('document', new File([docxBlob], filename, { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+      var resp = await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendDocument', {
+        method: 'POST',
+        body: formData
+      });
+      var result = await resp.json();
+
+      if (result.ok) {
+        // Успех — закрываем приложение
+        if (tg) tg.close();
+      } else {
+        throw new Error(result.description || 'Ошибка отправки в Telegram');
+      }
+
     } catch (e) {
-      var overlay = document.getElementById('loadingOverlay');
+      // Ошибка — показываем, не закрываем
       if (overlay) overlay.classList.remove('active');
-      alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
+      alert('Ошибка: ' + (e && e.message ? e.message : e));
     }
   };
 })();
