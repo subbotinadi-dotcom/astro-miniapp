@@ -2439,24 +2439,6 @@ button#exportDocxBtn.export-btn * {
 }
 </style>
 
-
-<style id="final-result-flow-fix">
-#foodCalcBtn,
-button#foodCalcBtn.sotis-btn-style {
-  background: #FFFFFF !important;
-  color: #0D1935 !important;
-  border: none !important;
-  border-radius: 14px !important;
-  font-weight: 800 !important;
-  text-transform: uppercase !important;
-  letter-spacing: .06em !important;
-}
-#foodCalcBtn *,
-button#foodCalcBtn.sotis-btn-style * {
-  color: #0D1935 !important;
-}
-</style>
-
 </head>
 <body>
 <!-- Оверлей загрузки -->
@@ -2467,7 +2449,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
 <span class="h1-style">Питание по натальной карте</span>
-<p class="tagline">Заполните все шаги и нажмите «✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ»</p>
+<p class="tagline">Заполните все шаги и нажмите «Рассчитать»</p>
 <div class="steps-card">
 <!-- ШАГ 1 -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
@@ -2495,7 +2477,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
 <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
 </div>
-<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ Рассчитать</button></div>
 <div class="sotis-file-fallback">
 <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
 <input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
@@ -2569,7 +2551,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem"></div>
 </div>
 <div class="food-data-actions">
-<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
+<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ Рассчитать</button></div>
 </div>
 </div>
 </div>
@@ -6444,6 +6426,7 @@ window.startExportDocx = async function(event){
   var overlay = document.getElementById('loadingOverlay');
   var loadingTxt = document.getElementById('loadingText');
 
+  // После нажатия показываем только экран загрузки, без вывода выгружаемого файла на страницу.
   if (overlay) overlay.classList.add('active');
   if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
 
@@ -6464,13 +6447,13 @@ window.startExportDocx = async function(event){
         : '');
 
     if (!wordHtml) throw new Error('Не удалось собрать файл');
+    if (!window.docx || !window.docx.Document || !window.docx.Packer) throw new Error('Библиотека DOCX не загружена');
 
     var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
+    var filename = 'pitanie_' + safeName + '.docx';
 
-    var built = await buildOpenableWordFile(wordHtml, safeName);
-    var wordBlob = built.blob;
-    var filename = built.filename;
+    var wordBlob = await buildRealDocxBlobFromHtml(wordHtml);
 
     var wordBase64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
@@ -6498,83 +6481,8 @@ window.startExportDocx = async function(event){
   }
 };
 
-async function ensureDocxLibrary() {
-  if (window.docx && window.docx.Document && window.docx.Packer) return window.docx;
-
-  var urls = [
-    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
-    'https://unpkg.com/docx@8.5.0/build/index.umd.js',
-    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js',
-    'https://unpkg.com/docx@8.5.0/build/index.js'
-  ];
-
-  function loadScript(src) {
-    return new Promise(function(resolve, reject) {
-      var s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.onload = function(){ resolve(); };
-      s.onerror = function(){ reject(new Error('Не загрузился ' + src)); };
-      document.head.appendChild(s);
-    });
-  }
-
-  for (var i = 0; i < urls.length; i++) {
-    try {
-      await loadScript(urls[i]);
-      if (window.docx && window.docx.Document && window.docx.Packer) return window.docx;
-    } catch(e) {}
-  }
-
-  try {
-    var mod = await import('https://esm.sh/docx@8.5.0');
-    if (mod && mod.Document && mod.Packer) {
-      window.docx = mod;
-      return window.docx;
-    }
-  } catch(e) {}
-
-  return null;
-}
-
-async function buildOpenableWordFile(wordHtml, safeName) {
-  var D = await ensureDocxLibrary();
-  if (D && D.Document && D.Packer) {
-    return {
-      blob: await buildDocxBlobWithLibrary(wordHtml, D),
-      filename: 'pitanie_' + safeName + '.docx'
-    };
-  }
-
-  // Запасной вариант: настоящий Word-документ в HTML-формате с расширением .doc.
-  // Он открывается Word без сообщения о повреждённом DOCX, если Telegram WebView заблокировал загрузку docx.js.
-  return {
-    blob: buildHtmlWordDocBlob(wordHtml),
-    filename: 'pitanie_' + safeName + '.doc'
-  };
-}
-
-function buildHtmlWordDocBlob(wordHtml) {
-  var html = String(wordHtml || '');
-  html = html.replace(/РЕКОМЕНДОВАНО/g, 'РАЗРЕШЕНО');
-  html = html.replace(/ЗАПРЕЩЁН/g, 'ЗАПРЕЩЕНО');
-  html = html.replace(/<\/head>/i,
-    '<style>' +
-    'body,table,td,th,p,li{font-family:Arial,sans-serif;color:#18304F;}' +
-    'table{border-collapse:collapse;width:100%;}' +
-    'td,th{border-bottom:1px solid #D8E0EA;padding:4pt 6pt;}' +
-    'th{background:#FFF3FA;text-align:left;}' +
-    'h1{color:#00AFA5;text-align:center;}' +
-    'h2,h3{color:#18304F;text-align:center;border-bottom:1.5pt solid #FC9FBC;}' +
-    '.status-rec,.badge-rec{color:#377E74!important;font-weight:800;background:transparent!important;border:0!important;}' +
-    '.status-forb,.badge-forb{color:#EC779F!important;font-weight:800;background:transparent!important;border:0!important;}' +
-    '.status-neut,.badge-neut{color:#18304F!important;font-weight:800;background:transparent!important;border:0!important;}' +
-    '</style></head>'
-  );
-  return new Blob(['\ufeff' + html], { type: 'application/msword;charset=utf-8' });
-}
-
-async function buildDocxBlobWithLibrary(wordHtml, D) {
+async function buildRealDocxBlobFromHtml(wordHtml) {
+  var D = window.docx;
   var Document = D.Document;
   var Packer = D.Packer;
   var Paragraph = D.Paragraph;
@@ -6602,10 +6510,7 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
   var noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
 
   function cleanText(value) {
-    return String(value == null ? '' : value)
-      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
   }
   function normalizedStatus(value) {
     var t = cleanText(value).toUpperCase();
@@ -6630,12 +6535,11 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
       var out = normalizedStatus(part);
       var color = opts.color || DARK;
       var upper = cleanText(part).toUpperCase();
-      var bold = !!opts.bold;
-      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') { color = ALLOW; bold = true; }
-      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') { color = FORB; bold = true; }
+      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') color = ALLOW;
+      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') color = FORB;
       runs.push(new TextRun({
         text: out,
-        bold: bold,
+        bold: opts.bold || /^(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО)$/i.test(upper),
         size: opts.size || 18,
         font: 'Arial',
         color: color
@@ -6660,19 +6564,19 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
       border: level === 1 ? undefined : { bottom: { style: BorderStyle.SINGLE, size: 4, color: PINK, space: 2 } }
     });
   }
-  function cellFromDom(td, isHeader, isStatus, colIndex, totalCells) {
+  function cellFromDom(td, isHeader, isStatus, colIndex) {
     var raw = cleanText(td.textContent || '—');
     var text = isStatus ? normalizedStatus(raw) : raw;
     var color = isStatus ? statusColor(raw) : DARK;
-    var width = totalCells === 2 ? (isStatus ? 36 : 64) : Math.floor(100 / Math.max(1, totalCells));
+    var width = isStatus ? 32 : (colIndex === 0 ? 68 : 50);
     return new TableCell({
       width: { size: width, type: WidthType.PERCENTAGE },
       shading: isHeader ? { fill: HEADER, type: ShadingType.CLEAR } : undefined,
       margins: { top: 70, bottom: 70, left: 80, right: 80 },
       borders: {
-        top: noBorder,
-        left: noBorder,
-        right: noBorder,
+        top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
         bottom: thinBorder
       },
       children: [new Paragraph({
@@ -6694,7 +6598,7 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
           var cls = String(td.className || '');
           var txt = cleanText(td.textContent || '').toUpperCase();
           var isStatus = cls.indexOf('status') !== -1 || txt === 'РЕКОМЕНДОВАНО' || txt === 'РАЗРЕШЕНО' || txt === 'ЗАПРЕЩЕНО' || txt === 'ЗАПРЕЩЁН' || txt === 'НЕЙТРАЛЬНО';
-          return cellFromDom(td, isHeader, isStatus, i, cells.length);
+          return cellFromDom(td, isHeader, isStatus, i);
         })
       }));
     });
@@ -6729,81 +6633,10 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
       children: children
     }]
   });
-
   return await Packer.toBlob(doc);
 }
 window.exportPdf = window.startExportDocx;
 })();
 </script>
-
-<script id="final-one-click-result-flow">
-(function(){
-  function showOverlay(text) {
-    var overlay = document.getElementById('loadingOverlay');
-    var loadingTxt = document.getElementById('loadingText');
-    if (overlay) overlay.classList.add('active');
-    if (loadingTxt) loadingTxt.textContent = text || 'Формируем файл...';
-  }
-  function hideResultScreens() {
-    ['productsPage','foodPage','result'].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-  }
-  function prepareButton() {
-    var btn = document.getElementById('foodCalcBtn');
-    if (btn) {
-      btn.textContent = '✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ';
-      btn.onclick = window.showFoodPage;
-    }
-  }
-
-  var bindTimer = setInterval(function(){
-    prepareButton();
-    if (typeof window.showFoodPage === 'function' && typeof window.startExportDocx === 'function') {
-      clearInterval(bindTimer);
-
-      var originalShowFoodPage = window.showFoodPage;
-
-      window.showFoodPage = async function(event) {
-        if (event) { event.preventDefault(); event.stopPropagation(); }
-
-        var btn = document.getElementById('foodCalcBtn');
-        if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
-
-        var previousFoodResult = window.foodResult;
-        window.foodResult = null;
-
-        showOverlay('Рассчитываем и формируем файл...');
-
-        try {
-          originalShowFoodPage.call(this, event);
-
-          if (!window.foodResult) {
-            window.foodResult = previousFoodResult || null;
-            var overlay = document.getElementById('loadingOverlay');
-            if (overlay) overlay.classList.remove('active');
-            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-            return;
-          }
-
-          try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
-
-          hideResultScreens();
-          await window.startExportDocx(event);
-        } catch(e) {
-          alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
-          var overlay = document.getElementById('loadingOverlay');
-          if (overlay) overlay.classList.remove('active');
-          if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-        }
-      };
-
-      prepareButton();
-    }
-  }, 100);
-})();
-</script>
-
 </body>
 </html>
