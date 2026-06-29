@@ -6377,26 +6377,43 @@ window.startExportDocx = async function(event){
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
     if (!chatId) { alert('Откройте приложение через Telegram-бота'); return; }
 
-    // Build the same HTML as before (reuse makeWordHtml)
+    // Extract content from makeWordHtml (strip outer html/head, keep only body content + styles)
     var wordHtml = window.makeWordHtml();
+    // Parse out the style and body content
+    var styleMatch = wordHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+    var bodyMatch = wordHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    var styleContent = styleMatch ? styleMatch[1] : '';
+    var bodyContent = bodyMatch ? bodyMatch[1] : wordHtml;
 
-    // Create a hidden iframe to render the HTML for html2pdf
-    var iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(wordHtml);
-    iframe.contentDocument.close();
+    // Create a hidden div on the SAME page (avoids cross-origin issues with iframe)
+    var printDiv = document.createElement('div');
+    printDiv.id = 'pdf-print-area';
+    printDiv.style.cssText = [
+      'position:absolute',
+      'left:-99999px',
+      'top:0',
+      'width:794px',
+      'background:#fff',
+      'color:#18304F',
+      'font-family:Arial,sans-serif',
+      'font-size:10.5pt',
+      'line-height:1.25',
+      'z-index:-1'
+    ].join(';');
 
-    // Wait for iframe fonts/images to load
-    await new Promise(function(res){ setTimeout(res, 600); });
+    // Inject scoped styles + body content
+    printDiv.innerHTML = '<style>' + styleContent + '</style>' + bodyContent;
+    document.body.appendChild(printDiv);
+
+    // Give browser a tick to paint the div
+    await new Promise(function(res){ setTimeout(res, 400); });
 
     var safeName = ((window.currentData || {}).chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.pdf';
 
     if (loadingTxt) loadingTxt.textContent = 'Генерируем PDF...';
 
-    // Generate PDF from iframe body using html2pdf.js
+    // Generate PDF from the div (same-origin, html2canvas works reliably)
     var pdfBlob = await html2pdf()
       .set({
         margin: [10, 7, 10, 7],
@@ -6406,19 +6423,20 @@ window.startExportDocx = async function(event){
           scale: 2,
           useCORS: true,
           logging: false,
-          windowWidth: 794
+          windowWidth: 794,
+          backgroundColor: '#ffffff'
         },
         jsPDF: {
           unit: 'mm',
           format: 'a4',
           orientation: 'portrait'
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: ['css', 'legacy'] }
       })
-      .from(iframe.contentDocument.body)
+      .from(printDiv)
       .outputPdf('blob');
 
-    document.body.removeChild(iframe);
+    document.body.removeChild(printDiv);
 
     if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
 
