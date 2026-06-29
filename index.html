@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -6367,18 +6368,51 @@ window.makeWordHtml = function(){
   html += '</div></body></html>';
   return html;
 };
+async function makePdfBlobFromWordHtml(wordHtml){
+  if (typeof html2pdf === 'undefined') {
+    throw new Error('html2pdf не загрузился');
+  }
+  var parsed = new DOMParser().parseFromString(wordHtml, 'text/html');
+  var holder = document.createElement('div');
+  holder.style.position = 'fixed';
+  holder.style.left = '-10000px';
+  holder.style.top = '0';
+  holder.style.width = '794px';
+  holder.style.background = '#ffffff';
+  holder.style.zIndex = '-1';
+  holder.style.pointerEvents = 'none';
+  var styles = Array.prototype.map.call(parsed.querySelectorAll('style'), function(style){
+    return style.outerHTML;
+  }).join('');
+  holder.innerHTML = styles + (parsed.body ? parsed.body.innerHTML : wordHtml);
+  document.body.appendChild(holder);
+  try {
+    var target = holder.querySelector('.WordSection1') || holder;
+    var opt = {
+      margin: [32, 28, 38, 28],
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    };
+    return await html2pdf().set(opt).from(target).outputPdf('blob');
+  } finally {
+    if (holder.parentNode) holder.parentNode.removeChild(holder);
+  }
+}
 window.startExportDocx = async function(event){
   if (event) { event.preventDefault(); event.stopPropagation(); }
   var overlay = document.getElementById('loadingOverlay');
   var loadingTxt = document.getElementById('loadingText');
   if (overlay) overlay.classList.add('active');
-  if (loadingTxt) loadingTxt.textContent = 'Отправляем Word в Telegram...';
+  if (loadingTxt) loadingTxt.textContent = 'Формируем PDF...';
   try {
     var tg = window.Telegram && window.Telegram.WebApp;
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
     if (!chatId) { alert('Откройте приложение через Telegram-бота'); return; }
     var wordHtml = window.makeWordHtml();
-    var blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+    var blob = await makePdfBlobFromWordHtml(wordHtml);
+    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
     var reader = new FileReader();
     var base64 = await new Promise(function(resolve, reject){
       reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
@@ -6389,17 +6423,17 @@ window.startExportDocx = async function(event){
     var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: 'pitanie_' + safeName + '.doc' })
+      body: JSON.stringify({ chat_id: chatId, pdf_base64: base64, filename: 'pitanie_' + safeName + '.pdf' })
     });
     var result = await resp.json();
     if (result.ok) {
-      if (loadingTxt) loadingTxt.textContent = 'Файл отправлен в Telegram!';
+      if (loadingTxt) loadingTxt.textContent = 'PDF отправлен в Telegram!';
       setTimeout(function(){ if (overlay) overlay.classList.remove('active'); }, 2000);
     } else {
       throw new Error(result.description || result.error || 'Ошибка сервера');
     }
   } catch(e) {
-    alert('Ошибка отправки файла: ' + e.message);
+    alert('Ошибка отправки PDF: ' + e.message);
     if (overlay) overlay.classList.remove('active');
   }
 };
