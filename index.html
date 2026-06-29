@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -4453,18 +4451,18 @@ macroCards(food.bmr) +
 ['Соль', salt],
 ['Вода', water],
 ['Жидкость', liquid],
-['Запивать ли еду', sipFood]
+['Запивать пищу', sipFood]
 ]) + '</tbody></table>' +
 '<h2>Белковый обмен</h2><table><tbody>' + tableRows([
-['Источник белка', proteinSource],
+['Источники белка', proteinSource],
 ['Вегетарианство', vegetarian]
 ]) + '</tbody></table>' +
 '<h2>Жировой обмен</h2><table><tbody>' + tableRows([
-['Источник жиров', fatSource],
-['Пропорция', fatProportion],
+['Источники жиров', fatSource],
+['Соотношение жиров', fatProportion],
 ['Накопление жира', fatAccumulation],
 ['Холестерин', cholesterol],
-['Предрасположенность к полноте', fullness]
+['Склонность к полноте', fullness]
 ]) + '</tbody></table>' +
 '<h2>Углеводный обмен</h2><table><tbody>' + tableRows([
 ['Гиперинсулинемия', hyperIns],
@@ -6350,15 +6348,29 @@ function makeEnergyRows(calc){
 }
 function wordStyle(){
   return '<style>'+ 
-  '@page WordSection1{size:595.3pt 841.9pt;margin:32pt 28pt 38pt 28pt}div.WordSection1{page:WordSection1}'+
-  'body{font-family:Arial,"Roboto Condensed",sans-serif;color:#18304F;font-size:10.5pt;line-height:1.25;background:#fff}'+
-  'h1{color:#00AFA5;font-size:24pt;text-align:center;text-transform:uppercase;letter-spacing:1pt;margin:0 0 28pt;font-weight:bold}'+
-  'h2{color:#18304F;font-size:18pt;text-align:center;text-transform:uppercase;letter-spacing:.7pt;margin:24pt 0 10pt;border-bottom:1.5pt solid #FC9FBC;padding-bottom:5pt;font-weight:bold}'+
-  'h3{color:#18304F;font-size:12.5pt;text-transform:uppercase;margin:16pt 0 4pt;border-left:3pt solid #C01870;padding-left:6pt;font-weight:bold}'+
-  'table{border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt}th,td{padding:4pt 6pt;vertical-align:top;color:#18304F}'+
-  '.data-table td,.data-table th,.product-table td,.product-table th{border-bottom:1pt solid #D8E0EA}.data-table th,.product-table th{background:#FFF3FA;text-align:left;font-weight:bold}'+
-  '.product-col{width:66%}.status-col{width:34%}.product-category-block,.product-table tr{page-break-inside:avoid}.product-name-cell,.status-cell{border-bottom:1pt solid #D8E0EA}.status-cell{width:34%;text-align:center;padding-left:4pt;padding-right:4pt}.status-cell span{display:block;width:100%;padding:2pt 2pt;border:0;background:transparent;border-radius:0;font-weight:bold;white-space:nowrap;letter-spacing:.2pt;font-size:9.2pt;line-height:1.05}.status-rec span{color:#00B5A6}.status-forb span{color:#FF99BE}.status-neut span{color:#18304F}'+
-  '.label{font-weight:bold;color:#18304F}.big{font-size:22pt;font-weight:bold;text-align:center;color:#18304F}.quad-table th,.quad-table td{text-align:center}.energy-table td{border:0;padding:7pt 3pt}.status-rec{color:#00B5A6;font-weight:bold}.status-forb{color:#FF99BE;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}ul{margin-top:0}li{margin-bottom:3pt;page-break-inside:avoid}'+
+  '@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt}div.WordSection1{page:WordSection1}'+
+  'body{font-family:Arial,sans-serif;color:#18304F;font-size:10.5pt;line-height:1.3;background:#fff}'+
+  'h1{color:#00AFA5;font-size:14pt;text-align:center;letter-spacing:.5pt;margin:0 0 14pt;font-weight:bold}'+
+  'h2{color:#18304F;font-size:11pt;text-align:center;letter-spacing:.3pt;margin:14pt 0 5pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt;font-weight:bold}'+
+  'h3{color:#18304F;font-size:10pt;text-transform:uppercase;margin:10pt 0 3pt;font-weight:bold}'+
+  'table{border-collapse:collapse;width:50%;table-layout:fixed;margin:0 0 8pt}'+
+  'th,td{padding:4pt 5pt;vertical-align:top;color:#18304F;border-top:none;border-left:none;border-right:none;border-bottom:1pt solid #D8E0EA}'+
+  '.data-table,.product-table{width:50%;border:none}'+
+  '.data-table td{border-top:none;border-left:none;border-right:none;border-bottom:1pt solid #D8E0EA}'+
+  '.data-table th{border:none;background:none;text-align:left;font-weight:bold;border-bottom:1pt solid #D8E0EA}'+
+  '.product-table th{background:none;text-align:left;font-weight:bold;border-bottom:1pt solid #D8E0EA}'+
+  '.product-col{width:66%}.status-col{width:34%}'+
+  '.product-category-block{margin:0 0 6pt}.product-table tr{page-break-inside:avoid}'+
+  '.product-name-cell,.status-cell{border-bottom:1pt solid #D8E0EA;border-top:none;border-left:none;border-right:none}'+
+  '.status-cell{width:34%;text-align:center;padding-left:3pt;padding-right:3pt}'+
+  '.status-cell span{display:block;width:100%;padding:1pt 2pt;border:0;background:transparent;font-weight:bold;white-space:nowrap;font-size:9pt;line-height:1.1}'+
+  '.status-rec span{color:#00B5A6}.status-forb span{color:#FF99BE}.status-neut span{color:#18304F}'+
+  '.label{font-weight:bold;color:#18304F}'+
+  '.big{font-size:16pt;font-weight:bold;text-align:center;color:#18304F}'+
+  '.quad-table{width:50%}.quad-table th,.quad-table td{text-align:center}'+
+  '.energy-table{width:50%}.energy-table td{border:0;padding:5pt 3pt}'+
+  '.status-rec{color:#00B5A6;font-weight:bold}.status-forb{color:#FF99BE;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}'+
+  'ul{margin-top:0;width:50%}li{margin-bottom:3pt;page-break-inside:avoid}'+
   '</style>';
 }
 window.makeWordHtml = function(){
