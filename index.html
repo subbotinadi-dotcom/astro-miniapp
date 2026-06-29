@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -2404,6 +2405,24 @@ text-align:center!important;
 </style>
 
 <style id="final-docx-button-fix">
+#exportDocxBtn,
+button#exportDocxBtn.export-btn {
+  background: #FFFFFF !important;
+  color: #0D1935 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+}
+#exportDocxBtn *,
+button#exportDocxBtn.export-btn * {
+  color: #0D1935 !important;
+}
+</style>
+
+
+<style id="final-docx-button-fix-v3">
 #exportDocxBtn,
 button#exportDocxBtn.export-btn {
   background: #FFFFFF !important;
@@ -6428,15 +6447,13 @@ window.startExportDocx = async function(event){
         : '');
 
     if (!wordHtml) throw new Error('Не удалось собрать файл');
+    if (!window.docx || !window.docx.Document || !window.docx.Packer) throw new Error('Библиотека DOCX не загружена');
 
     var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.docx';
 
-    // Отправляем один документ: Word-файл с расширением .docx.
-    var wordBlob = new Blob(['\ufeff' + wordHtml], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
-    });
+    var wordBlob = await buildRealDocxBlobFromHtml(wordHtml);
 
     var wordBase64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
@@ -6463,6 +6480,161 @@ window.startExportDocx = async function(event){
     if (overlay) overlay.classList.remove('active');
   }
 };
+
+async function buildRealDocxBlobFromHtml(wordHtml) {
+  var D = window.docx;
+  var Document = D.Document;
+  var Packer = D.Packer;
+  var Paragraph = D.Paragraph;
+  var TextRun = D.TextRun;
+  var Table = D.Table;
+  var TableRow = D.TableRow;
+  var TableCell = D.TableCell;
+  var WidthType = D.WidthType;
+  var BorderStyle = D.BorderStyle;
+  var ShadingType = D.ShadingType;
+  var AlignmentType = D.AlignmentType;
+
+  var parsed = new DOMParser().parseFromString(wordHtml, 'text/html');
+  var root = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.body;
+
+  var DARK = '18304F';
+  var TEAL = '00AFA5';
+  var PINK = 'FC9FBC';
+  var FORB = 'EC779F';
+  var ALLOW = '377E74';
+  var LINE = 'D8E0EA';
+  var HEADER = 'FFF3FA';
+
+  var thinBorder = { style: BorderStyle.SINGLE, size: 1, color: LINE };
+  var noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+
+  function cleanText(value) {
+    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  }
+  function normalizedStatus(value) {
+    var t = cleanText(value).toUpperCase();
+    if (t === 'РЕКОМЕНДОВАНО') return 'РАЗРЕШЕНО';
+    if (t === 'ЗАПРЕЩЁН') return 'ЗАПРЕЩЕНО';
+    return cleanText(value);
+  }
+  function statusColor(value) {
+    var t = cleanText(value).toUpperCase();
+    if (t.indexOf('ЗАПРЕЩ') !== -1) return FORB;
+    if (t.indexOf('РАЗРЕШ') !== -1 || t.indexOf('РЕКОМЕНДОВАН') !== -1) return ALLOW;
+    return DARK;
+  }
+  function makeRuns(text, opts) {
+    opts = opts || {};
+    var source = cleanText(text);
+    if (!source) return [new TextRun({ text: '', size: opts.size || 18, font: 'Arial', color: opts.color || DARK })];
+    var parts = source.split(/(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО|НЕЙТРАЛЬНО)/gi);
+    var runs = [];
+    parts.forEach(function(part){
+      if (!part) return;
+      var out = normalizedStatus(part);
+      var color = opts.color || DARK;
+      var upper = cleanText(part).toUpperCase();
+      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') color = ALLOW;
+      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') color = FORB;
+      runs.push(new TextRun({
+        text: out,
+        bold: opts.bold || /^(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО)$/i.test(upper),
+        size: opts.size || 18,
+        font: 'Arial',
+        color: color
+      }));
+    });
+    return runs.length ? runs : [new TextRun({ text: source, size: opts.size || 18, font: 'Arial', color: opts.color || DARK })];
+  }
+  function para(text, opts) {
+    opts = opts || {};
+    return new Paragraph({
+      children: makeRuns(text, opts),
+      alignment: opts.alignment || AlignmentType.LEFT,
+      spacing: { before: opts.before || 0, after: opts.after == null ? 80 : opts.after }
+    });
+  }
+  function heading(text, level) {
+    level = level || 2;
+    return new Paragraph({
+      children: [new TextRun({ text: cleanText(text), bold: true, color: level === 1 ? TEAL : DARK, size: level === 1 ? 28 : 22, font: 'Arial' })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: level === 1 ? 0 : 220, after: 100 },
+      border: level === 1 ? undefined : { bottom: { style: BorderStyle.SINGLE, size: 4, color: PINK, space: 2 } }
+    });
+  }
+  function cellFromDom(td, isHeader, isStatus, colIndex) {
+    var raw = cleanText(td.textContent || '—');
+    var text = isStatus ? normalizedStatus(raw) : raw;
+    var color = isStatus ? statusColor(raw) : DARK;
+    var width = isStatus ? 32 : (colIndex === 0 ? 68 : 50);
+    return new TableCell({
+      width: { size: width, type: WidthType.PERCENTAGE },
+      shading: isHeader ? { fill: HEADER, type: ShadingType.CLEAR } : undefined,
+      margins: { top: 70, bottom: 70, left: 80, right: 80 },
+      borders: {
+        top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        bottom: thinBorder
+      },
+      children: [new Paragraph({
+        children: makeRuns(text, { size: isStatus ? 17 : 18, color: color, bold: isHeader || isStatus }),
+        alignment: isStatus ? AlignmentType.CENTER : AlignmentType.LEFT,
+        spacing: { after: 0 }
+      })]
+    });
+  }
+  function tableFromDom(tbl) {
+    var rows = [];
+    Array.prototype.forEach.call(tbl.querySelectorAll('tr'), function(tr){
+      var cells = Array.prototype.slice.call(tr.children).filter(function(x){ return /^(TD|TH)$/i.test(x.tagName); });
+      if (!cells.length) return;
+      var isHeader = cells.some(function(c){ return c.tagName.toUpperCase() === 'TH'; });
+      rows.push(new TableRow({
+        cantSplit: true,
+        children: cells.map(function(td, i){
+          var cls = String(td.className || '');
+          var txt = cleanText(td.textContent || '').toUpperCase();
+          var isStatus = cls.indexOf('status') !== -1 || txt === 'РЕКОМЕНДОВАНО' || txt === 'РАЗРЕШЕНО' || txt === 'ЗАПРЕЩЕНО' || txt === 'ЗАПРЕЩЁН' || txt === 'НЕЙТРАЛЬНО';
+          return cellFromDom(td, isHeader, isStatus, i);
+        })
+      }));
+    });
+    return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: rows });
+  }
+  function appendNode(node, out) {
+    if (!node) return;
+    var tag = (node.tagName || '').toUpperCase();
+    if (tag === 'H1') out.push(heading(node.textContent, 1));
+    else if (tag === 'H2') out.push(heading(node.textContent, 2));
+    else if (tag === 'H3') out.push(heading(node.textContent, 3));
+    else if (tag === 'TABLE') out.push(tableFromDom(node));
+    else if (tag === 'UL' || tag === 'OL') {
+      Array.prototype.forEach.call(node.querySelectorAll('li'), function(li){
+        out.push(para('• ' + cleanText(li.textContent), { size: 18 }));
+      });
+    } else if (tag === 'P') {
+      out.push(para(node.textContent, { size: 18 }));
+    } else {
+      Array.prototype.forEach.call(node.children || [], function(child){ appendNode(child, out); });
+    }
+  }
+
+  var children = [];
+  Array.prototype.forEach.call(root.children || [], function(child){ appendNode(child, children); });
+  if (!children.length) children.push(para('Данные расчёта не найдены.'));
+
+  var doc = new Document({
+    styles: { default: { document: { run: { font: 'Arial', size: 18, color: DARK } } } },
+    sections: [{
+      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
+      children: children
+    }]
+  });
+  return await Packer.toBlob(doc);
+}
 window.exportPdf = window.startExportDocx;
 })();
 </script>
