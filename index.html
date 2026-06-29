@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -6447,7 +6446,6 @@ window.startExportDocx = async function(event){
         : '');
 
     if (!wordHtml) throw new Error('Не удалось собрать файл');
-    if (!window.docx || !window.docx.Document || !window.docx.Packer) throw new Error('Библиотека DOCX не загружена');
 
     var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
@@ -6482,19 +6480,8 @@ window.startExportDocx = async function(event){
 };
 
 async function buildRealDocxBlobFromHtml(wordHtml) {
-  var D = window.docx;
-  var Document = D.Document;
-  var Packer = D.Packer;
-  var Paragraph = D.Paragraph;
-  var TextRun = D.TextRun;
-  var Table = D.Table;
-  var TableRow = D.TableRow;
-  var TableCell = D.TableCell;
-  var WidthType = D.WidthType;
-  var BorderStyle = D.BorderStyle;
-  var ShadingType = D.ShadingType;
-  var AlignmentType = D.AlignmentType;
-
+  // Настоящий DOCX без внешней библиотеки docx.js.
+  // Так Telegram WebView не падает, даже если CDN со скриптом DOCX не загрузился.
   var parsed = new DOMParser().parseFromString(wordHtml, 'text/html');
   var root = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.body;
 
@@ -6506,11 +6493,16 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
   var LINE = 'D8E0EA';
   var HEADER = 'FFF3FA';
 
-  var thinBorder = { style: BorderStyle.SINGLE, size: 1, color: LINE };
-  var noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
-
   function cleanText(value) {
     return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  }
+  function xmlEsc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
   function normalizedStatus(value) {
     var t = cleanText(value).toUpperCase();
@@ -6524,85 +6516,81 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
     if (t.indexOf('РАЗРЕШ') !== -1 || t.indexOf('РЕКОМЕНДОВАН') !== -1) return ALLOW;
     return DARK;
   }
-  function makeRuns(text, opts) {
+  function isStatusText(value) {
+    var t = cleanText(value).toUpperCase();
+    return t === 'РЕКОМЕНДОВАНО' || t === 'РАЗРЕШЕНО' || t === 'ЗАПРЕЩЕНО' || t === 'ЗАПРЕЩЁН' || t === 'НЕЙТРАЛЬНО';
+  }
+  function run(text, opts) {
     opts = opts || {};
     var source = cleanText(text);
-    if (!source) return [new TextRun({ text: '', size: opts.size || 18, font: 'Arial', color: opts.color || DARK })];
+    if (!source) source = ' ';
     var parts = source.split(/(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО|НЕЙТРАЛЬНО)/gi);
-    var runs = [];
-    parts.forEach(function(part){
+    var xml = '';
+    parts.forEach(function(part) {
       if (!part) return;
       var out = normalizedStatus(part);
-      var color = opts.color || DARK;
       var upper = cleanText(part).toUpperCase();
-      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') color = ALLOW;
-      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') color = FORB;
-      runs.push(new TextRun({
-        text: out,
-        bold: opts.bold || /^(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО)$/i.test(upper),
-        size: opts.size || 18,
-        font: 'Arial',
-        color: color
-      }));
+      var color = opts.color || DARK;
+      var bold = !!opts.bold;
+      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') { color = ALLOW; bold = true; }
+      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') { color = FORB; bold = true; }
+      xml += '<w:r><w:rPr>' +
+        '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>' +
+        (bold ? '<w:b/>' : '') +
+        '<w:color w:val="' + color + '"/>' +
+        '<w:sz w:val="' + (opts.size || 18) + '"/>' +
+        '</w:rPr><w:t xml:space="preserve">' + xmlEsc(out) + '</w:t></w:r>';
     });
-    return runs.length ? runs : [new TextRun({ text: source, size: opts.size || 18, font: 'Arial', color: opts.color || DARK })];
+    return xml || '<w:r><w:t> </w:t></w:r>';
   }
   function para(text, opts) {
     opts = opts || {};
-    return new Paragraph({
-      children: makeRuns(text, opts),
-      alignment: opts.alignment || AlignmentType.LEFT,
-      spacing: { before: opts.before || 0, after: opts.after == null ? 80 : opts.after }
-    });
+    return '<w:p><w:pPr>' +
+      (opts.alignment ? '<w:jc w:val="' + opts.alignment + '"/>' : '') +
+      '<w:spacing w:before="' + (opts.before || 0) + '" w:after="' + (opts.after == null ? 80 : opts.after) + '"/>' +
+      '</w:pPr>' + run(text, opts) + '</w:p>';
   }
   function heading(text, level) {
     level = level || 2;
-    return new Paragraph({
-      children: [new TextRun({ text: cleanText(text), bold: true, color: level === 1 ? TEAL : DARK, size: level === 1 ? 28 : 22, font: 'Arial' })],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: level === 1 ? 0 : 220, after: 100 },
-      border: level === 1 ? undefined : { bottom: { style: BorderStyle.SINGLE, size: 4, color: PINK, space: 2 } }
-    });
+    var color = level === 1 ? TEAL : DARK;
+    var size = level === 1 ? 28 : (level === 3 ? 20 : 22);
+    return '<w:p><w:pPr><w:jc w:val="center"/>' +
+      '<w:spacing w:before="' + (level === 1 ? 0 : 220) + '" w:after="100"/>' +
+      (level === 1 ? '' : '<w:pBdr><w:bottom w:val="single" w:sz="4" w:space="2" w:color="' + PINK + '"/></w:pBdr>') +
+      '</w:pPr>' + run(cleanText(text), { bold: true, color: color, size: size }) + '</w:p>';
   }
-  function cellFromDom(td, isHeader, isStatus, colIndex) {
+  function cellXml(td, isHeader, isStatus, colIndex, totalCells) {
     var raw = cleanText(td.textContent || '—');
     var text = isStatus ? normalizedStatus(raw) : raw;
     var color = isStatus ? statusColor(raw) : DARK;
-    var width = isStatus ? 32 : (colIndex === 0 ? 68 : 50);
-    return new TableCell({
-      width: { size: width, type: WidthType.PERCENTAGE },
-      shading: isHeader ? { fill: HEADER, type: ShadingType.CLEAR } : undefined,
-      margins: { top: 70, bottom: 70, left: 80, right: 80 },
-      borders: {
-        top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-        left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-        right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-        bottom: thinBorder
-      },
-      children: [new Paragraph({
-        children: makeRuns(text, { size: isStatus ? 17 : 18, color: color, bold: isHeader || isStatus }),
-        alignment: isStatus ? AlignmentType.CENTER : AlignmentType.LEFT,
-        spacing: { after: 0 }
-      })]
-    });
+    var width = totalCells === 2 ? (isStatus ? 1800 : 3200) : Math.floor(5000 / Math.max(1, totalCells));
+    return '<w:tc><w:tcPr>' +
+      '<w:tcW w:w="' + width + '" w:type="pct"/>' +
+      (isHeader ? '<w:shd w:fill="' + HEADER + '"/>' : '') +
+      '<w:tcMar><w:top w:w="70" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
+      '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="' + LINE + '"/></w:tcBorders>' +
+      '</w:tcPr><w:p><w:pPr>' +
+      (isStatus ? '<w:jc w:val="center"/>' : '') +
+      '<w:spacing w:after="0"/></w:pPr>' +
+      run(text, { size: isStatus ? 18 : 18, color: color, bold: isHeader || isStatus }) +
+      '</w:p></w:tc>';
   }
   function tableFromDom(tbl) {
-    var rows = [];
-    Array.prototype.forEach.call(tbl.querySelectorAll('tr'), function(tr){
+    var rowsXml = '';
+    Array.prototype.forEach.call(tbl.querySelectorAll('tr'), function(tr) {
       var cells = Array.prototype.slice.call(tr.children).filter(function(x){ return /^(TD|TH)$/i.test(x.tagName); });
       if (!cells.length) return;
       var isHeader = cells.some(function(c){ return c.tagName.toUpperCase() === 'TH'; });
-      rows.push(new TableRow({
-        cantSplit: true,
-        children: cells.map(function(td, i){
-          var cls = String(td.className || '');
-          var txt = cleanText(td.textContent || '').toUpperCase();
-          var isStatus = cls.indexOf('status') !== -1 || txt === 'РЕКОМЕНДОВАНО' || txt === 'РАЗРЕШЕНО' || txt === 'ЗАПРЕЩЕНО' || txt === 'ЗАПРЕЩЁН' || txt === 'НЕЙТРАЛЬНО';
-          return cellFromDom(td, isHeader, isStatus, i);
-        })
-      }));
+      rowsXml += '<w:tr><w:trPr><w:cantSplit/></w:trPr>' + cells.map(function(td, i) {
+        var cls = String(td.className || '');
+        var txt = cleanText(td.textContent || '').toUpperCase();
+        var isStatus = cls.indexOf('status') !== -1 || isStatusText(txt);
+        return cellXml(td, isHeader, isStatus, i, cells.length);
+      }).join('') + '</w:tr>';
     });
-    return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: rows });
+    return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' +
+      '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>' +
+      '</w:tblPr>' + rowsXml + '</w:tbl>';
   }
   function appendNode(node, out) {
     if (!node) return;
@@ -6612,7 +6600,7 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
     else if (tag === 'H3') out.push(heading(node.textContent, 3));
     else if (tag === 'TABLE') out.push(tableFromDom(node));
     else if (tag === 'UL' || tag === 'OL') {
-      Array.prototype.forEach.call(node.querySelectorAll('li'), function(li){
+      Array.prototype.forEach.call(node.querySelectorAll('li'), function(li) {
         out.push(para('• ' + cleanText(li.textContent), { size: 18 }));
       });
     } else if (tag === 'P') {
@@ -6622,18 +6610,104 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
     }
   }
 
-  var children = [];
-  Array.prototype.forEach.call(root.children || [], function(child){ appendNode(child, children); });
-  if (!children.length) children.push(para('Данные расчёта не найдены.'));
+  var bodyParts = [];
+  Array.prototype.forEach.call(root.children || [], function(child){ appendNode(child, bodyParts); });
+  if (!bodyParts.length) bodyParts.push(para('Данные расчёта не найдены.', { size: 18 }));
 
-  var doc = new Document({
-    styles: { default: { document: { run: { font: 'Arial', size: 18, color: DARK } } } },
-    sections: [{
-      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
-      children: children
-    }]
-  });
-  return await Packer.toBlob(doc);
+  var documentXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    '<w:body>' + bodyParts.join('') +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  function utf8(s) { return new TextEncoder().encode(s); }
+  function u16(n) { return [n & 255, (n >>> 8) & 255]; }
+  function u32(n) { return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+  var crcTable = null;
+  function crc32(data) {
+    if (!crcTable) {
+      crcTable = [];
+      for (var n = 0; n < 256; n++) {
+        var c = n;
+        for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        crcTable[n] = c >>> 0;
+      }
+    }
+    var crc = 0 ^ -1;
+    for (var i = 0; i < data.length; i++) crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 255];
+    return (crc ^ -1) >>> 0;
+  }
+  function concatArrays(arrays) {
+    var len = arrays.reduce(function(sum, a){ return sum + a.length; }, 0);
+    var out = new Uint8Array(len);
+    var pos = 0;
+    arrays.forEach(function(a){ out.set(a, pos); pos += a.length; });
+    return out;
+  }
+  function bytes(arr) { return new Uint8Array(arr); }
+  function zip(files) {
+    var locals = [];
+    var centrals = [];
+    var offset = 0;
+    files.forEach(function(file) {
+      var nameBytes = utf8(file.name);
+      var data = typeof file.data === 'string' ? utf8(file.data) : file.data;
+      var crc = crc32(data);
+      var local = concatArrays([
+        bytes(u32(0x04034b50)), bytes(u16(20)), bytes(u16(0x0800)), bytes(u16(0)),
+        bytes(u16(0)), bytes(u16(0)), bytes(u32(crc)), bytes(u32(data.length)), bytes(u32(data.length)),
+        bytes(u16(nameBytes.length)), bytes(u16(0)), nameBytes, data
+      ]);
+      locals.push(local);
+      var central = concatArrays([
+        bytes(u32(0x02014b50)), bytes(u16(20)), bytes(u16(20)), bytes(u16(0x0800)), bytes(u16(0)),
+        bytes(u16(0)), bytes(u16(0)), bytes(u32(crc)), bytes(u32(data.length)), bytes(u32(data.length)),
+        bytes(u16(nameBytes.length)), bytes(u16(0)), bytes(u16(0)), bytes(u16(0)), bytes(u16(0)),
+        bytes(u32(0)), bytes(u32(offset)), nameBytes
+      ]);
+      centrals.push(central);
+      offset += local.length;
+    });
+    var centralStart = offset;
+    var centralDir = concatArrays(centrals);
+    var end = concatArrays([
+      bytes(u32(0x06054b50)), bytes(u16(0)), bytes(u16(0)), bytes(u16(files.length)), bytes(u16(files.length)),
+      bytes(u32(centralDir.length)), bytes(u32(centralStart)), bytes(u16(0))
+    ]);
+    return concatArrays(locals.concat([centralDir, end]));
+  }
+
+  var files = [
+    { name: '[Content_Types].xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
+      '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>' +
+      '</Types>' },
+    { name: '_rels/.rels', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>' +
+      '</Relationships>' },
+    { name: 'word/document.xml', data: documentXml },
+    { name: 'word/_rels/document.xml.rels', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>' },
+    { name: 'docProps/core.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+      '<dc:title>Питание по Натальной карте</dc:title><dc:creator>AstroDarya</dc:creator></cp:coreProperties>' },
+    { name: 'docProps/app.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>AstroDarya</Application></Properties>' }
+  ];
+  return new Blob([zip(files)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 }
 window.exportPdf = window.startExportDocx;
 })();
