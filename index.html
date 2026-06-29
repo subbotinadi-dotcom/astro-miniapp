@@ -4447,7 +4447,7 @@ var wrap = document.createElement('div');
 wrap.style.position = 'absolute';
 wrap.style.left = '0';
 wrap.style.top = String(window.scrollY || 0) + 'px';
-wrap.style.width = '794px';
+wrap.style.width = '760px';
 wrap.style.minHeight = '1123px';
 wrap.style.background = '#ffffff';
 wrap.style.zIndex = '2147483646';
@@ -6208,9 +6208,9 @@ function statusClass(status){
   return status === 'РЕКОМЕНДОВАНО' ? 'status-rec' : ((status === 'ЗАПРЕЩЕНО' || status === 'ЗАПРЕЩЁН') ? 'status-forb' : 'status-neut');
 }
 function productRows(products){
-  if (!products || !products.length) return '<tr><td>—</td><td>—</td></tr>';
+  if (!products || !products.length) return '<tr class="product-row"><td>—</td><td class="status-cell status-neut"><span>—</span></td></tr>';
   return products.map(function(x){
-    return '<tr><td>'+esc(x.product || x.name || '—')+'</td><td class="'+statusClass(x.status)+'">'+esc(x.status || '—')+'</td></tr>';
+    return '<tr class="product-row"><td class="product-name-cell">'+esc(x.product || x.name || '—')+'</td><td class="status-cell '+statusClass(x.status)+'"><span>'+esc(x.status || '—')+'</span></td></tr>';
   }).join('');
 }
 function productsSummary(products){
@@ -6229,7 +6229,7 @@ function categoryTables(products){
   });
   Object.keys(groups).forEach(function(k){ if (order.indexOf(k) === -1) order.push(k); });
   var html = order.filter(function(k){ return groups[k] && groups[k].length; }).map(function(cat){
-    return '<h3>'+esc(cat.toUpperCase())+'</h3><table class="product-table"><thead><tr><th>Наименование</th><th>Результат</th></tr></thead><tbody>'+productRows(groups[cat])+'</tbody></table>';
+    return '<div class="product-category-block"><h3>'+esc(cat.toUpperCase())+'</h3><table class="product-table"><colgroup><col class="product-col"><col class="status-col"></colgroup><thead><tr><th>Наименование</th><th>Результат</th></tr></thead><tbody>'+productRows(groups[cat])+'</tbody></table></div>';
   }).join('');
   return html || '<p>—</p>';
 }
@@ -6268,9 +6268,15 @@ function planetName(p){
 function signText(signChar){
   try { return typeof signLabel === 'function' ? signLabel(signChar) : (signChar || ''); } catch(e) { return signChar || ''; }
 }
+function isExportNodePlanet(v){
+  var t = String(v == null ? '' : (v.sym || v.name || v)).toLowerCase().replace(/\s+/g,'');
+  var ru = String(v == null ? '' : (v.name || v)).toLowerCase().replace(/\s+/g,'');
+  return t === 'x' || t === 'y' || t === 'x1' || t === 'rahu' || t === 'ketu' || ru.indexOf('раху') !== -1 || ru.indexOf('кету') !== -1 || ru.indexOf('узел') !== -1;
+}
 function makePlanetsRows(d){
   var arr = [];
   (d.planets || []).forEach(function(p){
+    if (isExportNodePlanet(p)) return;
     arr.push([planetName(p), [p.pos || '', signText(p.signChar)].filter(Boolean).join(' ')]);
   });
   if (d.asc) arr.push(['ASC', [d.asc.pos || '', signText(d.asc.signChar)].filter(Boolean).join(' ')]);
@@ -6282,6 +6288,7 @@ function makeAspectRows(d){
   try {
     if (typeof shouldShowAspect === 'function') aspects = aspects.filter(function(a){ return shouldShowAspect(a.p1, a.p2, a.orb); });
   } catch(e) {}
+  aspects = aspects.filter(function(a){ return !isExportNodePlanet(a.p1) && !isExportNodePlanet(a.p2); });
   if (!aspects.length) return '<p>—</p>';
   return '<table class="data-table"><thead><tr><th>Аспект</th><th>Планеты</th><th>Орбис</th></tr></thead><tbody>'+aspects.map(function(a){
     var info = (typeof ASPECT_NAMES !== 'undefined' && ASPECT_NAMES[a.type]) ? ASPECT_NAMES[a.type] : null;
@@ -6307,7 +6314,8 @@ function wordStyle(){
   'h3{color:#18304F;font-size:12.5pt;text-transform:uppercase;margin:16pt 0 4pt;border-left:3pt solid #C01870;padding-left:6pt;font-weight:bold}'+
   'table{border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt}th,td{padding:4pt 6pt;vertical-align:top;color:#18304F}'+
   '.data-table td,.data-table th,.product-table td,.product-table th{border-bottom:1pt solid #D8E0EA}.data-table th,.product-table th{background:#FFF3FA;text-align:left;font-weight:bold}'+
-  '.label{font-weight:bold;color:#18304F}.big{font-size:24pt;font-weight:bold;text-align:center;color:#18304F}.quad-table th,.quad-table td{text-align:center}.energy-table td{border:0;padding:7pt 4pt}.status-rec{color:#00AFA5;font-weight:bold}.status-forb{color:#C01870;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}ul{margin-top:0}li{margin-bottom:3pt}'+
+  '.product-col{width:72%}.status-col{width:28%}.product-category-block,.product-table tr{page-break-inside:avoid}.status-cell{width:28%;text-align:center;border-bottom:1pt solid #D8E0EA}.status-cell span{display:block;border-radius:10pt;padding:3pt 5pt;border:1pt solid transparent}.status-rec span{background:#D9F5F2;border-color:#00B5A6}.status-forb span{background:#FFE0EC;border-color:#FF99BE}.status-neut span{background:#fff;border-color:#D8E0EA}'+
+  '.label{font-weight:bold;color:#18304F}.big{font-size:22pt;font-weight:bold;text-align:center;color:#18304F}.quad-table th,.quad-table td{text-align:center}.energy-table td{border:0;padding:7pt 3pt}.status-rec{color:#18304F;font-weight:bold}.status-forb{color:#18304F;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}ul{margin-top:0}li{margin-bottom:3pt;page-break-inside:avoid}'+
   '</style>';
 }
 window.makeWordHtml = function(){
@@ -6410,14 +6418,24 @@ window.startExportDocx = async function(event){
 
     tmpStyle = document.createElement('style');
     tmpStyle.textContent = Array.from(parsed.querySelectorAll('style')).map(function(st){ return st.textContent || ''; }).join('\n') + '\n' +
-      '.telegram-pdf-render{width:794px;max-width:794px;background:#fff;color:#18304F;padding:28px 26px;box-sizing:border-box;font-family:Arial,"Roboto Condensed",sans-serif;}\n' +
-      '.telegram-pdf-render *{box-sizing:border-box;}\n' +
-      '.telegram-pdf-render table{page-break-inside:auto;}\n' +
-      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3{page-break-inside:avoid;}\n' +
-      '.telegram-pdf-render,.telegram-pdf-render *{color:#18304F!important;text-shadow:none!important;-webkit-text-fill-color:#18304F!important;}\n' +
+      '.telegram-pdf-render{width:760px;max-width:760px;background:#fff;color:#18304F;padding:24px 10px 42px 6px;margin:0!important;box-sizing:border-box;font-family:Arial,"Roboto Condensed",sans-serif;font-size:10pt;line-height:1.22;overflow:visible!important;}\n' +
+      '.telegram-pdf-render *{box-sizing:border-box;max-width:100%;text-shadow:none!important;-webkit-text-fill-color:#18304F!important;color:#18304F!important;}\n' +
+      '.telegram-pdf-render table{page-break-inside:auto;width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}\n' +
+      '.telegram-pdf-render tr,.telegram-pdf-render h1,.telegram-pdf-render h2,.telegram-pdf-render h3,.telegram-pdf-render li,.telegram-pdf-render .product-category-block{page-break-inside:avoid!important;break-inside:avoid!important;}\n' +
       '.telegram-pdf-render h1{color:#00AFA5!important;-webkit-text-fill-color:#00AFA5!important;}\n' +
       '.telegram-pdf-render h2,.telegram-pdf-render h3,.telegram-pdf-render th,.telegram-pdf-render td,.telegram-pdf-render .label,.telegram-pdf-render .big{color:#18304F!important;-webkit-text-fill-color:#18304F!important;}\n' +
-      '.telegram-pdf-render .status-rec,.telegram-pdf-render .status-forb,.telegram-pdf-render .status-neut,.telegram-pdf-render .badge-rec,.telegram-pdf-render .badge-forb,.telegram-pdf-render .badge-neut{color:#18304F!important;-webkit-text-fill-color:#18304F!important;}';
+      '.telegram-pdf-render h2{margin-top:18px!important;}\n' +
+      '.telegram-pdf-render .big{font-size:20pt!important;}\n' +
+      '.telegram-pdf-render .energy-table td{padding:6px 2px!important;font-size:9pt!important;}\n' +
+      '.telegram-pdf-render .energy-table .big{font-size:19pt!important;}\n' +
+      '.telegram-pdf-render .product-col{width:72%!important;}\n' +
+      '.telegram-pdf-render .status-col{width:28%!important;}\n' +
+      '.telegram-pdf-render .product-table th,.telegram-pdf-render .product-table td{border-bottom:1px solid #D8E0EA!important;}\n' +
+      '.telegram-pdf-render .status-cell{width:28%!important;text-align:center!important;border-bottom:1px solid #D8E0EA!important;padding-left:4px!important;padding-right:4px!important;}\n' +
+      '.telegram-pdf-render .status-cell span{display:block!important;width:100%!important;border-radius:13px!important;padding:4px 4px!important;border:1px solid transparent!important;font-weight:800!important;font-size:8.6pt!important;line-height:1.05!important;color:#18304F!important;-webkit-text-fill-color:#18304F!important;}\n' +
+      '.telegram-pdf-render .status-rec span,.telegram-pdf-render .badge-rec{background:#D9F5F2!important;border-color:#00B5A6!important;}\n' +
+      '.telegram-pdf-render .status-forb span,.telegram-pdf-render .badge-forb{background:#FFE0EC!important;border-color:#FF99BE!important;}\n' +
+      '.telegram-pdf-render .status-neut span,.telegram-pdf-render .badge-neut{background:#fff!important;border-color:#D8E0EA!important;}';
     document.head.appendChild(tmpStyle);
 
     wrap = document.createElement('div');
@@ -6427,7 +6445,7 @@ window.startExportDocx = async function(event){
     wrap.style.position = 'absolute';
     wrap.style.left = '0';
     wrap.style.top = String(window.scrollY || 0) + 'px';
-    wrap.style.width = '794px';
+    wrap.style.width = '760px';
     wrap.style.minHeight = '1123px';
     wrap.style.background = '#ffffff';
     wrap.style.zIndex = '2147483646';
@@ -6436,6 +6454,7 @@ window.startExportDocx = async function(event){
     var content = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.documentElement;
     var node = document.importNode(content, true);
     node.classList.add('telegram-pdf-render');
+    node.querySelectorAll('table.product-table').forEach(function(tbl){ if (!tbl.querySelector('colgroup')) tbl.insertAdjacentHTML('afterbegin','<colgroup><col class="product-col"><col class="status-col"></colgroup>'); });
     node.style.display = 'block';
     node.style.visibility = 'visible';
     node.style.opacity = '1';
@@ -6456,7 +6475,7 @@ window.startExportDocx = async function(event){
     var filename = 'pitanie_' + safeName + '.pdf';
 
     var opt = {
-      margin: [8, 8, 8, 8],
+      margin: [7, 2, 7, 8],
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: {
@@ -6464,7 +6483,7 @@ window.startExportDocx = async function(event){
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        windowWidth: 794,
+        windowWidth: 760,
         windowHeight: Math.max(1123, node.scrollHeight || wrap.scrollHeight || 1123),
         scrollX: 0,
         scrollY: 0
@@ -6491,9 +6510,26 @@ window.startExportDocx = async function(event){
     });
 
     var result = await resp.json();
-    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера');
+    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера при отправке PDF');
 
-    if (loadingTxt) loadingTxt.textContent = 'PDF отправлен в Telegram!';
+    if (loadingTxt) loadingTxt.textContent = 'Отправляем Word в Telegram...';
+    var wordHtml = (typeof window.makeWordHtml === 'function') ? window.makeWordHtml() : html;
+    var wordBlob = new Blob(['\ufeff' + wordHtml], { type: 'application/msword;charset=utf-8' });
+    var wordBase64 = await new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(wordBlob);
+    });
+    var wordResp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, pdf_base64: wordBase64, filename: filename.replace(/\.pdf$/i, '.doc') })
+    });
+    var wordResult = await wordResp.json();
+    if (!wordResult.ok) throw new Error(wordResult.description || wordResult.error || 'Ошибка сервера при отправке Word');
+
+    if (loadingTxt) loadingTxt.textContent = 'PDF и Word отправлены в Telegram!';
     setTimeout(function(){
       if (overlay) overlay.classList.remove('active');
       if (tg && typeof tg.close === 'function') tg.close();
