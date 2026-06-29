@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -6499,63 +6500,55 @@ window.makeWordHtml = function(){
   html += '</div></body></html>';
   return html;
 };
-window.startExportDocx = async function(event){
+window.startExportDocx = async function(event) {
   if (event) { event.preventDefault(); event.stopPropagation(); }
 
   var overlay = document.getElementById('loadingOverlay');
   var loadingTxt = document.getElementById('loadingText');
-
-  // После нажатия показываем только экран загрузки, без вывода выгружаемого файла на страницу.
   if (overlay) overlay.classList.add('active');
   if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
 
   try {
-    var tg = window.Telegram && window.Telegram.WebApp;
-    var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
-    if (!chatId) throw new Error('Откройте приложение через Telegram-бота');
-
     if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
-    if (!window.currentData && typeof currentData === 'undefined') throw new Error('Сначала выполните расчёт');
+    if (!window.currentData) throw new Error('Сначала выполните расчёт');
 
     try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
 
     var wordHtml = (typeof window.makeWordHtml === 'function')
       ? window.makeWordHtml()
-      : (typeof window.buildPdfHtml === 'function'
-        ? '<!doctype html><html><head><meta charset="utf-8"></head><body>' + window.buildPdfHtml() + '</body></html>'
-        : '');
+      : '<!doctype html><html><head><meta charset="utf-8"></head><body>' + (window.buildPdfHtml ? window.buildPdfHtml() : '') + '</body></html>';
 
     if (!wordHtml) throw new Error('Не удалось собрать файл');
 
-    var d = window.currentData || (typeof currentData !== 'undefined' ? currentData : {}) || {};
+    var d = window.currentData || {};
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.docx';
 
-    var wordBlob = await buildRealDocxBlobFromHtml(wordHtml);
+    if (loadingTxt) loadingTxt.textContent = 'Скачиваем файл...';
 
-    var wordBase64 = await new Promise(function(resolve, reject){
-      var reader = new FileReader();
-      reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(wordBlob);
-    });
+    var docxBlob = await buildRealDocxBlobFromHtml(wordHtml);
 
-    if (loadingTxt) loadingTxt.textContent = 'Отправляем файл в Telegram...';
+    var url = URL.createObjectURL(docxBlob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.position = 'fixed';
+    a.style.left = '-9999px';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 3000);
 
-    var resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, pdf_base64: wordBase64, filename: filename })
-    });
+    if (loadingTxt) loadingTxt.textContent = 'Файл скачан!';
+    setTimeout(function() {
+      if (overlay) overlay.classList.remove('active');
+    }, 2000);
 
-    var result = await resp.json();
-    if (!result.ok) throw new Error(result.description || result.error || 'Ошибка сервера при отправке файла');
-
-    if (loadingTxt) loadingTxt.textContent = 'Файл отправлен!';
-    if (tg && typeof tg.close === 'function') tg.close();
   } catch(e) {
-    alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
     if (overlay) overlay.classList.remove('active');
+    alert('Ошибка: ' + (e && e.message ? e.message : e));
   }
 };
 
