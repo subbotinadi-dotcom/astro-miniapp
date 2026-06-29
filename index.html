@@ -2467,14 +2467,14 @@ button#foodCalcBtn.sotis-btn-style * {
 <!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
 <span class="h1-style">Питание по натальной карте</span>
-<p class="tagline">Заполните все шаги.</p>
+<p class="tagline">Заполните все шаги и нажмите «✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ»</p>
 <div class="steps-card">
 <!-- ШАГ 1 -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-<div class="step-label">ШАГ 1 — СОЗДАЙТЕ КАРТУ</div>
+<div class="step-label">Шаг 1 — создайте карту на Сотисе</div>
 <div class="instruction-box">
 <p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
-Зайди на сайт СОТИС. Нажми на меню «Гороскоп» → «Создать новый» → «Одиночная карта».
+В меню «Гороскоп» → «Создать новый» → «Одиночная карта»
 </p>
 <ol style="color:#FFFFFF">
 <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
@@ -2495,7 +2495,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
 <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
 </div>
-<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПРОДОЛЖИТЬ</button></div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
 <div class="sotis-file-fallback">
 <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
 <input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
@@ -2569,7 +2569,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem"></div>
 </div>
 <div class="food-data-actions">
-<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ РАССЧИТАТЬ</button></div>
+<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
 </div>
 </div>
 </div>
@@ -3702,25 +3702,15 @@ const foodPage = document.getElementById('foodPage');
 if (foodDataBlock) foodDataBlock.style.display = 'none';
 if (foodPage) foodPage.style.display = 'none';
 
-// На второй странице оставляем только планеты и аспекты.
-const indicatorsSection = document.getElementById('indicatorsSection');
-if (indicatorsSection) {
-  indicatorsSection.style.display = 'none';
-  const indicatorsTitle = indicatorsSection.previousElementSibling;
-  if (indicatorsTitle && indicatorsTitle.classList && indicatorsTitle.classList.contains('section-title')) {
-    indicatorsTitle.style.display = 'none';
-  }
-}
-
 // Добавляем кнопку «Продолжить» после аспектов
 if (!document.getElementById('continueBtn')) {
 const btn = document.createElement('button');
 btn.id = 'continueBtn';
 btn.type = 'button';
-btn.textContent = '✦ ПРОДОЛЖИТЬ';
+btn.textContent = '✦ Продолжить';
 btn.className = 'continue-btn';
 btn.onclick = showStep3;
-(document.querySelector('#result .aspects-section') || document.getElementById('indicatorsSection')).after(btn);
+document.getElementById('indicatorsSection').after(btn);
 }
 
 window.scrollTo(0, 0);
@@ -6570,18 +6560,15 @@ function buildHtmlWordDocBlob(wordHtml) {
   html = html.replace(/ЗАПРЕЩЁН/g, 'ЗАПРЕЩЕНО');
   html = html.replace(/<\/head>/i,
     '<style>' +
-    '@page WordSection1{size:595.3pt 841.9pt;margin:32pt 28pt 38pt 28pt}div.WordSection1{page:WordSection1}' +
-    'body,table,td,th,p,li{font-family:Arial,sans-serif;color:#18304F;font-size:10.5pt;line-height:1.25;}' +
-    'table{border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt;}' +
-    'td,th{border-bottom:1px solid #D8E0EA;padding:4pt 6pt;vertical-align:top;}' +
-    'th{background:#FFF3FA;text-align:left;font-weight:700;}' +
-    'h1{color:#00AFA5;text-align:center;font-size:14pt;margin:0 0 8pt;font-weight:700;}' +
-    'h2,h3{color:#18304F;text-align:center;border-bottom:1.5pt solid #FC9FBC;font-size:11pt;margin:14pt 0 7pt;padding-bottom:4pt;font-weight:700;}' +
-    '.data-table td:first-child{width:34%;}.data-table td:last-child{width:66%;}.product-col{width:64%;}.status-col{width:36%;}' +
-    '.product-category-block,.product-table tr{page-break-inside:avoid;}.status-cell{text-align:center;}.status-cell span{background:transparent!important;border:0!important;white-space:nowrap;font-weight:800;}' +
-    '.status-rec,.status-rec span,.badge-rec{color:#377E74!important;font-weight:800;background:transparent!important;border:0!important;}' +
-    '.status-forb,.status-forb span,.badge-forb{color:#EC779F!important;font-weight:800;background:transparent!important;border:0!important;}' +
-    '.status-neut,.status-neut span,.badge-neut{color:#18304F!important;font-weight:800;background:transparent!important;border:0!important;}' +
+    'body,table,td,th,p,li{font-family:Arial,sans-serif;color:#18304F;}' +
+    'table{border-collapse:collapse;width:100%;}' +
+    'td,th{border-bottom:1px solid #D8E0EA;padding:4pt 6pt;}' +
+    'th{background:#FFF3FA;text-align:left;}' +
+    'h1{color:#00AFA5;text-align:center;}' +
+    'h2,h3{color:#18304F;text-align:center;border-bottom:1.5pt solid #FC9FBC;}' +
+    '.status-rec,.badge-rec{color:#377E74!important;font-weight:800;background:transparent!important;border:0!important;}' +
+    '.status-forb,.badge-forb{color:#EC779F!important;font-weight:800;background:transparent!important;border:0!important;}' +
+    '.status-neut,.badge-neut{color:#18304F!important;font-weight:800;background:transparent!important;border:0!important;}' +
     '</style></head>'
   );
   return new Blob(['\ufeff' + html], { type: 'application/msword;charset=utf-8' });
@@ -6673,23 +6660,14 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
       border: level === 1 ? undefined : { bottom: { style: BorderStyle.SINGLE, size: 4, color: PINK, space: 2 } }
     });
   }
-  function cellFromDom(td, isHeader, isStatus, colIndex, totalCells, tableKind) {
+  function cellFromDom(td, isHeader, isStatus, colIndex, totalCells) {
     var raw = cleanText(td.textContent || '—');
     var text = isStatus ? normalizedStatus(raw) : raw;
     var color = isStatus ? statusColor(raw) : DARK;
-    var width;
-    if (totalCells === 2 && tableKind === 'product') {
-      width = isStatus || colIndex === 1 ? 36 : 64;
-    } else if (totalCells === 2) {
-      width = colIndex === 0 ? 34 : 66;
-    } else if (totalCells === 3) {
-      width = colIndex === 1 ? 40 : 30;
-    } else {
-      width = Math.floor(100 / Math.max(1, totalCells));
-    }
+    var width = totalCells === 2 ? (isStatus ? 36 : 64) : Math.floor(100 / Math.max(1, totalCells));
     return new TableCell({
       width: { size: width, type: WidthType.PERCENTAGE },
-      shading: isHeader ? { fill: HEADER, type: ShadingType.CLEAR, color: 'auto' } : undefined,
+      shading: isHeader ? { fill: HEADER, type: ShadingType.CLEAR } : undefined,
       margins: { top: 70, bottom: 70, left: 80, right: 80 },
       borders: {
         top: noBorder,
@@ -6706,8 +6684,6 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
   }
   function tableFromDom(tbl) {
     var rows = [];
-    var tblClass = String(tbl.className || '');
-    var tableKind = tblClass.indexOf('product-table') !== -1 ? 'product' : 'data';
     Array.prototype.forEach.call(tbl.querySelectorAll('tr'), function(tr){
       var cells = Array.prototype.slice.call(tr.children).filter(function(x){ return /^(TD|TH)$/i.test(x.tagName); });
       if (!cells.length) return;
@@ -6718,7 +6694,7 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
           var cls = String(td.className || '');
           var txt = cleanText(td.textContent || '').toUpperCase();
           var isStatus = cls.indexOf('status') !== -1 || txt === 'РЕКОМЕНДОВАНО' || txt === 'РАЗРЕШЕНО' || txt === 'ЗАПРЕЩЕНО' || txt === 'ЗАПРЕЩЁН' || txt === 'НЕЙТРАЛЬНО';
-          return cellFromDom(td, isHeader, isStatus, i, cells.length, tableKind);
+          return cellFromDom(td, isHeader, isStatus, i, cells.length);
         })
       }));
     });
@@ -6760,64 +6736,72 @@ window.exportPdf = window.startExportDocx;
 })();
 </script>
 
-
-<script id="requested-flow-fix-20260629">
+<script id="final-one-click-result-flow">
 (function(){
-  function setRequestedButtonLabels(){
-    var first = document.querySelector('button[onclick="calculateFromUrl(event)"]');
-    if (first) first.textContent = '✦ ПРОДОЛЖИТЬ';
-    var cont = document.getElementById('continueBtn');
-    if (cont) cont.textContent = '✦ ПРОДОЛЖИТЬ';
-    var food = document.getElementById('foodCalcBtn');
-    if (food) food.textContent = '✦ РАССЧИТАТЬ';
+  function showOverlay(text) {
+    var overlay = document.getElementById('loadingOverlay');
+    var loadingTxt = document.getElementById('loadingText');
+    if (overlay) overlay.classList.add('active');
+    if (loadingTxt) loadingTxt.textContent = text || 'Формируем файл...';
   }
-  document.addEventListener('DOMContentLoaded', setRequestedButtonLabels);
-
-  var prevShowResultWithStep3 = window.showResultWithStep3;
-  if (typeof prevShowResultWithStep3 === 'function') {
-    window.showResultWithStep3 = function(){
-      var res = prevShowResultWithStep3.apply(this, arguments);
-      var indicators = document.getElementById('indicatorsSection');
-      if (indicators) {
-        indicators.style.display = 'none';
-        var title = indicators.previousElementSibling;
-        if (title && title.classList && title.classList.contains('section-title')) title.style.display = 'none';
-      }
-      var btn = document.getElementById('continueBtn');
-      if (btn) {
-        btn.textContent = '✦ ПРОДОЛЖИТЬ';
-        var aspects = document.querySelector('#result .aspects-section');
-        if (aspects && btn.previousElementSibling !== aspects) aspects.after(btn);
-      }
-      setRequestedButtonLabels();
-      return res;
-    };
+  function hideResultScreens() {
+    ['productsPage','foodPage','result'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+  function prepareButton() {
+    var btn = document.getElementById('foodCalcBtn');
+    if (btn) {
+      btn.textContent = '✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ';
+      btn.onclick = window.showFoodPage;
+    }
   }
 
-  var prevShowFoodPage = window.showFoodPage;
-  if (typeof prevShowFoodPage === 'function') {
-    window.showFoodPage = async function(event){
-      if (event) { event.preventDefault(); event.stopPropagation(); }
-      var result = prevShowFoodPage.call(this, event);
-      if (result && typeof result.then === 'function') await result;
+  var bindTimer = setInterval(function(){
+    prepareButton();
+    if (typeof window.showFoodPage === 'function' && typeof window.startExportDocx === 'function') {
+      clearInterval(bindTimer);
 
-      var err = document.getElementById('foodDataErr');
-      var foodPage = document.getElementById('foodPage');
-      var hasError = err && String(err.textContent || '').trim();
-      var hasResult = foodPage && foodPage.style.display !== 'none' && String(foodPage.innerHTML || '').trim();
-      var hasFoodResult = !!window.foodResult;
+      var originalShowFoodPage = window.showFoodPage;
 
-      if (!hasError && hasResult && hasFoodResult && typeof window.startExportDocx === 'function') {
-        var overlay = document.getElementById('loadingOverlay');
-        var loadingTxt = document.getElementById('loadingText');
-        if (overlay) overlay.classList.add('active');
-        if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
-        await window.startExportDocx();
-      }
-      setRequestedButtonLabels();
-      return result;
-    };
-  }
+      window.showFoodPage = async function(event) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+
+        var btn = document.getElementById('foodCalcBtn');
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
+
+        var previousFoodResult = window.foodResult;
+        window.foodResult = null;
+
+        showOverlay('Рассчитываем и формируем файл...');
+
+        try {
+          originalShowFoodPage.call(this, event);
+
+          if (!window.foodResult) {
+            window.foodResult = previousFoodResult || null;
+            var overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.remove('active');
+            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            return;
+          }
+
+          try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e) {}
+
+          hideResultScreens();
+          await window.startExportDocx(event);
+        } catch(e) {
+          alert('Ошибка отправки файла: ' + (e && e.message ? e.message : e));
+          var overlay = document.getElementById('loadingOverlay');
+          if (overlay) overlay.classList.remove('active');
+          if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        }
+      };
+
+      prepareButton();
+    }
+  }, 100);
 })();
 </script>
 
