@@ -2495,7 +2495,7 @@ button#foodCalcBtn.sotis-btn-style * {
 <input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
 <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
 </div>
-<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ РАССЧИТАТЬ</button></div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПРОДОЛЖИТЬ</button></div>
 <div class="sotis-file-fallback">
 <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
 <input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
@@ -3702,15 +3702,25 @@ const foodPage = document.getElementById('foodPage');
 if (foodDataBlock) foodDataBlock.style.display = 'none';
 if (foodPage) foodPage.style.display = 'none';
 
+// На второй странице оставляем только планеты и аспекты.
+const indicatorsSection = document.getElementById('indicatorsSection');
+if (indicatorsSection) {
+  indicatorsSection.style.display = 'none';
+  const indicatorsTitle = indicatorsSection.previousElementSibling;
+  if (indicatorsTitle && indicatorsTitle.classList && indicatorsTitle.classList.contains('section-title')) {
+    indicatorsTitle.style.display = 'none';
+  }
+}
+
 // Добавляем кнопку «Продолжить» после аспектов
 if (!document.getElementById('continueBtn')) {
 const btn = document.createElement('button');
 btn.id = 'continueBtn';
 btn.type = 'button';
-btn.textContent = '✦ Продолжить';
+btn.textContent = '✦ ПРОДОЛЖИТЬ';
 btn.className = 'continue-btn';
 btn.onclick = showStep3;
-document.getElementById('indicatorsSection').after(btn);
+(document.querySelector('#result .aspects-section') || document.getElementById('indicatorsSection')).after(btn);
 }
 
 window.scrollTo(0, 0);
@@ -6747,6 +6757,67 @@ async function buildDocxBlobWithLibrary(wordHtml, D) {
   return await Packer.toBlob(doc);
 }
 window.exportPdf = window.startExportDocx;
+})();
+</script>
+
+
+<script id="requested-flow-fix-20260629">
+(function(){
+  function setRequestedButtonLabels(){
+    var first = document.querySelector('button[onclick="calculateFromUrl(event)"]');
+    if (first) first.textContent = '✦ ПРОДОЛЖИТЬ';
+    var cont = document.getElementById('continueBtn');
+    if (cont) cont.textContent = '✦ ПРОДОЛЖИТЬ';
+    var food = document.getElementById('foodCalcBtn');
+    if (food) food.textContent = '✦ РАССЧИТАТЬ';
+  }
+  document.addEventListener('DOMContentLoaded', setRequestedButtonLabels);
+
+  var prevShowResultWithStep3 = window.showResultWithStep3;
+  if (typeof prevShowResultWithStep3 === 'function') {
+    window.showResultWithStep3 = function(){
+      var res = prevShowResultWithStep3.apply(this, arguments);
+      var indicators = document.getElementById('indicatorsSection');
+      if (indicators) {
+        indicators.style.display = 'none';
+        var title = indicators.previousElementSibling;
+        if (title && title.classList && title.classList.contains('section-title')) title.style.display = 'none';
+      }
+      var btn = document.getElementById('continueBtn');
+      if (btn) {
+        btn.textContent = '✦ ПРОДОЛЖИТЬ';
+        var aspects = document.querySelector('#result .aspects-section');
+        if (aspects && btn.previousElementSibling !== aspects) aspects.after(btn);
+      }
+      setRequestedButtonLabels();
+      return res;
+    };
+  }
+
+  var prevShowFoodPage = window.showFoodPage;
+  if (typeof prevShowFoodPage === 'function') {
+    window.showFoodPage = async function(event){
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      var result = prevShowFoodPage.call(this, event);
+      if (result && typeof result.then === 'function') await result;
+
+      var err = document.getElementById('foodDataErr');
+      var foodPage = document.getElementById('foodPage');
+      var hasError = err && String(err.textContent || '').trim();
+      var hasResult = foodPage && foodPage.style.display !== 'none' && String(foodPage.innerHTML || '').trim();
+      var hasFoodResult = !!window.foodResult;
+
+      if (!hasError && hasResult && hasFoodResult && typeof window.startExportDocx === 'function') {
+        var overlay = document.getElementById('loadingOverlay');
+        var loadingTxt = document.getElementById('loadingText');
+        if (overlay) overlay.classList.add('active');
+        if (loadingTxt) loadingTxt.textContent = 'Формируем файл...';
+        await window.startExportDocx();
+      }
+      setRequestedButtonLabels();
+      return result;
+    };
+  }
 })();
 </script>
 
