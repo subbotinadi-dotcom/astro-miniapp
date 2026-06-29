@@ -9,6 +9,7 @@
 
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <link href="style.css" rel="stylesheet"/>
@@ -6377,96 +6378,309 @@ window.startExportDocx = async function(event){
     var chatId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
     if (!chatId) { alert('Откройте приложение через Telegram-бота'); return; }
 
-    // Extract content from makeWordHtml (strip outer html/head, keep only body content + styles)
-    var wordHtml = window.makeWordHtml();
-    // Parse out the body content only
-    var bodyMatch = wordHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    var bodyContent = bodyMatch ? bodyMatch[1] : wordHtml;
+    // ── Collect data ──────────────────────────────────────────────────────────
+    if (!window.currentData && typeof currentData !== 'undefined') window.currentData = currentData;
+    var d = window.currentData || {};
+    if (!d || (!d.planets && !d.chartName)) throw new Error('Нет данных для экспорта');
+    try { if (typeof window.runProductCalculations === 'function') window.runProductCalculations(); } catch(e){}
+    var food = window.foodResult || {};
+    var calc = {};
+    try { calc = typeof calcElements === 'function' ? calcElements(d.planets||[], d.asc, d.mc) : {}; } catch(e){}
+    var products = [];
+    try { products = (typeof window.runProductCalculations==='function' ? (window.productResults||window.runProductCalculations()) : (window.productResults||[])) || []; } catch(e){ products = window.productResults||[]; }
+    var gender = food.gender || (typeof selectedGender!=='undefined' ? selectedGender : '—');
 
-    // Outer wrapper — positioned off-screen, not affected by html2canvas clip
-    var printWrap = document.createElement('div');
-    printWrap.style.cssText = 'position:absolute;left:-99999px;top:0;width:794px;overflow:visible;z-index:9999';
-    document.body.appendChild(printWrap);
+    // ── Build PDF with jsPDF directly (no html2canvas — works in Telegram WebView) ─
+    var { jsPDF } = window.jspdf || {};
+    if (!jsPDF) {
+      // html2pdf bundles jsPDF — extract it
+      var tmp = html2pdf().set({}).outputPdf; // touch to init
+      jsPDF = window.jspdf && window.jspdf.jsPDF;
+    }
+    if (!jsPDF) throw new Error('jsPDF не загружен');
 
-    // Inner div — carries ALL styles explicitly, overrides the global * {color:#fff}
-    var printDiv = document.createElement('div');
-    printDiv.id = 'pdf-print-area';
-    // Critical: all-color override must come AFTER global styles via !important
-    var scopedStyle = document.createElement('style');
-    scopedStyle.textContent = [
-      '#pdf-print-area, #pdf-print-area * {',
-      '  all: revert;',           // reset any inherited #FFF from global * rule
-      '  box-sizing: border-box;',
-      '}',
-      '#pdf-print-area {',
-      '  background: #fff !important;',
-      '  color: #18304F !important;',
-      '  font-family: Arial, sans-serif !important;',
-      '  font-size: 10.5pt !important;',
-      '  line-height: 1.25 !important;',
-      '  width: 794px;',
-      '  padding: 0;',
-      '}',
-      '#pdf-print-area h1 { color:#00AFA5 !important; font-size:24pt !important; text-align:center !important; text-transform:uppercase !important; letter-spacing:1pt !important; margin:0 0 28pt !important; font-weight:bold !important; }',
-      '#pdf-print-area h2 { color:#18304F !important; font-size:18pt !important; text-align:center !important; text-transform:uppercase !important; letter-spacing:.7pt !important; margin:24pt 0 10pt !important; border-bottom:1.5pt solid #FC9FBC !important; padding-bottom:5pt !important; font-weight:bold !important; }',
-      '#pdf-print-area h3 { color:#18304F !important; font-size:12.5pt !important; text-transform:uppercase !important; margin:16pt 0 4pt !important; border-left:3pt solid #C01870 !important; padding-left:6pt !important; font-weight:bold !important; }',
-      '#pdf-print-area table { border-collapse:collapse !important; width:100% !important; table-layout:fixed !important; margin:0 0 10pt !important; }',
-      '#pdf-print-area th, #pdf-print-area td { padding:4pt 6pt !important; vertical-align:top !important; color:#18304F !important; font-size:10pt !important; }',
-      '#pdf-print-area .data-table td, #pdf-print-area .data-table th, #pdf-print-area .product-table td, #pdf-print-area .product-table th { border-bottom:1pt solid #D8E0EA !important; }',
-      '#pdf-print-area .data-table th, #pdf-print-area .product-table th { background:#FFF3FA !important; text-align:left !important; font-weight:bold !important; }',
-      '#pdf-print-area .label { font-weight:bold !important; color:#18304F !important; }',
-      '#pdf-print-area .big { font-size:24pt !important; font-weight:bold !important; text-align:center !important; color:#18304F !important; }',
-      '#pdf-print-area .quad-table th, #pdf-print-area .quad-table td { text-align:center !important; }',
-      '#pdf-print-area .energy-table td { border:0 !important; padding:7pt 4pt !important; }',
-      '#pdf-print-area .status-rec { color:#00AFA5 !important; font-weight:bold !important; }',
-      '#pdf-print-area .status-forb { color:#C01870 !important; font-weight:bold !important; }',
-      '#pdf-print-area .status-neut { color:#18304F !important; font-weight:bold !important; }',
-      '#pdf-print-area ul { margin-top:0 !important; }',
-      '#pdf-print-area li { margin-bottom:3pt !important; color:#18304F !important; }',
-      '#pdf-print-area p { color:#18304F !important; }'
-    ].join('\n');
-    document.head.appendChild(scopedStyle);
+    var doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    var PW = 210, PH = 297;
+    var ML = 14, MR = 14, MT = 14, MB = 14;
+    var CW = PW - ML - MR; // content width = 182mm
+    var y = MT;
+    var LINE = 5.5;
 
-    printDiv.innerHTML = bodyContent;
-    printWrap.appendChild(printDiv);
+    function hexToRgb(hex) {
+      var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      return [r,g,b];
+    }
+    function setColor(hex){ var c=hexToRgb(hex); doc.setTextColor(c[0],c[1],c[2]); }
+    function setFill(hex){ var c=hexToRgb(hex); doc.setFillColor(c[0],c[1],c[2]); }
+    function setDraw(hex){ var c=hexToRgb(hex); doc.setDrawColor(c[0],c[1],c[2]); }
 
-    // Give browser time to paint
-    await new Promise(function(res){ setTimeout(res, 600); });
+    function checkPage(need) {
+      if (y + need > PH - MB) { doc.addPage(); y = MT; }
+    }
 
-    var safeName = ((window.currentData || {}).chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
+    function addH1(text) {
+      checkPage(12);
+      doc.setFont('helvetica','bold'); doc.setFontSize(18);
+      setColor('#00AFA5');
+      doc.text(text.toUpperCase(), PW/2, y, {align:'center'});
+      y += 10;
+    }
+
+    function addH2(text) {
+      checkPage(10);
+      y += 4;
+      doc.setFont('helvetica','bold'); doc.setFontSize(13);
+      setColor('#18304F');
+      doc.text(text.toUpperCase(), PW/2, y, {align:'center'});
+      y += 2;
+      setDraw('#FC9FBC'); doc.setLineWidth(0.5);
+      doc.line(ML, y, PW-MR, y);
+      y += 5;
+    }
+
+    function addText(label, value, bold) {
+      checkPage(LINE+1);
+      doc.setFontSize(9);
+      if (label) {
+        doc.setFont('helvetica','bold'); setColor('#18304F');
+        doc.text(label+':', ML, y);
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        var lw = doc.getTextWidth(label+': ');
+        var lines = doc.splitTextToSize(String(value||'—'), CW - lw - 2);
+        doc.text(lines, ML + lw + 1, y);
+        y += LINE * lines.length;
+      } else {
+        doc.setFont('helvetica','normal'); setColor('#18304F');
+        var lines = doc.splitTextToSize(String(value||''), CW);
+        doc.text(lines, ML, y);
+        y += LINE * lines.length;
+      }
+    }
+
+    function addTable2col(rows) {
+      // Two-column key:value table
+      var col1 = CW * 0.38, col2 = CW * 0.62;
+      rows.forEach(function(row) {
+        var key = String(row[0]||''), val = String(row[1]||'—');
+        var valLines = doc.splitTextToSize(val, col2 - 4);
+        var rowH = Math.max(LINE, LINE * valLines.length) + 2;
+        checkPage(rowH + 1);
+        // border
+        setDraw('#D8E0EA'); doc.setLineWidth(0.2);
+        doc.rect(ML, y-4, CW, rowH, 'S');
+        // key
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); setColor('#18304F');
+        doc.text(key, ML+2, y);
+        // value
+        doc.setFont('helvetica','normal'); setColor('#18304F');
+        doc.text(valLines, ML + col1 + 2, y);
+        y += rowH;
+      });
+      y += 2;
+    }
+
+    function addTable4col(headers, rows) {
+      var colW = CW / headers.length;
+      var rowH = LINE + 2;
+      checkPage(rowH * (rows.length + 1) + 2);
+      // header row
+      setFill('#FFF3FA'); setDraw('#D8E0EA'); doc.setLineWidth(0.2);
+      doc.rect(ML, y-4, CW, rowH, 'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); setColor('#18304F');
+      headers.forEach(function(h, i){ doc.text(String(h), ML + colW*i + colW/2, y, {align:'center'}); });
+      y += rowH;
+      // data rows
+      rows.forEach(function(row){
+        checkPage(rowH+1);
+        setDraw('#D8E0EA');
+        doc.rect(ML, y-4, CW, rowH, 'S');
+        doc.setFont('helvetica','normal'); doc.setFontSize(9); setColor('#18304F');
+        row.forEach(function(cell, i){ doc.text(String(cell||'—'), ML + colW*i + colW/2, y, {align:'center'}); });
+        y += rowH;
+      });
+      y += 3;
+    }
+
+    function addProductList(items, color) {
+      if (!items || !items.length) { addText(null, '—'); return; }
+      items.forEach(function(p){
+        checkPage(LINE+1);
+        doc.setFontSize(8);
+        var cat = p.category ? '['+p.category+'] ' : '';
+        var line = '• ' + cat + (p.name||p.product||'') + (p.comment ? ' — '+p.comment : '');
+        doc.setFont('helvetica','normal'); setColor(color||'#18304F');
+        var lines = doc.splitTextToSize(line, CW-4);
+        doc.text(lines, ML+3, y);
+        y += LINE * lines.length;
+      });
+      y += 2;
+    }
+
+    // ── Render content ────────────────────────────────────────────────────────
+    addH1('Питание по натальной карте');
+
+    // Subtitle
+    checkPage(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); setColor('#18304F');
+    var subtitle = (d.chartName||'') + (d.chartDate ? '  ' + d.chartDate : '') + (d.birthTime||d.time ? '  ' + (d.birthTime||d.time) : '');
+    doc.text(subtitle.trim(), PW/2, y, {align:'center'});
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    var sub2 = 'ПОЛ: ' + (gender||'—') + (food.age ? ',  ВОЗРАСТ: '+food.age+' лет' : '') + (food.height ? ',  РОСТ: '+food.height+' см' : '') + (food.weight ? ',  ВЕС: '+food.weight+' кг' : '');
+    doc.text(sub2, PW/2, y, {align:'center'});
+    y += 8;
+
+    // Stihii
+    addH2('✦ Расчёт показателей ✦');
+    var el = (calc && calc.elements) || {};
+    var total = (el['Огонь']||0)+(el['Земля']||0)+(el['Воздух']||0)+(el['Вода']||0);
+    addTable4col(
+      ['🔥 Огонь','🌍 Земля','💨 Воздух','💧 Вода'],
+      [
+        ['Огонь','Земля','Воздух','Вода'].map(function(k){ return el[k]||0; }),
+        ['Огонь','Земля','Воздух','Вода'].map(function(k){ return total ? Math.round((el[k]||0)/total*100)+'%' : '0%'; })
+      ]
+    );
+
+    // Energia
+    addTable4col(
+      ['☀️ Тепло','❄️ Холод','🍁 Сухость','🌧️ Влажность'],
+      [[calc.teplo||0, calc.holod||0, calc.suhost||0, calc.vlazhnost||0]]
+    );
+    addTable4col(
+      ['😉 Эмоциональность','🧠 Рациональность','',''],
+      [[calc.emotsionalnost||0, calc.racionalnost||0,'','']]
+    );
+
+    // Planets
+    addH2('✦ Планеты в знаках ✦');
+    var pNames = (typeof PLANET_NAMES!=='undefined')?PLANET_NAMES:{};
+    var pSymbols = (typeof PLANET_SYMBOLS!=='undefined')?PLANET_SYMBOLS:{};
+    var planetRows = [];
+    (d.planets||[]).forEach(function(p){
+      var nm = (pSymbols[p.sym]?pSymbols[p.sym]+' ':'') + (pNames[p.sym]||p.name||p.sym||'—') + (p.isRetro?' R':'');
+      var pos = [p.pos||'', (function(sc){ try{return typeof signLabel==='function'?signLabel(sc):(sc||'');}catch(e){return sc||'';}})(p.signChar)].filter(Boolean).join(' ');
+      planetRows.push([nm, pos]);
+    });
+    if (d.asc) planetRows.push(['ASC', [d.asc.pos||'', (function(sc){try{return typeof signLabel==='function'?signLabel(sc):(sc||'');}catch(e){return sc||'';}})(d.asc.signChar)].filter(Boolean).join(' ')]);
+    if (d.mc) planetRows.push(['MC', [d.mc.pos||'', (function(sc){try{return typeof signLabel==='function'?signLabel(sc):(sc||'');}catch(e){return sc||'';}})(d.mc.signChar)].filter(Boolean).join(' ')]);
+    // 2-column table for planets (pairs)
+    var half = Math.ceil(planetRows.length/2);
+    var pairRows = [];
+    for (var i=0;i<half;i++){
+      var left=planetRows[i]||['',''], right=planetRows[i+half]||['',''];
+      pairRows.push([left[0],left[1],right[0],right[1]]);
+    }
+    addTable4col(['Планета','Положение','Планета','Положение'], pairRows);
+
+    // Aspects
+    addH2('✦ Аспекты ✦');
+    var aspects = d.aspects||[];
+    try { if(typeof shouldShowAspect==='function') aspects=aspects.filter(function(a){return shouldShowAspect(a.p1,a.p2,a.orb);}); } catch(e){}
+    var aspNames = (typeof ASPECT_NAMES!=='undefined')?ASPECT_NAMES:{};
+    var aspRows = aspects.map(function(a){
+      var info = aspNames[a.type]||null;
+      return [(info&&info.name)||a.typeName||a.type||'—', (a.p1||'—')+' — '+(a.p2||'—'), a.orb||'—'];
+    });
+    addTable4col(['Аспект','Планеты','Орбис'], aspRows);
+
+    // Rezhim pitania
+    addH2('✦ Режим питания ✦');
+    addTable2col([
+      ['Количество приёмов', food.meals],
+      ['Завтрак', food.breakfast],
+      ['Обед', food.lunch],
+      ['Ужин', food.dinner],
+      ['Метаболизм', food.metabolism]
+    ]);
+
+    // KBZU
+    addH2('✦ КБЖУ ✦');
+    addTable4col(
+      ['Калорийность','Белки','Жиры','Углеводы'],
+      [[food.calories||'—', (food.proteins||food.protein||'—')+' г', (food.fats||food.fat||'—')+' г', (food.carbs||food.carbohydrates||'—')+' г']]
+    );
+
+    // Vodno-solevoy
+    addH2('✦ Водно-солевой баланс ✦');
+    addTable2col([
+      ['Соль', food.salt],
+      ['Вода', food.water],
+      ['Жидкость', food.liquid],
+      ['Запивать пищу', food.drinkFood]
+    ]);
+
+    // Belkovy
+    addH2('✦ Белковый обмен ✦');
+    addTable2col([
+      ['Источники белка', food.proteinSource],
+      ['Вегетарианство', food.vegetarian]
+    ]);
+
+    // Zhirovy
+    addH2('✦ Жировой обмен ✦');
+    addTable2col([
+      ['Источники жиров', food.fatSource],
+      ['Соотношение жиров', food.fatProportion],
+      ['Накопление жира', food.fatAccumulation],
+      ['Холестерин', food.cholesterol],
+      ['Склонность к полноте', food.fullness]
+    ]);
+
+    // Uglevod
+    addH2('✦ Углеводный обмен ✦');
+    addTable2col([
+      ['Сахар', food.sugarRules],
+      ['Гиперинсулинемия', food.hyperinsulin]
+    ]);
+
+    // Vitamins
+    addH2('✦ Витамины и минералы ✦');
+    addTable2col([
+      ['Нехватка витаминов', food.vitamins],
+      ['Нехватка минералов', food.minerals]
+    ]);
+
+    // Products
+    var rec = products.filter(function(x){ return x.status==='РЕКОМЕНДОВАНО'; });
+    var forb = products.filter(function(x){ return x.status==='ЗАПРЕЩЕНО'||x.status==='ЗАПРЕЩЁН'; });
+    addH2('✦ Рекомендовано ✦');
+    addProductList(rec, '#00AFA5');
+    addH2('✦ Запрещено ✦');
+    addProductList(forb, '#C01870');
+
+    // Full product list by category
+    addH2('✦ Итоговый список ✦');
+    var bycat = {};
+    products.forEach(function(p){
+      var cat = p.category||'Прочее';
+      if (!bycat[cat]) bycat[cat] = [];
+      bycat[cat].push(p);
+    });
+    Object.keys(bycat).forEach(function(cat){
+      checkPage(8);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); setColor('#C01870');
+      doc.text(cat.toUpperCase(), ML, y); y += LINE+1;
+      bycat[cat].forEach(function(p){
+        checkPage(LINE+1);
+        var st = p.status||'';
+        var stColor = st==='РЕКОМЕНДОВАНО'?'#00AFA5': (st==='ЗАПРЕЩЕНО'||st==='ЗАПРЕЩЁН'?'#C01870':'#18304F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5); setColor(stColor);
+        var line = (p.name||p.product||'') + (p.comment?' — '+p.comment:'') + '  ['+st+']';
+        var lines = doc.splitTextToSize(line, CW-4);
+        doc.text(lines, ML+3, y);
+        y += LINE * lines.length;
+      });
+      y += 2;
+    });
+
+    // ── Output ────────────────────────────────────────────────────────────────
+    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
+    var safeName = (d.chartName||'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g,'_');
     var filename = 'pitanie_' + safeName + '.pdf';
 
-    if (loadingTxt) loadingTxt.textContent = 'Генерируем PDF...';
+    var pdfBlob = doc.output('blob');
 
-    // Generate PDF from the div (same-origin, html2canvas works reliably)
-    var pdfBlob = await html2pdf()
-      .set({
-        margin: [10, 7, 10, 7],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          windowWidth: 794,
-          backgroundColor: '#ffffff'
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait'
-        },
-        pagebreak: { mode: ['css', 'legacy'] }
-      })
-      .from(printDiv)
-      .outputPdf('blob');
-
-    document.body.removeChild(printWrap);
-    document.head.removeChild(scopedStyle);
-
-    if (loadingTxt) loadingTxt.textContent = 'Отправляем PDF в Telegram...';
-
-    // Convert blob to base64
     var base64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
       reader.onload = function(){ resolve(String(reader.result).split(',')[1]); };
@@ -6484,7 +6698,6 @@ window.startExportDocx = async function(event){
       if (loadingTxt) loadingTxt.textContent = 'PDF отправлен в Telegram!';
       setTimeout(function(){
         if (overlay) overlay.classList.remove('active');
-        // Close Telegram Mini App after successful send
         if (tg && typeof tg.close === 'function') tg.close();
       }, 1500);
     } else {
