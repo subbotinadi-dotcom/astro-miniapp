@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -2453,10 +2454,10 @@ button#exportDocxBtn.export-btn * {
 <div class="steps-card">
 <!-- ШАГ 1 -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-<div class="step-label">Шаг 1 — создайте карту на Сотисе</div>
+<div class="step-label">ШАГ 1 — СОЗДАЙТЕ КАРТУ</div>
 <div class="instruction-box">
 <p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
-В меню «Гороскоп» → «Создать новый» → «Одиночная карта»
+Зайдите на сайт сотис. Нажми на меню «Гороскоп» → «Создать новый» → «Одиночная карта».
 </p>
 <ol style="color:#FFFFFF">
 <li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
@@ -2472,12 +2473,12 @@ button#exportDocxBtn.export-btn * {
 </div>
 <!-- ШАГ 2 -->
 <div class="step" id="step2Block">
-<div class="step-label">Шаг 2 — вставьте ссылку на карту</div>
+<div class="step-label">ШАГ 2 — ВСТАВЬТЕ ССЫЛКУ</div>
 <div class="url-input-wrap">
 <input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
 <div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
 </div>
-<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ Рассчитать</button></div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПРОДОЛЖИТЬ</button></div>
 <div class="sotis-file-fallback">
 <p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
 <input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
@@ -2551,7 +2552,7 @@ button#exportDocxBtn.export-btn * {
 <div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem"></div>
 </div>
 <div class="food-data-actions">
-<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ Рассчитать</button></div>
+<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
 </div>
 </div>
 </div>
@@ -3606,6 +3607,8 @@ foodPage.innerHTML = `
 foodPage.style.display = 'block';
 foodPage.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+
+setTimeout(function(){ startExportDocx(); }, 0);
 }
 
 // ── Сброс ─────────────────────────────────────────────────────────────────────
@@ -4031,7 +4034,7 @@ window.startExportDocx = async function() {
 const overlay = document.getElementById('loadingOverlay');
 const loadingTxt = document.getElementById('loadingText');
 if (overlay) { overlay.classList.add('active'); }
-if (loadingTxt) { loadingTxt.textContent = 'Отправляем PDF в Telegram...'; }
+if (loadingTxt) { loadingTxt.textContent = 'Отправляем файл в Telegram...'; }
 try {
 const tg = window.Telegram?.WebApp;
 const chatId = tg?.initDataUnsafe?.user?.id;
@@ -4154,7 +4157,7 @@ if (event) { event.preventDefault(); event.stopPropagation(); }
 const overlay = document.getElementById('loadingOverlay');
 const loadingTxt = document.getElementById('loadingText');
 if (overlay) { overlay.classList.add('active'); }
-if (loadingTxt) { loadingTxt.textContent = 'Отправляем PDF в Telegram...'; }
+if (loadingTxt) { loadingTxt.textContent = 'Отправляем файл в Telegram...'; }
 try {
 const tg = window.Telegram?.WebApp;
 const chatId = tg?.initDataUnsafe?.user?.id;
