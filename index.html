@@ -3848,18 +3848,13 @@ return controller.signal;
 
 async function tryLoadSotisHtml(loader, normalizedUrl) {
 const proxyUrl = loader.build(normalizedUrl);
-// Используем мобильный UA — многие прокси и Сотис лучше отвечают на мобильные запросы
-var mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
-var fetchHeaders = { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' };
-// Добавляем UA только для прокси (не для direct), т.к. некоторые прокси форвардят его к цели
-if (loader.name !== 'direct') { fetchHeaders['X-Requested-With'] = 'XMLHttpRequest'; }
 const resp = await fetch(proxyUrl, {
 method: 'GET',
 cache: 'no-store',
 mode: 'cors',
 credentials: 'omit',
 referrerPolicy: 'no-referrer',
-headers: fetchHeaders,
+headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
 signal: timeoutSignal(SOTIS_FETCH_TIMEOUT_MS)
 });
 
@@ -4466,18 +4461,18 @@ macroCards(food.bmr) +
 ['Соль', salt],
 ['Вода', water],
 ['Жидкость', liquid],
-['Запивать ли еду', sipFood]
+['Запивать пищу', sipFood]
 ]) + '</tbody></table>' +
 '<h2>Белковый обмен</h2><table><tbody>' + tableRows([
-['Источник белка', proteinSource],
+['Источники белка', proteinSource],
 ['Вегетарианство', vegetarian]
 ]) + '</tbody></table>' +
 '<h2>Жировой обмен</h2><table><tbody>' + tableRows([
-['Источник жиров', fatSource],
-['Пропорция', fatProportion],
+['Источники жиров', fatSource],
+['Соотношение жиров', fatProportion],
 ['Накопление жира', fatAccumulation],
 ['Холестерин', cholesterol],
-['Предрасположенность к полноте', fullness]
+['Склонность к полноте', fullness]
 ]) + '</tbody></table>' +
 '<h2>Углеводный обмен</h2><table><tbody>' + tableRows([
 ['Гиперинсулинемия', hyperIns],
@@ -6362,16 +6357,28 @@ function makeEnergyRows(calc){
   return '<table class="energy-table"><tbody><tr><td class="label">Тепло</td><td class="big">'+esc(calc.teplo || 0)+'</td><td class="label">Сухость</td><td class="big">'+esc(calc.suhost || 0)+'</td><td class="label">Эмоциональность</td><td class="big">'+esc(calc.emotsionalnost || 0)+'</td></tr><tr><td class="label">Холод</td><td class="big">'+esc(calc.holod || 0)+'</td><td class="label">Влажность</td><td class="big">'+esc(calc.vlazhnost || 0)+'</td><td class="label">Рациональность</td><td class="big">'+esc(calc.racionalnost || 0)+'</td></tr></tbody></table>';
 }
 function wordStyle(){
-  return '<style>'+ 
-  '@page WordSection1{size:595.3pt 841.9pt;margin:32pt 28pt 38pt 28pt}div.WordSection1{page:WordSection1}'+
-  'body{font-family:Arial,"Roboto Condensed",sans-serif;color:#18304F;font-size:10.5pt;line-height:1.25;background:#fff}'+
-  'h1{color:#00AFA5;font-size:24pt;text-align:center;text-transform:uppercase;letter-spacing:1pt;margin:0 0 28pt;font-weight:bold}'+
-  'h2{color:#18304F;font-size:18pt;text-align:center;text-transform:uppercase;letter-spacing:.7pt;margin:24pt 0 10pt;border-bottom:1.5pt solid #FC9FBC;padding-bottom:5pt;font-weight:bold}'+
-  'h3{color:#18304F;font-size:12.5pt;text-transform:uppercase;margin:16pt 0 4pt;border-left:3pt solid #C01870;padding-left:6pt;font-weight:bold}'+
-  'table{border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt}th,td{padding:4pt 6pt;vertical-align:top;color:#18304F}'+
-  '.data-table td,.data-table th,.product-table td,.product-table th{border-bottom:1pt solid #D8E0EA}.data-table th,.product-table th{background:#FFF3FA;text-align:left;font-weight:bold}'+
-  '.product-col{width:66%}.status-col{width:34%}.product-category-block,.product-table tr{page-break-inside:avoid}.product-name-cell,.status-cell{border-bottom:1pt solid #D8E0EA}.status-cell{width:34%;text-align:center;padding-left:4pt;padding-right:4pt}.status-cell span{display:block;width:100%;padding:2pt 2pt;border:0;background:transparent;border-radius:0;font-weight:bold;white-space:nowrap;letter-spacing:.2pt;font-size:9.2pt;line-height:1.05}.status-rec span{color:#00B5A6}.status-forb span{color:#FF99BE}.status-neut span{color:#18304F}'+
-  '.label{font-weight:bold;color:#18304F}.big{font-size:22pt;font-weight:bold;text-align:center;color:#18304F}.quad-table th,.quad-table td{text-align:center}.energy-table td{border:0;padding:7pt 3pt}.status-rec{color:#00B5A6;font-weight:bold}.status-forb{color:#FF99BE;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}ul{margin-top:0}li{margin-bottom:3pt;page-break-inside:avoid}'+
+  return '<style>'+
+  '@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt}div.WordSection1{page:WordSection1}'+
+  'body{font-family:Arial,sans-serif;color:#18304F;font-size:10.5pt;line-height:1.3;background:#fff}'+
+  'h1{color:#00AFA5;font-size:14pt;text-align:center;letter-spacing:.5pt;margin:0 0 14pt;font-weight:bold}'+
+  'h2{color:#18304F;font-size:11pt;text-align:center;letter-spacing:.3pt;margin:14pt 0 5pt;border-bottom:1pt solid #FC9FBC;padding-bottom:3pt;font-weight:bold}'+
+  'h3{color:#18304F;font-size:10pt;text-transform:uppercase;margin:10pt 0 3pt;font-weight:bold}'+
+  'table{border-collapse:collapse;width:50%;table-layout:fixed;margin:0 0 8pt}'+
+  'th,td{padding:4pt 5pt;vertical-align:top;color:#18304F;border-top:none;border-left:none;border-right:none;border-bottom:1pt solid #D8E0EA}'+
+  '.data-table,.product-table{width:50%;border:none}'+
+  '.data-table td,.data-table th{border-top:none;border-left:none;border-right:none;border-bottom:1pt solid #D8E0EA}'+
+  '.data-table th,.product-table th{background:none;text-align:left;font-weight:bold;border-bottom:1pt solid #D8E0EA}'+
+  '.product-col{width:50%}.status-col{width:50%}.product-category-block{margin:0 0 6pt}.product-table tr{page-break-inside:avoid}'+
+  '.product-name-cell,.status-cell{border-bottom:1pt solid #D8E0EA;border-top:none;border-left:none;border-right:none}'+
+  '.status-cell{width:50%;text-align:center;padding-left:3pt;padding-right:3pt}'+
+  '.status-cell span{display:block;width:100%;padding:1pt 2pt;border:0;background:transparent;font-weight:bold;white-space:nowrap;font-size:9pt;line-height:1.1}'+
+  '.status-rec span{color:#00B5A6}.status-forb span{color:#FF99BE}.status-neut span{color:#18304F}'+
+  '.label{font-weight:bold;color:#18304F}'+
+  '.big{font-size:16pt;font-weight:bold;text-align:center;color:#18304F}'+
+  '.quad-table{width:50%}.quad-table th,.quad-table td{text-align:center}'+
+  '.energy-table{width:50%}.energy-table td{border:0;padding:5pt 3pt}'+
+  '.status-rec{color:#00B5A6;font-weight:bold}.status-forb{color:#FF99BE;font-weight:bold}.status-neut{color:#18304F;font-weight:bold}'+
+  'ul{margin-top:0;width:50%}li{margin-bottom:3pt;page-break-inside:avoid}'+
   '</style>';
 }
 window.makeWordHtml = function(){
@@ -6565,34 +6572,49 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
   }
   function para(text, opts) {
     opts = opts || {};
+    // Correct pPr order: spacing → jc
     return '<w:p><w:pPr>' +
-      (opts.alignment ? '<w:jc w:val="' + opts.alignment + '"/>' : '') +
       '<w:spacing w:before="' + (opts.before || 0) + '" w:after="' + (opts.after == null ? 80 : opts.after) + '"/>' +
+      (opts.alignment ? '<w:jc w:val="' + opts.alignment + '"/>' : '') +
       '</w:pPr>' + run(text, opts) + '</w:p>';
   }
   function heading(text, level) {
     level = level || 2;
     var color = level === 1 ? TEAL : DARK;
     var size = level === 1 ? 28 : (level === 3 ? 20 : 22);
-    return '<w:p><w:pPr><w:jc w:val="center"/>' +
-      '<w:spacing w:before="' + (level === 1 ? 0 : 220) + '" w:after="100"/>' +
+    // Correct pPr order: pBdr → spacing → jc
+    return '<w:p><w:pPr>' +
       (level === 1 ? '' : '<w:pBdr><w:bottom w:val="single" w:sz="4" w:space="2" w:color="' + PINK + '"/></w:pBdr>') +
+      '<w:spacing w:before="' + (level === 1 ? 0 : 220) + '" w:after="100"/>' +
+      '<w:jc w:val="center"/>' +
       '</w:pPr>' + run(cleanText(text), { bold: true, color: color, size: size }) + '</w:p>';
   }
   function cellXml(td, isHeader, isStatus, colIndex, totalCells) {
     var raw = cleanText(td.textContent || '—');
     var text = isStatus ? normalizedStatus(raw) : raw;
     var color = isStatus ? statusColor(raw) : DARK;
-    var width = totalCells === 2 ? (isStatus ? 1800 : 3200) : Math.floor(5000 / Math.max(1, totalCells));
+    // 2-col tables: left=1666 (33%), right=3334 (67%) — aligns with Aspects "Планеты" column
+    // Other tables: equal split
+    var width;
+    if (totalCells === 2) {
+      width = (colIndex === 0) ? 1666 : 3334;
+    } else {
+      width = Math.floor(5000 / Math.max(1, totalCells));
+    }
+    // isResultat: header cell containing "Результат" — center-align it
+    var isResultat = isHeader && cleanText(td.textContent || '').toLowerCase().indexOf('результат') !== -1;
+    var needsCenter = isStatus || isResultat;
+    // tcPr correct order: tcW → tcBorders → shd → tcMar
     return '<w:tc><w:tcPr>' +
       '<w:tcW w:w="' + width + '" w:type="pct"/>' +
+      '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="' + LINE + '"/><w:right w:val="nil"/></w:tcBorders>' +
       (isHeader ? '<w:shd w:val="clear" w:color="auto" w:fill="' + HEADER + '"/>' : '') +
-      '<w:tcMar><w:top w:w="70" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
-      '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="' + LINE + '"/></w:tcBorders>' +
+      '<w:tcMar><w:top w:w="70" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
       '</w:tcPr><w:p><w:pPr>' +
-      (isStatus ? '<w:jc w:val="center"/>' : '') +
-      '<w:spacing w:after="0"/></w:pPr>' +
-      run(text, { size: isStatus ? 18 : 18, color: color, bold: isHeader || isStatus }) +
+      '<w:spacing w:after="0"/>' +
+      (needsCenter ? '<w:jc w:val="center"/>' : '') +
+      '</w:pPr>' +
+      run(text, { size: 18, color: color, bold: isHeader || isStatus }) +
       '</w:p></w:tc>';
   }
   function tableFromDom(tbl) {
@@ -6608,9 +6630,28 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
         return cellXml(td, isHeader, isStatus, i, cells.length);
       }).join('') + '</w:tr>';
     });
+    // tblGrid: calculate column widths in DXA for tblGrid
+    // Page content = ~8400 dxa (A4 50% table). For 2-col: 1744+3490. Equal split otherwise.
+    var tblGridXml = '<w:tblGrid>';
+    var firstRowCells = (function() {
+      var firstTr = tbl.querySelector('tr');
+      if (!firstTr) return [];
+      return Array.prototype.slice.call(firstTr.children).filter(function(x){ return /^(TD|TH)$/i.test(x.tagName); });
+    })();
+    var numCols = firstRowCells.length || 1;
+    for (var gi = 0; gi < numCols; gi++) {
+      var dxa;
+      if (numCols === 2) {
+        dxa = (gi === 0) ? 1744 : 3490;
+      } else {
+        dxa = Math.floor(8400 / numCols);
+      }
+      tblGridXml += '<w:gridCol w:w="' + dxa + '"/>';
+    }
+    tblGridXml += '</w:tblGrid>';
     return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' +
       '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>' +
-      '</w:tblPr>' + rowsXml + '</w:tbl>';
+      '</w:tblPr>' + tblGridXml + rowsXml + '</w:tbl>';
   }
   function appendNode(node, out) {
     if (!node) return;
@@ -6747,12 +6788,12 @@ async function buildRealDocxBlobFromHtml(wordHtml) {
     { name: 'word/fontTable.xml', data:
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
-      '<w:font w:name="Arial"><w:family w:val="swiss"/><w:pitch w:val="variable"/><w:charset w:val="00"/></w:font>' +
+      '<w:font w:name="Arial"><w:panose1 w:val="020B0604020202020204"/><w:charset w:val="00"/><w:family w:val="swiss"/><w:pitch w:val="variable"/><w:sig w:usb0="E0002AFF" w:usb1="C0007843" w:usb2="00000009" w:usb3="00000000" w:csb0="000001FF" w:csb1="00000000"/></w:font>' +
       '</w:fonts>' },
     { name: 'word/theme/theme1.xml', data:
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme">' +
-      '<a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1F497D"/></a:dk2><a:lt2><a:srgbClr val="EEECE1"/></a:lt2><a:accent1><a:srgbClr val="4F81BD"/></a:accent1><a:accent2><a:srgbClr val="C0504D"/></a:accent2><a:accent3><a:srgbClr val="9BBB59"/></a:accent3><a:accent4><a:srgbClr val="8064A2"/></a:accent4><a:accent5><a:srgbClr val="4BACC6"/></a:accent5><a:accent6><a:srgbClr val="F79646"/></a:accent6><a:hlink><a:srgbClr val="0000FF"/></a:hlink><a:folHlink><a:srgbClr val="800080"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle/></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>' },
+      '<a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1F497D"/></a:dk2><a:lt2><a:srgbClr val="EEECE1"/></a:lt2><a:accent1><a:srgbClr val="4F81BD"/></a:accent1><a:accent2><a:srgbClr val="C0504D"/></a:accent2><a:accent3><a:srgbClr val="9BBB59"/></a:accent3><a:accent4><a:srgbClr val="8064A2"/></a:accent4><a:accent5><a:srgbClr val="4BACC6"/></a:accent5><a:accent6><a:srgbClr val="F79646"/></a:accent6><a:hlink><a:srgbClr val="0000FF"/></a:hlink><a:folHlink><a:srgbClr val="800080"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="50000"/><a:satMod val="300000"/></a:schemeClr></a:gs><a:gs pos="35000"><a:schemeClr val="phClr"><a:tint val="37000"/><a:satMod val="300000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:tint val="15000"/><a:satMod val="350000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="16200000" scaled="1"/></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:shade val="51000"/><a:satMod val="130000"/></a:schemeClr></a:gs><a:gs pos="80000"><a:schemeClr val="phClr"><a:shade val="93000"/><a:satMod val="130000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="94000"/><a:satMod val="135000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="16200000" scaled="0"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="40000" dist="23000" dir="5400000" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="35000"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="40000"/><a:satMod val="350000"/></a:schemeClr></a:gs><a:gs pos="40000"><a:schemeClr val="phClr"><a:tint val="45000"/><a:satMod val="350000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="20000"/><a:satMod val="255000"/></a:schemeClr></a:gs></a:gsLst><a:path path="circle"><a:fillToRect l="50000" t="-80000" r="50000" b="180000"/></a:path></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="80000"/><a:satMod val="300000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="30000"/><a:satMod val="200000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="16200000" scaled="0"/></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>' },
 
     { name: 'docProps/core.xml', data:
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
