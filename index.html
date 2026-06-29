@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -2404,6 +2405,24 @@ text-align:center!important;
 </style>
 
 <style id="final-docx-button-fix">
+#exportDocxBtn,
+button#exportDocxBtn.export-btn {
+  background: #FFFFFF !important;
+  color: #0D1935 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+}
+#exportDocxBtn *,
+button#exportDocxBtn.export-btn * {
+  color: #0D1935 !important;
+}
+</style>
+
+
+<style id="final-docx-button-fix-v3">
 #exportDocxBtn,
 button#exportDocxBtn.export-btn {
   background: #FFFFFF !important;
@@ -6433,10 +6452,7 @@ window.startExportDocx = async function(event){
     var safeName = String(d.chartName || 'raschet').replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-]+/g, '_');
     var filename = 'pitanie_' + safeName + '.docx';
 
-    // Отправляем один документ: Word-файл с расширением .docx.
-    var wordBlob = new Blob(['\ufeff' + wordHtml], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8'
-    });
+    var wordBlob = await buildRealDocxBlobFromHtml(wordHtml);
 
     var wordBase64 = await new Promise(function(resolve, reject){
       var reader = new FileReader();
@@ -6463,6 +6479,272 @@ window.startExportDocx = async function(event){
     if (overlay) overlay.classList.remove('active');
   }
 };
+
+async function buildRealDocxBlobFromHtml(wordHtml) {
+  // Настоящий DOCX без внешней библиотеки docx.js.
+  // Так Telegram WebView не падает, даже если CDN со скриптом DOCX не загрузился.
+  var parsed = new DOMParser().parseFromString(wordHtml, 'text/html');
+  var root = parsed.body && parsed.body.firstElementChild ? parsed.body.firstElementChild : parsed.body;
+
+  var DARK = '18304F';
+  var TEAL = '00AFA5';
+  var PINK = 'FC9FBC';
+  var FORB = 'EC779F';
+  var ALLOW = '377E74';
+  var LINE = 'D8E0EA';
+  var HEADER = 'FFF3FA';
+
+  function cleanText(value) {
+    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  }
+  function xmlEsc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+  function normalizedStatus(value) {
+    var t = cleanText(value).toUpperCase();
+    if (t === 'РЕКОМЕНДОВАНО') return 'РАЗРЕШЕНО';
+    if (t === 'ЗАПРЕЩЁН') return 'ЗАПРЕЩЕНО';
+    return cleanText(value);
+  }
+  function statusColor(value) {
+    var t = cleanText(value).toUpperCase();
+    if (t.indexOf('ЗАПРЕЩ') !== -1) return FORB;
+    if (t.indexOf('РАЗРЕШ') !== -1 || t.indexOf('РЕКОМЕНДОВАН') !== -1) return ALLOW;
+    return DARK;
+  }
+  function isStatusText(value) {
+    var t = cleanText(value).toUpperCase();
+    return t === 'РЕКОМЕНДОВАНО' || t === 'РАЗРЕШЕНО' || t === 'ЗАПРЕЩЕНО' || t === 'ЗАПРЕЩЁН' || t === 'НЕЙТРАЛЬНО';
+  }
+  function run(text, opts) {
+    opts = opts || {};
+    var source = cleanText(text);
+    if (!source) source = ' ';
+    var parts = source.split(/(ЗАПРЕЩЕНО|ЗАПРЕЩЁН|РЕКОМЕНДОВАНО|РАЗРЕШЕНО|НЕЙТРАЛЬНО)/gi);
+    var xml = '';
+    parts.forEach(function(part) {
+      if (!part) return;
+      var out = normalizedStatus(part);
+      var upper = cleanText(part).toUpperCase();
+      var color = opts.color || DARK;
+      var bold = !!opts.bold;
+      if (upper === 'РЕКОМЕНДОВАНО' || upper === 'РАЗРЕШЕНО') { color = ALLOW; bold = true; }
+      else if (upper === 'ЗАПРЕЩЕНО' || upper === 'ЗАПРЕЩЁН') { color = FORB; bold = true; }
+      xml += '<w:r><w:rPr>' +
+        '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>' +
+        (bold ? '<w:b/>' : '') +
+        '<w:color w:val="' + color + '"/>' +
+        '<w:sz w:val="' + (opts.size || 18) + '"/>' +
+        '</w:rPr><w:t xml:space="preserve">' + xmlEsc(out) + '</w:t></w:r>';
+    });
+    return xml || '<w:r><w:t> </w:t></w:r>';
+  }
+  function para(text, opts) {
+    opts = opts || {};
+    return '<w:p><w:pPr>' +
+      (opts.alignment ? '<w:jc w:val="' + opts.alignment + '"/>' : '') +
+      '<w:spacing w:before="' + (opts.before || 0) + '" w:after="' + (opts.after == null ? 80 : opts.after) + '"/>' +
+      '</w:pPr>' + run(text, opts) + '</w:p>';
+  }
+  function heading(text, level) {
+    level = level || 2;
+    var color = level === 1 ? TEAL : DARK;
+    var size = level === 1 ? 28 : (level === 3 ? 20 : 22);
+    return '<w:p><w:pPr><w:jc w:val="center"/>' +
+      '<w:spacing w:before="' + (level === 1 ? 0 : 220) + '" w:after="100"/>' +
+      (level === 1 ? '' : '<w:pBdr><w:bottom w:val="single" w:sz="4" w:space="2" w:color="' + PINK + '"/></w:pBdr>') +
+      '</w:pPr>' + run(cleanText(text), { bold: true, color: color, size: size }) + '</w:p>';
+  }
+  function cellXml(td, isHeader, isStatus, colIndex, totalCells) {
+    var raw = cleanText(td.textContent || '—');
+    var text = isStatus ? normalizedStatus(raw) : raw;
+    var color = isStatus ? statusColor(raw) : DARK;
+    var width = totalCells === 2 ? (isStatus ? 1800 : 3200) : Math.floor(5000 / Math.max(1, totalCells));
+    return '<w:tc><w:tcPr>' +
+      '<w:tcW w:w="' + width + '" w:type="pct"/>' +
+      (isHeader ? '<w:shd w:val="clear" w:color="auto" w:fill="' + HEADER + '"/>' : '') +
+      '<w:tcMar><w:top w:w="70" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tcMar>' +
+      '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="' + LINE + '"/></w:tcBorders>' +
+      '</w:tcPr><w:p><w:pPr>' +
+      (isStatus ? '<w:jc w:val="center"/>' : '') +
+      '<w:spacing w:after="0"/></w:pPr>' +
+      run(text, { size: isStatus ? 18 : 18, color: color, bold: isHeader || isStatus }) +
+      '</w:p></w:tc>';
+  }
+  function tableFromDom(tbl) {
+    var rowsXml = '';
+    Array.prototype.forEach.call(tbl.querySelectorAll('tr'), function(tr) {
+      var cells = Array.prototype.slice.call(tr.children).filter(function(x){ return /^(TD|TH)$/i.test(x.tagName); });
+      if (!cells.length) return;
+      var isHeader = cells.some(function(c){ return c.tagName.toUpperCase() === 'TH'; });
+      rowsXml += '<w:tr><w:trPr><w:cantSplit/></w:trPr>' + cells.map(function(td, i) {
+        var cls = String(td.className || '');
+        var txt = cleanText(td.textContent || '').toUpperCase();
+        var isStatus = cls.indexOf('status') !== -1 || isStatusText(txt);
+        return cellXml(td, isHeader, isStatus, i, cells.length);
+      }).join('') + '</w:tr>';
+    });
+    return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' +
+      '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>' +
+      '</w:tblPr>' + rowsXml + '</w:tbl>';
+  }
+  function appendNode(node, out) {
+    if (!node) return;
+    var tag = (node.tagName || '').toUpperCase();
+    if (tag === 'H1') out.push(heading(node.textContent, 1));
+    else if (tag === 'H2') out.push(heading(node.textContent, 2));
+    else if (tag === 'H3') out.push(heading(node.textContent, 3));
+    else if (tag === 'TABLE') out.push(tableFromDom(node));
+    else if (tag === 'UL' || tag === 'OL') {
+      Array.prototype.forEach.call(node.querySelectorAll('li'), function(li) {
+        out.push(para('• ' + cleanText(li.textContent), { size: 18 }));
+      });
+    } else if (tag === 'P') {
+      out.push(para(node.textContent, { size: 18 }));
+    } else {
+      Array.prototype.forEach.call(node.children || [], function(child){ appendNode(child, out); });
+    }
+  }
+
+  var bodyParts = [];
+  Array.prototype.forEach.call(root.children || [], function(child){ appendNode(child, bodyParts); });
+  if (!bodyParts.length) bodyParts.push(para('Данные расчёта не найдены.', { size: 18 }));
+
+  var documentXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 wp14">' +
+    '<w:body>' + bodyParts.join('') +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  function utf8(s) { return new TextEncoder().encode(s); }
+  function u16(n) { return [n & 255, (n >>> 8) & 255]; }
+  function u32(n) { return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+  var crcTable = null;
+  function crc32(data) {
+    if (!crcTable) {
+      crcTable = [];
+      for (var n = 0; n < 256; n++) {
+        var c = n;
+        for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        crcTable[n] = c >>> 0;
+      }
+    }
+    var crc = 0 ^ -1;
+    for (var i = 0; i < data.length; i++) crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 255];
+    return (crc ^ -1) >>> 0;
+  }
+  function concatArrays(arrays) {
+    var len = arrays.reduce(function(sum, a){ return sum + a.length; }, 0);
+    var out = new Uint8Array(len);
+    var pos = 0;
+    arrays.forEach(function(a){ out.set(a, pos); pos += a.length; });
+    return out;
+  }
+  function bytes(arr) { return new Uint8Array(arr); }
+  function zip(files) {
+    var locals = [];
+    var centrals = [];
+    var offset = 0;
+    files.forEach(function(file) {
+      var nameBytes = utf8(file.name);
+      var data = typeof file.data === 'string' ? utf8(file.data) : file.data;
+      var crc = crc32(data);
+      var local = concatArrays([
+        bytes(u32(0x04034b50)), bytes(u16(20)), bytes(u16(0x0800)), bytes(u16(0)),
+        bytes(u16(0)), bytes(u16(0)), bytes(u32(crc)), bytes(u32(data.length)), bytes(u32(data.length)),
+        bytes(u16(nameBytes.length)), bytes(u16(0)), nameBytes, data
+      ]);
+      locals.push(local);
+      var central = concatArrays([
+        bytes(u32(0x02014b50)), bytes(u16(20)), bytes(u16(20)), bytes(u16(0x0800)), bytes(u16(0)),
+        bytes(u16(0)), bytes(u16(0)), bytes(u32(crc)), bytes(u32(data.length)), bytes(u32(data.length)),
+        bytes(u16(nameBytes.length)), bytes(u16(0)), bytes(u16(0)), bytes(u16(0)), bytes(u16(0)),
+        bytes(u32(0)), bytes(u32(offset)), nameBytes
+      ]);
+      centrals.push(central);
+      offset += local.length;
+    });
+    var centralStart = offset;
+    var centralDir = concatArrays(centrals);
+    var end = concatArrays([
+      bytes(u32(0x06054b50)), bytes(u16(0)), bytes(u16(0)), bytes(u16(files.length)), bytes(u16(files.length)),
+      bytes(u32(centralDir.length)), bytes(u32(centralStart)), bytes(u16(0))
+    ]);
+    return concatArrays(locals.concat([centralDir, end]));
+  }
+
+  var files = [
+    { name: '[Content_Types].xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>' +
+      '<Override PartName="/word/webSettings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml"/>' +
+      '<Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/>' +
+      '<Override PartName="/word/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>' +
+      '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
+      '<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>' +
+      '</Types>' },
+    { name: '_rels/.rels', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>' +
+      '</Relationships>' },
+    { name: 'word/document.xml', data: documentXml },
+    { name: 'word/_rels/document.xml.rels', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
+      '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml"/>' +
+      '<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>' +
+      '<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>' +
+      '</Relationships>' },
+    { name: 'word/styles.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="18"/><w:color w:val="18304F"/></w:rPr></w:rPrDefault></w:docDefaults>' +
+      '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="18"/><w:color w:val="18304F"/></w:rPr></w:style>' +
+      '</w:styles>' },
+    { name: 'word/settings.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">' +
+      '<w:zoom w:percent="100"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat>' +
+      '</w:settings>' },
+    { name: 'word/webSettings.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:webSettings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:optimizeForBrowser/></w:webSettings>' },
+    { name: 'word/fontTable.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:font w:name="Arial"><w:family w:val="swiss"/><w:pitch w:val="variable"/><w:charset w:val="00"/></w:font>' +
+      '</w:fonts>' },
+    { name: 'word/theme/theme1.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme">' +
+      '<a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1F497D"/></a:dk2><a:lt2><a:srgbClr val="EEECE1"/></a:lt2><a:accent1><a:srgbClr val="4F81BD"/></a:accent1><a:accent2><a:srgbClr val="C0504D"/></a:accent2><a:accent3><a:srgbClr val="9BBB59"/></a:accent3><a:accent4><a:srgbClr val="8064A2"/></a:accent4><a:accent5><a:srgbClr val="4BACC6"/></a:accent5><a:accent6><a:srgbClr val="F79646"/></a:accent6><a:hlink><a:srgbClr val="0000FF"/></a:hlink><a:folHlink><a:srgbClr val="800080"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface="Arial"/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle/></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>' },
+
+    { name: 'docProps/core.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+      '<dc:title>Питание по Натальной карте</dc:title><dc:creator>AstroDarya</dc:creator></cp:coreProperties>' },
+    { name: 'docProps/app.xml', data:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><Company>AstroDarya</Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>16.0000</AppVersion></Properties>' }
+  ];
+  return new Blob([zip(files)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
 window.exportPdf = window.startExportDocx;
 })();
 </script>
