@@ -2438,6 +2438,7 @@ button#exportDocxBtn.export-btn * {
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
 </head>
 <body>
 <!-- Оверлей загрузки -->
@@ -2448,40 +2449,36 @@ button#exportDocxBtn.export-btn * {
 <!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
 <span class="h1-style">Питание по натальной карте</span>
-<p class="tagline">Заполните все шаги</p>
+<p class="tagline">Введите данные рождения — карта рассчитается автоматически</p>
 <div class="steps-card">
-<!-- ШАГ 1 -->
+<!-- ДАННЫЕ РОЖДЕНИЯ -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-<div class="step-label">ШАГ 1 — СОЗДАЙТЕ КАРТУ</div>
-<div class="instruction-box">
-<p style="color:#FFFFFF !important; font-size:0.97rem; margin-bottom:0.7rem; line-height:1.5; text-align:left">
-Зайдите на сайт сотис. Нажми на меню «Гороскоп» → «Создать новый» → «Одиночная карта».
-</p>
-<ol style="color:#FFFFFF">
-<li style="color:#FFFFFF !important">Внесите данные: имя, пол, дату, место и время рождения</li>
-<li style="color:#FFFFFF !important">Тип карты: Натал</li>
-<li style="color:#FFFFFF !important">Нажмите «ОК» — карта построится</li>
-<li style="color:#FFFFFF !important">Скопируй ссылку в браузере и вставь в поле Шага 2.</li>
-</ol>
+<div class="step-label">ДАННЫЕ РОЖДЕНИЯ</div>
+<div class="food-data-form">
+<div class="form-field" style="margin-bottom:0.8rem">
+<label for="birthNameInput">Имя (необязательно)</label>
+<input autocomplete="off" id="birthNameInput" placeholder="Например, Анна" type="text"/>
 </div>
-<div class="sotis-link-wrap"><a class="sotis-link" href="https://sotis-online.ru/" target="_blank">
-
-✦ Перейти на сайт Сотис
-</a></div>
+<div class="input-grid">
+<div class="form-field">
+<label for="birthDateInput">Дата рождения</label>
+<input id="birthDateInput" type="date"/>
 </div>
-<!-- ШАГ 2 -->
-<div class="step" id="step2Block">
-<div class="step-label">ШАГ 2 — ВСТАВЬТЕ ССЫЛКУ</div>
-<div class="url-input-wrap">
-<input autocapitalize="none" autocomplete="off" autocorrect="off" class="url-input" id="sotisUrlInput" placeholder="https://sotis-online.ru/?chr=..." spellcheck="false" type="url"/>
-<div class="url-err" id="urlErr">Пожалуйста, вставьте ссылку с сайта Сотис</div>
+<div class="form-field">
+<label for="birthTimeInput">Время рождения</label>
+<input id="birthTimeInput" type="time"/>
 </div>
-<div class="sotis-link-wrap"><button class="sotis-btn-style" onclick="calculateFromUrl(event)" type="button">✦ ПРОДОЛЖИТЬ</button></div>
-<div class="sotis-file-fallback">
-<p class="sotis-file-note">Если ссылка не читает, зайди на сайт Сотис, сохрани HTML и загрузите файл.</p>
-<input accept=".html,.htm,text/html" id="sotisHtmlFileInput" style="display:none" type="file"/>
-<label class="sotis-file-label" for="sotisHtmlFileInput">✦ Загрузить HTML карты</label>
-<span class="sotis-file-name" id="sotisHtmlFileName"></span>
+<div class="form-field" style="grid-column:1/-1">
+<label for="birthPlaceInput">Место рождения (город)</label>
+<input autocapitalize="words" autocomplete="off" autocorrect="off" id="birthPlaceInput" placeholder="Например, Москва" spellcheck="false" type="text"/>
+</div>
+</div>
+<div class="food-data-actions">
+<div class="url-err" id="birthErr" style="display:none">Заполните дату, время и место рождения</div>
+</div>
+<div class="food-data-actions">
+<div class="sotis-link-wrap"><button class="sotis-btn-style" id="calcChartBtn" onclick="calculateNatal(event)" type="button">✦ РАССЧИТАТЬ КАРТУ</button></div>
+</div>
 </div>
 </div>
 </div>
@@ -7048,5 +7045,321 @@ window.buildRealDocxBlobFromHtml = buildRealDocxBlobFromHtml;
 })();
 </script>
 
+<script id="natal-ephemeris-engine">
+// ── Полностью автономный расчёт натальной карты ──────────────────────────────
+// Заменяет загрузку/парсинг HTML с sotis-online.ru: пользователь вводит дату,
+// время и место рождения, всё остальное (положения планет, ASC/MC, аспекты)
+// вычисляется прямо в браузере.
+
+const DEG2RAD = Math.PI / 180;
+const RAD2DEG = 180 / Math.PI;
+
+const SIGN_ORDER = [';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F'];
+// ';' Овен 0-30, '<' Телец 30-60, ... 'F' Рыбы 330-360
+
+function lonToSignChar(lon) {
+  const idx = Math.floor(((lon % 360) + 360) % 360 / 30);
+  return SIGN_ORDER[idx];
+}
+
+function formatDegreeInSign(lon) {
+  const norm = ((lon % 360) + 360) % 360;
+  const inSign = norm % 30;
+  const d = Math.floor(inSign);
+  const mFloat = (inSign - d) * 60;
+  const m = Math.floor(mFloat);
+  const s = Math.round((mFloat - m) * 60);
+  let mm = m, ss = s, dd = d;
+  if (ss === 60) { ss = 0; mm += 1; }
+  if (mm === 60) { mm = 0; dd += 1; }
+  return `${dd}°${String(mm).padStart(2,'0')}′${String(ss).padStart(2,'0')}″`;
+}
+
+function formatOrb(deg) {
+  const d = Math.floor(deg);
+  const mFloat = (deg - d) * 60;
+  const m = Math.floor(mFloat);
+  const s = Math.round((mFloat - m) * 60);
+  let mm = m, ss = s, dd = d;
+  if (ss === 60) { ss = 0; mm += 1; }
+  if (mm === 60) { mm = 0; dd += 1; }
+  return `${dd}°${String(mm).padStart(2,'0')}′${String(ss).padStart(2,'0')}″`;
+}
+
+// ── Юлианская дата / звёздное время / наклон эклиптики ──────────────────────
+function julianDayUTC(jsDate) {
+  return jsDate.getTime() / 86400000 + 2440587.5;
+}
+function siderealTimeDeg(jd) {
+  const d = jd - 2451545.0;
+  const T = d / 36525;
+  let gmst = 280.46061837 + 360.98564736629 * d + 0.000387933 * T * T - (T * T * T) / 38710000;
+  gmst = gmst % 360;
+  if (gmst < 0) gmst += 360;
+  return gmst;
+}
+function obliquityDeg(T) {
+  return 23.439291 - 0.0130042 * T - 1.64e-7 * T * T + 5.04e-7 * T * T * T;
+}
+function calcAscMc(jd, lonDeg, latDeg) {
+  const T = (jd - 2451545.0) / 36525;
+  const gmst = siderealTimeDeg(jd);
+  let ramc = (gmst + lonDeg) % 360;
+  if (ramc < 0) ramc += 360;
+  const eps = obliquityDeg(T) * DEG2RAD;
+  const ramcR = ramc * DEG2RAD;
+  const phi = latDeg * DEG2RAD;
+
+  let mc = Math.atan2(Math.sin(ramcR), Math.cos(ramcR) * Math.cos(eps)) * RAD2DEG;
+  mc = ((mc % 360) + 360) % 360;
+
+  let asc = Math.atan2(-Math.cos(ramcR), Math.sin(eps) * Math.tan(phi) + Math.cos(eps) * Math.sin(ramcR)) * RAD2DEG;
+  asc = ((asc % 360) + 360) % 360;
+
+  return { asc, mc };
+}
+
+// ── Хирон: упрощённая кеплеровская орбита (точность достаточна для знака/аспектов) ──
+const CHIRON_EL = {
+  a: 13.70, e: 0.3772,
+  i: 6.93 * DEG2RAD,
+  Om: 209.38 * DEG2RAD,
+  w: 339.48 * DEG2RAD,
+  M0: 13.18 * DEG2RAD,
+  periodDays: 50.71 * 365.25
+};
+function chironHeliocentricEcl(jd) {
+  const n = 360 / CHIRON_EL.periodDays;
+  let M = (CHIRON_EL.M0 * RAD2DEG + n * (jd - 2451545.0)) % 360;
+  M = ((M % 360) + 360) % 360;
+  const Mr = M * DEG2RAD;
+  let E = Mr;
+  for (let k = 0; k < 30; k++) {
+    const dE = (E - CHIRON_EL.e * Math.sin(E) - Mr) / (1 - CHIRON_EL.e * Math.cos(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-9) break;
+  }
+  const xOrb = CHIRON_EL.a * (Math.cos(E) - CHIRON_EL.e);
+  const yOrb = CHIRON_EL.a * Math.sqrt(1 - CHIRON_EL.e * CHIRON_EL.e) * Math.sin(E);
+  const cosW = Math.cos(CHIRON_EL.w), sinW = Math.sin(CHIRON_EL.w);
+  const cosOm = Math.cos(CHIRON_EL.Om), sinOm = Math.sin(CHIRON_EL.Om);
+  const cosI = Math.cos(CHIRON_EL.i), sinI = Math.sin(CHIRON_EL.i);
+  const xw = xOrb * cosW - yOrb * sinW;
+  const yw = xOrb * sinW + yOrb * cosW;
+  return {
+    x: xw * cosOm - yw * cosI * sinOm,
+    y: xw * sinOm + yw * cosI * cosOm,
+    z: yw * sinI
+  };
+}
+function chironGeoLongitude(astroTime, jd) {
+  const helio = chironHeliocentricEcl(jd);
+  const earthHelio = Astronomy.HelioVector('Earth', astroTime);
+  const earthEcl = Astronomy.Ecliptic(earthHelio);
+  const gx = helio.x - earthEcl.vec.x;
+  const gy = helio.y - earthEcl.vec.y;
+  let lon = Math.atan2(gy, gx) * RAD2DEG;
+  return ((lon % 360) + 360) % 360;
+}
+
+// ── Положения планет через Astronomy Engine ──────────────────────────────────
+function bodyEclipticLongitude(bodyName, astroTime) {
+  if (bodyName === 'Moon') {
+    return Astronomy.EclipticGeoMoon(astroTime).lon;
+  }
+  const vec = Astronomy.GeoVector(bodyName, astroTime, true);
+  return Astronomy.Ecliptic(vec).elon;
+}
+
+const NATAL_BODIES = [
+  { sym: 'n', body: 'Sun',     name: 'Солнце'   },
+  { sym: 'o', body: 'Moon',    name: 'Луна'     },
+  { sym: 'p', body: 'Mercury', name: 'Меркурий' },
+  { sym: 'q', body: 'Venus',   name: 'Венера'   },
+  { sym: 'r', body: 'Mars',    name: 'Марс'     },
+  { sym: 's', body: 'Jupiter', name: 'Юпитер'   },
+  { sym: 't', body: 'Saturn',  name: 'Сатурн'   },
+  { sym: 'u', body: 'Uranus',  name: 'Уран'     },
+  { sym: 'v', body: 'Neptune', name: 'Нептун'   },
+  { sym: 'w', body: 'Pluto',   name: 'Плутон'   },
+  { sym: '|', body: 'Chiron',  name: 'Хирон'    }
+];
+
+const ASPECT_ANGLES = [0, 60, 90, 120, 180];
+
+// ── Геокодинг места рождения (бесплатный публичный API, без файлов) ─────────
+async function geocodePlace(query) {
+  const url = 'https://geocoding-api.open-meteo.com/v1/search?name=' +
+    encodeURIComponent(query) + '&count=5&language=ru&format=json';
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('Геосервис недоступен');
+  const data = await resp.json();
+  if (!data.results || !data.results.length) throw new Error('Город не найден. Уточните название.');
+  // Берём наиболее населённый/релевантный результат (первый в ответе)
+  const r = data.results[0];
+  return {
+    lat: r.latitude,
+    lon: r.longitude,
+    timezone: r.timezone,
+    label: [r.name, r.admin1, r.country].filter(Boolean).join(', ')
+  };
+}
+
+// ── Перевод локального времени рождения (в часовом поясе места рождения) в UTC ──
+function localToUTC(year, month, day, hour, minute, tz) {
+  let guessMs = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const target = Date.UTC(year, month - 1, day, hour, minute, 0);
+  for (let i = 0; i < 4; i++) {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const parts = dtf.formatToParts(new Date(guessMs));
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    const hh = map.hour === '24' ? 0 : Number(map.hour);
+    const formattedAsUTC = Date.UTC(
+      Number(map.year), Number(map.month) - 1, Number(map.day),
+      hh, Number(map.minute), Number(map.second)
+    );
+    const diff = target - formattedAsUTC;
+    if (diff === 0) break;
+    guessMs += diff;
+  }
+  return new Date(guessMs);
+}
+
+// ── Аспекты между планетами с фильтрацией по орбисам (используется существующая ORB_LIMITS) ──
+function buildAspectsFromLongitudes(bodiesWithLon) {
+  const aspects = [];
+  for (let i = 0; i < bodiesWithLon.length; i++) {
+    for (let j = i + 1; j < bodiesWithLon.length; j++) {
+      const a = bodiesWithLon[i], b = bodiesWithLon[j];
+      let diff = Math.abs(a.lon - b.lon) % 360;
+      if (diff > 180) diff = 360 - diff;
+      let nearest = ASPECT_ANGLES[0], best = Infinity;
+      ASPECT_ANGLES.forEach(ang => {
+        const d = Math.abs(diff - ang);
+        if (d < best) { best = d; nearest = ang; }
+      });
+      const info = ASPECT_NAMES[nearest];
+      aspects.push({
+        type: nearest,
+        typeName: info ? info.name : String(nearest),
+        p1: a.name,
+        p2: b.name,
+        orb: formatOrb(best)
+      });
+    }
+  }
+  return aspects;
+}
+
+// ── Основная функция: дата+время+место → объект карты (формат как у parseHTML) ──
+async function buildNatalChart({ name, year, month, day, hour, minute, place }) {
+  const geo = await geocodePlace(place);
+  const utcDate = localToUTC(year, month, day, hour, minute, geo.timezone);
+  const astroTime = Astronomy.MakeTime(utcDate);
+  const jd = julianDayUTC(utcDate);
+
+  const longitudes = NATAL_BODIES.map(b => ({
+    sym: b.sym,
+    name: b.name,
+    lon: b.body === 'Chiron' ? chironGeoLongitude(astroTime, jd) : bodyEclipticLongitude(b.body, astroTime)
+  }));
+
+  // Ретроградность: сравниваем долготу сейчас и через сутки
+  const astroTimeNext = Astronomy.MakeTime(new Date(utcDate.getTime() + 86400000));
+  const jdNext = jd + 1;
+  const planets = longitudes.map(p => {
+    const next = NATAL_BODIES.find(b => b.sym === p.sym).body === 'Chiron'
+      ? chironGeoLongitude(astroTimeNext, jdNext)
+      : bodyEclipticLongitude(NATAL_BODIES.find(b => b.sym === p.sym).body, astroTimeNext);
+    let delta = next - p.lon;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    return {
+      sym: p.sym,
+      pos: formatDegreeInSign(p.lon),
+      signChar: lonToSignChar(p.lon),
+      isRetro: delta < 0
+    };
+  });
+
+  const { asc, mc } = calcAscMc(jd, geo.lon, geo.lat);
+
+  const aspects = buildAspectsFromLongitudes(longitudes);
+
+  const dd = String(day).padStart(2, '0');
+  const mo = String(month).padStart(2, '0');
+  const hh = String(hour).padStart(2, '0');
+  const mi = String(minute).padStart(2, '0');
+  const chartDate = `${dd}.${mo}.${year} ${hh}:${mi}:00`;
+
+  return {
+    chartName: (name || '').trim(),
+    chartDate,
+    planets,
+    aspects,
+    asc: { pos: formatDegreeInSign(asc), signChar: lonToSignChar(asc) },
+    mc:  { pos: formatDegreeInSign(mc),  signChar: lonToSignChar(mc)  }
+  };
+}
+
+// ── Сброс новых полей даты/времени/места рождения ────────────────────────────
+const __origResetPage = resetPage;
+resetPage = function() {
+  __origResetPage();
+  ['birthNameInput','birthDateInput','birthTimeInput','birthPlaceInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const errEl = document.getElementById('birthErr');
+  if (errEl) errEl.style.display = 'none';
+};
+
+async function calculateNatal(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+
+  const nameEl = document.getElementById('birthNameInput');
+  const dateEl = document.getElementById('birthDateInput');
+  const timeEl = document.getElementById('birthTimeInput');
+  const placeEl = document.getElementById('birthPlaceInput');
+  const errEl = document.getElementById('birthErr');
+  const btn = document.getElementById('calcChartBtn');
+
+  const dateVal = dateEl ? dateEl.value : '';
+  const timeVal = timeEl ? timeEl.value : '';
+  const placeVal = placeEl ? placeEl.value.trim() : '';
+
+  if (!dateVal || !timeVal || !placeVal) {
+    if (errEl) errEl.style.display = 'block';
+    return false;
+  }
+  if (errEl) errEl.style.display = 'none';
+
+  const [yearStr, monthStr, dayStr] = dateVal.split('-');
+  const [hourStr, minuteStr] = timeVal.split(':');
+
+  const originalLabel = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '✦ Считаем карту…'; btn.disabled = true; }
+
+  try {
+    currentData = await buildNatalChart({
+      name: nameEl ? nameEl.value : '',
+      year: Number(yearStr), month: Number(monthStr), day: Number(dayStr),
+      hour: Number(hourStr), minute: Number(minuteStr),
+      place: placeVal
+    });
+    render();
+  } catch (err) {
+    alert('Не удалось рассчитать карту: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = originalLabel || '✦ РАССЧИТАТЬ КАРТУ'; btn.disabled = false; }
+  }
+  return false;
+}
+</script>
 </body>
 </html>
