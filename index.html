@@ -7353,15 +7353,21 @@ resetPage = function() {
   const errEl = document.getElementById('birthErr');
   if (errEl) errEl.style.display = 'none';
   clearPlaceConfirmation();
+  hidePlaceList();
 };
 
-// ── Подтверждение города, если по запросу нашлось несколько совпадений ──────
+// ── Автоподбор города по мере ввода ──────────────────────────────────────────
 let confirmedGeo = null;        // выбранные координаты/часовой пояс
-let confirmedGeoQuery = '';     // текст места, для которого они подтверждены
+let confirmedGeoQuery = '';     // текст в поле, для которого они подтверждены
+let placeSearchTimer = null;
+let placeSearchToken = 0;
 
 function clearPlaceConfirmation() {
   confirmedGeo = null;
   confirmedGeoQuery = '';
+}
+
+function hidePlaceList() {
   const block = document.getElementById('placeConfirmBlock');
   const list = document.getElementById('placeConfirmList');
   if (block) block.style.display = 'none';
@@ -7371,15 +7377,43 @@ function clearPlaceConfirmation() {
 const __birthPlaceInputEl = document.getElementById('birthPlaceInput');
 if (__birthPlaceInputEl) {
   __birthPlaceInputEl.addEventListener('input', function() {
-    if (this.value.trim() !== confirmedGeoQuery) clearPlaceConfirmation();
+    const val = this.value.trim();
+    if (val !== confirmedGeoQuery) clearPlaceConfirmation();
+
+    if (placeSearchTimer) clearTimeout(placeSearchTimer);
+    if (val.length < 2) { hidePlaceList(); return; }
+
+    const myToken = ++placeSearchToken;
+    placeSearchTimer = setTimeout(async () => {
+      try {
+        const candidates = await fetchPlaceCandidates(val);
+        if (myToken !== placeSearchToken) return; // устарело — пользователь печатает дальше
+        renderPlaceCandidates(candidates, val);
+      } catch (e) {
+        if (myToken !== placeSearchToken) return;
+        hidePlaceList();
+      }
+    }, 450);
   });
 }
 
 function renderPlaceCandidates(candidates, query) {
   const block = document.getElementById('placeConfirmBlock');
   const list = document.getElementById('placeConfirmList');
+  const placeEl = document.getElementById('birthPlaceInput');
   if (!block || !list) return;
   list.innerHTML = '';
+
+  if (!candidates.length) {
+    const empty = document.createElement('div');
+    empty.style.color = 'rgba(255,255,255,0.5)';
+    empty.style.fontSize = '0.95rem';
+    empty.textContent = 'Город не найден — попробуйте другое написание';
+    list.appendChild(empty);
+    block.style.display = 'block';
+    return;
+  }
+
   candidates.forEach(c => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -7387,22 +7421,13 @@ function renderPlaceCandidates(candidates, query) {
     btn.textContent = c.label;
     btn.onclick = function() {
       confirmedGeo = c;
-      confirmedGeoQuery = query;
-      block.style.display = 'none';
-      list.innerHTML = '';
-      calculateNatal();
+      confirmedGeoQuery = c.label;
+      if (placeEl) placeEl.value = c.label;
+      hidePlaceList();
     };
     list.appendChild(btn);
   });
   block.style.display = 'block';
-  block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-// Подбирает кандидатов, релевантных именно введённому названию города
-function pickRelevantCandidates(candidates, query) {
-  const q = query.trim().toLowerCase();
-  const exact = candidates.filter(c => c.name.trim().toLowerCase() === q);
-  return exact.length ? exact : candidates;
 }
 
 async function calculateNatal(event) {
@@ -7428,7 +7453,14 @@ async function calculateNatal(event) {
   const ageVal = ageEl ? parseInt(ageEl.value, 10) : 0;
 
   if (!dateVal || !timeVal || !placeVal || !genderVal || !weightVal || !heightVal || !ageVal) {
-    if (errEl) errEl.style.display = 'block';
+    if (errEl) { errEl.textContent = 'Заполните дату, время, место рождения, пол, вес, рост и возраст'; errEl.style.display = 'block'; }
+    return false;
+  }
+  if (!confirmedGeo || confirmedGeoQuery !== placeVal) {
+    if (errEl) { errEl.textContent = 'Выберите город из списка, который появляется под полем «Место рождения»'; errEl.style.display = 'block'; }
+    hidePlaceList();
+    const candidates = await fetchPlaceCandidates(placeVal).catch(() => []);
+    if (candidates.length) renderPlaceCandidates(candidates, placeVal);
     return false;
   }
   if (errEl) errEl.style.display = 'none';
@@ -7446,22 +7478,7 @@ async function calculateNatal(event) {
   if (btn) { btn.textContent = '✦ Считаем карту…'; btn.disabled = true; }
 
   try {
-    let geo = (confirmedGeo && confirmedGeoQuery === placeVal) ? confirmedGeo : null;
-
-    if (!geo) {
-      const candidates = await fetchPlaceCandidates(placeVal);
-      const relevant = pickRelevantCandidates(candidates, placeVal);
-      if (relevant.length > 1) {
-        renderPlaceCandidates(relevant, placeVal);
-        if (btn) { btn.textContent = originalLabel || '✦ ПРОДОЛЖИТЬ'; btn.disabled = false; }
-        return false; // ждём, пока пользователь выберет город
-      }
-      geo = relevant[0];
-      confirmedGeo = geo;
-      confirmedGeoQuery = placeVal;
-    }
-
-    currentData = buildNatalChartWithGeo(geo, birthInputs);
+    currentData = buildNatalChartWithGeo(confirmedGeo, birthInputs);
     render();
   } catch (err) {
     alert('Не удалось рассчитать карту: ' + err.message);
