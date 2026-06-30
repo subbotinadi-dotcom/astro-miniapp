@@ -169,11 +169,15 @@ grid-template-columns: 1fr 1fr;
 width: 100%;
 min-width: 0;
 box-sizing: border-box;
-padding-left: 0.7rem;
-padding-right: 2.2rem;
-font-size: 1.15rem;
-background-position: right 0.6rem center !important;
-background-size: 1.3rem 1.3rem !important;
+padding-left: 0.6rem;
+padding-right: 1.7rem;
+font-size: 1rem;
+background-position: right 0.45rem center !important;
+background-size: 1.05rem 1.05rem !important;
+}
+@media (max-width: 480px) {
+.date-select-row { grid-template-columns: 1fr 1.15fr 0.85fr; gap: 0.4rem; }
+.date-select-row select { font-size: 0.92rem; padding-left: 0.5rem; padding-right: 1.5rem; background-size: 0.95rem 0.95rem !important; background-position: right 0.35rem center !important; }
 }
 
 /* Стрелка у выпадающего списка — размер как у стрелок счётчика веса/роста/возраста */
@@ -2523,10 +2527,9 @@ button#exportDocxBtn.export-btn * {
 <div class="steps-card">
 <!-- ДАННЫЕ РОЖДЕНИЯ -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
-<div class="step-label">ДАННЫЕ РОЖДЕНИЯ</div>
 <div class="food-data-form">
 <div class="form-field" style="margin-bottom:0.8rem">
-<label for="birthNameInput">Имя (необязательно)</label>
+<label for="birthNameInput">Имя</label>
 <input autocomplete="off" id="birthNameInput" placeholder="Например, Анна" type="text"/>
 </div>
 <div class="input-grid">
@@ -2588,7 +2591,7 @@ button#exportDocxBtn.export-btn * {
 <div class="chart-title">
 <span class="h1-style">Расчёт питания</span>
 <div class="subtitle" id="chartMeta"></div>
-<div class="gender-badge" id="genderBadge"></div>
+<div class="gender-badge" id="genderBadge" style="display:none"></div>
 </div>
 <div class="section-title">Планеты в знаках</div>
 <div class="planets-grid" id="planetsGrid"></div>
