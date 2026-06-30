@@ -155,16 +155,49 @@ padding: 0.9rem 1rem; font-size: 1.35rem; width: 100%; box-sizing: border-box;
 .form-field select option { background: #0D1935; color: #FFFFFF !important; }
 .field-err, .gender-err { color: #FC9FBC !important; font-size: 0.95rem; }
 
-/* Поля даты/времени — тёмная тема нативного календаря/часов */
+/* Ряд из выпадающих списков для даты/времени: Год → Месяц → День, Час → Минута */
+.date-select-row {
+display: grid;
+grid-template-columns: 1.2fr 1.3fr 1fr;
+gap: 0.6rem;
+width: 100%;
+}
+.date-select-row-time {
+grid-template-columns: 1fr 1fr;
+}
+.date-select-row select {
+width: 100%;
+min-width: 0;
+box-sizing: border-box;
+padding-left: 0.7rem;
+padding-right: 2.2rem;
+font-size: 1.15rem;
+background-position: right 0.6rem center !important;
+background-size: 1.3rem 1.3rem !important;
+}
+
+/* Стрелка у выпадающего списка — размер как у стрелок счётчика веса/роста/возраста */
+.form-field select {
+appearance: none !important;
+-webkit-appearance: none !important;
+-moz-appearance: none !important;
+background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+background-repeat: no-repeat !important;
+background-position: right 0.9rem center !important;
+background-size: 1.6rem 1.6rem !important;
+padding-right: 3rem !important;
+}
+
+/* Поля даты/времени — тёмная тема нативного календаря/часов, иконки белые */
 .form-field input[type="date"],
 .form-field input[type="time"] {
 color-scheme: dark;
 }
 .form-field input[type="date"]::-webkit-calendar-picker-indicator,
 .form-field input[type="time"]::-webkit-calendar-picker-indicator {
-filter: invert(1) brightness(1.6) sepia(1) saturate(3) hue-rotate(295deg);
+filter: invert(1) brightness(1.8);
 cursor: pointer;
-opacity: 0.9;
+opacity: 0.95;
 }
 .form-field input[type="date"]::-webkit-calendar-picker-indicator:hover,
 .form-field input[type="time"]::-webkit-calendar-picker-indicator:hover {
@@ -2487,7 +2520,6 @@ button#exportDocxBtn.export-btn * {
 <!-- ЭКРАН 1: Ввод ссылки и данных -->
 <div id="uploadZone">
 <span class="h1-style">Питание по натальной карте</span>
-<p class="tagline">Введите данные рождения — карта рассчитается автоматически</p>
 <div class="steps-card">
 <!-- ДАННЫЕ РОЖДЕНИЯ -->
 <div class="step" id="step1Block" style="text-align:left; align-items:stretch; display:flex; flex-direction:column;">
@@ -2498,13 +2530,20 @@ button#exportDocxBtn.export-btn * {
 <input autocomplete="off" id="birthNameInput" placeholder="Например, Анна" type="text"/>
 </div>
 <div class="input-grid">
-<div class="form-field">
-<label for="birthDateInput">Дата рождения</label>
-<input id="birthDateInput" type="date"/>
+<div class="form-field" style="grid-column:1/-1">
+<label>Дата рождения</label>
+<div class="date-select-row">
+<select id="birthYearSelect"><option value="">Год</option></select>
+<select id="birthMonthSelect"><option value="">Месяц</option></select>
+<select id="birthDaySelect"><option value="">День</option></select>
 </div>
-<div class="form-field">
-<label for="birthTimeInput">Время рождения</label>
-<input id="birthTimeInput" type="time"/>
+</div>
+<div class="form-field" style="grid-column:1/-1">
+<label>Время рождения</label>
+<div class="date-select-row date-select-row-time">
+<select id="birthHourSelect"><option value="">Час</option></select>
+<select id="birthMinuteSelect"><option value="">Минута</option></select>
+</div>
 </div>
 <div class="form-field" style="grid-column:1/-1">
 <label for="birthPlaceInput">Место рождения (город)</label>
@@ -7344,7 +7383,11 @@ function buildNatalChartWithGeo(geo, { name, year, month, day, hour, minute }) {
 const __origResetPage = resetPage;
 resetPage = function() {
   __origResetPage();
-  ['birthNameInput','birthDateInput','birthTimeInput','birthPlaceInput','weightInput2','heightInput2','ageInput2'].forEach(id => {
+  ['birthNameInput','birthPlaceInput','weightInput2','heightInput2','ageInput2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['birthYearSelect','birthMonthSelect','birthDaySelect','birthHourSelect','birthMinuteSelect'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -7355,6 +7398,66 @@ resetPage = function() {
   clearPlaceConfirmation();
   hidePlaceList();
 };
+
+// ── Заполнение выпадающих списков Год/Месяц/День/Час/Минута ──────────────────
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function populateBirthDateTimeSelects() {
+  const yearEl = document.getElementById('birthYearSelect');
+  const monthEl = document.getElementById('birthMonthSelect');
+  const dayEl = document.getElementById('birthDaySelect');
+  const hourEl = document.getElementById('birthHourSelect');
+  const minuteEl = document.getElementById('birthMinuteSelect');
+  if (!yearEl || !monthEl || !dayEl || !hourEl || !minuteEl) return;
+
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1920; y--) {
+    const opt = document.createElement('option');
+    opt.value = String(y);
+    opt.textContent = String(y);
+    yearEl.appendChild(opt);
+  }
+
+  const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  monthNames.forEach((name, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i + 1);
+    opt.textContent = name;
+    monthEl.appendChild(opt);
+  });
+
+  for (let h = 0; h <= 23; h++) {
+    const opt = document.createElement('option');
+    opt.value = String(h);
+    opt.textContent = pad2(h);
+    hourEl.appendChild(opt);
+  }
+  for (let m = 0; m <= 59; m++) {
+    const opt = document.createElement('option');
+    opt.value = String(m);
+    opt.textContent = pad2(m);
+    minuteEl.appendChild(opt);
+  }
+
+  function refreshDays() {
+    const y = Number(yearEl.value) || currentYear;
+    const m = Number(monthEl.value) || 1;
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const prevDay = dayEl.value;
+    dayEl.innerHTML = '<option value="">День</option>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const opt = document.createElement('option');
+      opt.value = String(d);
+      opt.textContent = String(d);
+      dayEl.appendChild(opt);
+    }
+    if (prevDay && Number(prevDay) <= daysInMonth) dayEl.value = prevDay;
+  }
+  refreshDays();
+  yearEl.addEventListener('change', refreshDays);
+  monthEl.addEventListener('change', refreshDays);
+}
+populateBirthDateTimeSelects();
 
 // ── Автоподбор города по мере ввода ──────────────────────────────────────────
 let confirmedGeo = null;        // выбранные координаты/часовой пояс
@@ -7434,8 +7537,11 @@ async function calculateNatal(event) {
   if (event) { event.preventDefault(); event.stopPropagation(); }
 
   const nameEl = document.getElementById('birthNameInput');
-  const dateEl = document.getElementById('birthDateInput');
-  const timeEl = document.getElementById('birthTimeInput');
+  const yearEl = document.getElementById('birthYearSelect');
+  const monthEl = document.getElementById('birthMonthSelect');
+  const dayEl = document.getElementById('birthDaySelect');
+  const hourEl = document.getElementById('birthHourSelect');
+  const minuteEl = document.getElementById('birthMinuteSelect');
   const placeEl = document.getElementById('birthPlaceInput');
   const genderEl = document.getElementById('genderSelect2');
   const weightEl = document.getElementById('weightInput2');
@@ -7444,15 +7550,18 @@ async function calculateNatal(event) {
   const errEl = document.getElementById('birthErr');
   const btn = document.getElementById('calcChartBtn');
 
-  const dateVal = dateEl ? dateEl.value : '';
-  const timeVal = timeEl ? timeEl.value : '';
+  const yearVal = yearEl ? yearEl.value : '';
+  const monthVal = monthEl ? monthEl.value : '';
+  const dayVal = dayEl ? dayEl.value : '';
+  const hourVal = hourEl ? hourEl.value : '';
+  const minuteVal = minuteEl ? minuteEl.value : '';
   const placeVal = placeEl ? placeEl.value.trim() : '';
   const genderVal = genderEl ? genderEl.value : '';
   const weightVal = weightEl ? parseFloat(weightEl.value) : 0;
   const heightVal = heightEl ? parseFloat(heightEl.value) : 0;
   const ageVal = ageEl ? parseInt(ageEl.value, 10) : 0;
 
-  if (!dateVal || !timeVal || !placeVal || !genderVal || !weightVal || !heightVal || !ageVal) {
+  if (!yearVal || !monthVal || !dayVal || hourVal === '' || minuteVal === '' || !placeVal || !genderVal || !weightVal || !heightVal || !ageVal) {
     if (errEl) { errEl.textContent = 'Заполните дату, время, место рождения, пол, вес, рост и возраст'; errEl.style.display = 'block'; }
     return false;
   }
@@ -7466,8 +7575,8 @@ async function calculateNatal(event) {
   if (errEl) errEl.style.display = 'none';
   selectedGender = genderVal;
 
-  const [yearStr, monthStr, dayStr] = dateVal.split('-');
-  const [hourStr, minuteStr] = timeVal.split(':');
+  const yearStr = yearVal, monthStr = monthVal, dayStr = dayVal;
+  const hourStr = hourVal, minuteStr = minuteVal;
   const birthInputs = {
     name: nameEl ? nameEl.value : '',
     year: Number(yearStr), month: Number(monthStr), day: Number(dayStr),
