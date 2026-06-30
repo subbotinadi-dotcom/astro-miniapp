@@ -7150,14 +7150,14 @@ function calcAscMc(jd, lonDeg, latDeg) {
   return { asc, mc };
 }
 
-// ── Хирон: упрощённая кеплеровская орбита (точность достаточна для знака/аспектов) ──
+// ── Хирон: кеплеровская орбита, элементы откалиброваны по проверенной эфемериде ──
 const CHIRON_EL = {
-  a: 13.70, e: 0.3772,
+  a: 13.71, e: 0.3772,
   i: 6.93 * DEG2RAD,
   Om: 209.38 * DEG2RAD,
   w: 339.48 * DEG2RAD,
-  M0: 13.18 * DEG2RAD,
-  periodDays: 50.71 * 365.25
+  M0: 24.5969 * DEG2RAD,
+  periodDays: Math.pow(13.71, 1.5) * 365.25
 };
 function chironHeliocentricEcl(jd) {
   const n = 360 / CHIRON_EL.periodDays;
