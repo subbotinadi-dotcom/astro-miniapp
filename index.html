@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -155,6 +154,44 @@ padding: 0.9rem 1rem; font-size: 1.35rem; width: 100%; box-sizing: border-box;
 }
 .form-field select option { background: #0D1935; color: #FFFFFF !important; }
 .field-err, .gender-err { color: #FC9FBC !important; font-size: 0.95rem; }
+
+/* Поля даты/времени — тёмная тема нативного календаря/часов */
+.form-field input[type="date"],
+.form-field input[type="time"] {
+color-scheme: dark;
+}
+.form-field input[type="date"]::-webkit-calendar-picker-indicator,
+.form-field input[type="time"]::-webkit-calendar-picker-indicator {
+filter: invert(1) brightness(1.6) sepia(1) saturate(3) hue-rotate(295deg);
+cursor: pointer;
+opacity: 0.9;
+}
+.form-field input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.form-field input[type="time"]::-webkit-calendar-picker-indicator:hover {
+opacity: 1;
+}
+.form-field input[type="date"]::-webkit-datetime-edit,
+.form-field input[type="time"]::-webkit-datetime-edit {
+color: #FFFFFF;
+}
+
+/* Кнопки уточнения города при геокодинге */
+.place-option-btn {
+width: 100%; text-align: left; box-sizing: border-box;
+background: rgba(255,255,255,0.07) !important;
+border: 1.5px solid rgba(255,255,255,0.2) !important;
+border-radius: 12px; color: #FFFFFF !important;
+padding: 0.75rem 1rem; font-size: 1.05rem; letter-spacing: 0.01em;
+cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.place-option-btn:hover, .place-option-btn:focus {
+background: rgba(252,159,188,0.18) !important;
+border-color: #FC9FBC !important;
+}
+.place-option-btn.selected {
+background: rgba(252,159,188,0.28) !important;
+border-color: #FC9FBC !important;
+}
 
 /* Карточки результатов */
 .planet-card, .aspect-row, .energy-card, .element-card {
@@ -2473,12 +2510,35 @@ button#exportDocxBtn.export-btn * {
 <label for="birthPlaceInput">Место рождения (город)</label>
 <input autocapitalize="words" autocomplete="off" autocorrect="off" id="birthPlaceInput" placeholder="Например, Москва" spellcheck="false" type="text"/>
 </div>
+<div id="placeConfirmBlock" style="display:none; grid-column:1/-1; margin-top:0.4rem;">
+<div style="color:#FC9FBC; font-size:0.95rem; margin-bottom:0.5rem; text-transform:none; letter-spacing:normal;">Нашлось несколько городов с таким названием — уточните, какой нужен:</div>
+<div id="placeConfirmList" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+</div>
+<div class="form-field" style="grid-column:1/-1; margin-top:0.4rem;">
+<label for="genderSelect2">Пол</label>
+<select id="genderSelect2">
+<option selected="" value="Женский">Женский</option>
+<option value="Мужской">Мужской</option>
+</select>
+</div>
+<div class="form-field">
+<label for="weightInput2">Вес, кг</label>
+<input id="weightInput2" min="1" placeholder="60" step="0.1" type="number"/>
+</div>
+<div class="form-field">
+<label for="heightInput2">Рост, см</label>
+<input id="heightInput2" min="50" placeholder="165" step="1" type="number"/>
+</div>
+<div class="form-field" style="grid-column:1/-1">
+<label for="ageInput2">Возраст, лет</label>
+<input id="ageInput2" min="1" placeholder="30" step="1" type="number"/>
+</div>
 </div>
 <div class="food-data-actions">
-<div class="url-err" id="birthErr" style="display:none">Заполните дату, время и место рождения</div>
+<div class="url-err" id="birthErr" style="display:none">Заполните дату, время, место рождения, пол, вес, рост и возраст</div>
 </div>
 <div class="food-data-actions">
-<div class="sotis-link-wrap"><button class="sotis-btn-style" id="calcChartBtn" onclick="calculateNatal(event)" type="button">✦ РАССЧИТАТЬ КАРТУ</button></div>
+<div class="sotis-link-wrap"><button class="sotis-btn-style" id="calcChartBtn" onclick="calculateNatal(event)" type="button">✦ ПРОДОЛЖИТЬ</button></div>
 </div>
 </div>
 </div>
@@ -2499,6 +2559,10 @@ button#exportDocxBtn.export-btn * {
 </div>
 <div class="section-title">Расчёт показателей</div>
 <div id="indicatorsSection"></div>
+<div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:1rem"></div>
+<div class="bottom-btns" style="margin-top:1.5rem;">
+<button class="export-btn" id="finalResultBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button>
+</div>
 <div id="foodPage" style="display:none; margin-top:3rem;">
 <div class="section-title">Прием пищи</div>
 <div class="wide-grid">
@@ -2518,41 +2582,7 @@ button#exportDocxBtn.export-btn * {
 </button>
 </div>
 </div>
-<!-- Блок ввода данных питания -->
-<div class="food-data-card energy-card" id="foodDataBlock">
-<div style="width:100%">
-<span class="food-step-label">Шаг 3 — режим питания</span>
-<div class="food-data-form">
-<div class="form-field" style="margin-bottom:0.8rem">
-<label for="genderSelect2">Пол</label>
-<select id="genderSelect2">
-<option selected="" value="Женский">Женский</option>
-<option value="Мужской">Мужской</option>
-</select>
-</div>
-<div class="input-grid">
-<div class="form-field">
-<label for="weightInput2">Вес, кг</label>
-<input id="weightInput2" min="1" placeholder="60" step="0.1" type="number"/>
-</div>
-<div class="form-field">
-<label for="heightInput2">Рост, см</label>
-<input id="heightInput2" min="50" placeholder="165" step="1" type="number"/>
-</div>
-<div class="form-field" style="grid-column:1/-1">
-<label for="ageInput2">Возраст, лет</label>
-<input id="ageInput2" min="1" placeholder="30" step="1" type="number"/>
-</div>
-</div>
-<div class="food-data-actions">
-<div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;margin-bottom:0.5rem"></div>
-</div>
-<div class="food-data-actions">
-<div class="sotis-link-wrap" id="foodCalcBtnWrap"><button class="sotis-btn-style" id="foodCalcBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button></div>
-</div>
-</div>
-</div>
-</div>
+
 </div>
 <!-- Страница продуктов -->
 <div id="productsPage" style="display:none; padding:2rem 1rem 5rem; max-width:960px; margin:0 auto;">
@@ -7189,21 +7219,24 @@ const NATAL_BODIES = [
 const ASPECT_ANGLES = [0, 60, 90, 120, 180];
 
 // ── Геокодинг места рождения (бесплатный публичный API, без файлов) ─────────
-async function geocodePlace(query) {
+// Возвращает СПИСОК подходящих городов — если их несколько, решение о выборе
+// принимает пользователь (см. resolvePlaceForCalc).
+async function fetchPlaceCandidates(query) {
   const url = 'https://geocoding-api.open-meteo.com/v1/search?name=' +
-    encodeURIComponent(query) + '&count=5&language=ru&format=json';
+    encodeURIComponent(query) + '&count=8&language=ru&format=json';
   const resp = await fetch(url);
   if (!resp.ok) throw new Error('Геосервис недоступен');
   const data = await resp.json();
   if (!data.results || !data.results.length) throw new Error('Город не найден. Уточните название.');
-  // Берём наиболее населённый/релевантный результат (первый в ответе)
-  const r = data.results[0];
-  return {
+  return data.results.map(r => ({
     lat: r.latitude,
     lon: r.longitude,
     timezone: r.timezone,
-    label: [r.name, r.admin1, r.country].filter(Boolean).join(', ')
-  };
+    label: [r.name, r.admin1, r.country].filter(Boolean).join(', '),
+    name: r.name,
+    admin1: r.admin1 || '',
+    country: r.country || ''
+  }));
 }
 
 // ── Перевод локального времени рождения (в часовом поясе места рождения) в UTC ──
@@ -7257,9 +7290,8 @@ function buildAspectsFromLongitudes(bodiesWithLon) {
   return aspects;
 }
 
-// ── Основная функция: дата+время+место → объект карты (формат как у parseHTML) ──
-async function buildNatalChart({ name, year, month, day, hour, minute, place }) {
-  const geo = await geocodePlace(place);
+// ── Расчёт карты при УЖЕ известных координатах/часовом поясе места рождения ──
+function buildNatalChartWithGeo(geo, { name, year, month, day, hour, minute }) {
   const utcDate = localToUTC(year, month, day, hour, minute, geo.timezone);
   const astroTime = Astronomy.MakeTime(utcDate);
   const jd = julianDayUTC(utcDate);
@@ -7312,13 +7344,66 @@ async function buildNatalChart({ name, year, month, day, hour, minute, place }) 
 const __origResetPage = resetPage;
 resetPage = function() {
   __origResetPage();
-  ['birthNameInput','birthDateInput','birthTimeInput','birthPlaceInput'].forEach(id => {
+  ['birthNameInput','birthDateInput','birthTimeInput','birthPlaceInput','weightInput2','heightInput2','ageInput2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  const genderResetEl = document.getElementById('genderSelect2');
+  if (genderResetEl) genderResetEl.value = 'Женский';
   const errEl = document.getElementById('birthErr');
   if (errEl) errEl.style.display = 'none';
+  clearPlaceConfirmation();
 };
+
+// ── Подтверждение города, если по запросу нашлось несколько совпадений ──────
+let confirmedGeo = null;        // выбранные координаты/часовой пояс
+let confirmedGeoQuery = '';     // текст места, для которого они подтверждены
+
+function clearPlaceConfirmation() {
+  confirmedGeo = null;
+  confirmedGeoQuery = '';
+  const block = document.getElementById('placeConfirmBlock');
+  const list = document.getElementById('placeConfirmList');
+  if (block) block.style.display = 'none';
+  if (list) list.innerHTML = '';
+}
+
+const __birthPlaceInputEl = document.getElementById('birthPlaceInput');
+if (__birthPlaceInputEl) {
+  __birthPlaceInputEl.addEventListener('input', function() {
+    if (this.value.trim() !== confirmedGeoQuery) clearPlaceConfirmation();
+  });
+}
+
+function renderPlaceCandidates(candidates, query) {
+  const block = document.getElementById('placeConfirmBlock');
+  const list = document.getElementById('placeConfirmList');
+  if (!block || !list) return;
+  list.innerHTML = '';
+  candidates.forEach(c => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'place-option-btn';
+    btn.textContent = c.label;
+    btn.onclick = function() {
+      confirmedGeo = c;
+      confirmedGeoQuery = query;
+      block.style.display = 'none';
+      list.innerHTML = '';
+      calculateNatal();
+    };
+    list.appendChild(btn);
+  });
+  block.style.display = 'block';
+  block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Подбирает кандидатов, релевантных именно введённому названию города
+function pickRelevantCandidates(candidates, query) {
+  const q = query.trim().toLowerCase();
+  const exact = candidates.filter(c => c.name.trim().toLowerCase() === q);
+  return exact.length ? exact : candidates;
+}
 
 async function calculateNatal(event) {
   if (event) { event.preventDefault(); event.stopPropagation(); }
@@ -7327,37 +7412,61 @@ async function calculateNatal(event) {
   const dateEl = document.getElementById('birthDateInput');
   const timeEl = document.getElementById('birthTimeInput');
   const placeEl = document.getElementById('birthPlaceInput');
+  const genderEl = document.getElementById('genderSelect2');
+  const weightEl = document.getElementById('weightInput2');
+  const heightEl = document.getElementById('heightInput2');
+  const ageEl = document.getElementById('ageInput2');
   const errEl = document.getElementById('birthErr');
   const btn = document.getElementById('calcChartBtn');
 
   const dateVal = dateEl ? dateEl.value : '';
   const timeVal = timeEl ? timeEl.value : '';
   const placeVal = placeEl ? placeEl.value.trim() : '';
+  const genderVal = genderEl ? genderEl.value : '';
+  const weightVal = weightEl ? parseFloat(weightEl.value) : 0;
+  const heightVal = heightEl ? parseFloat(heightEl.value) : 0;
+  const ageVal = ageEl ? parseInt(ageEl.value, 10) : 0;
 
-  if (!dateVal || !timeVal || !placeVal) {
+  if (!dateVal || !timeVal || !placeVal || !genderVal || !weightVal || !heightVal || !ageVal) {
     if (errEl) errEl.style.display = 'block';
     return false;
   }
   if (errEl) errEl.style.display = 'none';
+  selectedGender = genderVal;
 
   const [yearStr, monthStr, dayStr] = dateVal.split('-');
   const [hourStr, minuteStr] = timeVal.split(':');
+  const birthInputs = {
+    name: nameEl ? nameEl.value : '',
+    year: Number(yearStr), month: Number(monthStr), day: Number(dayStr),
+    hour: Number(hourStr), minute: Number(minuteStr)
+  };
 
   const originalLabel = btn ? btn.textContent : '';
   if (btn) { btn.textContent = '✦ Считаем карту…'; btn.disabled = true; }
 
   try {
-    currentData = await buildNatalChart({
-      name: nameEl ? nameEl.value : '',
-      year: Number(yearStr), month: Number(monthStr), day: Number(dayStr),
-      hour: Number(hourStr), minute: Number(minuteStr),
-      place: placeVal
-    });
+    let geo = (confirmedGeo && confirmedGeoQuery === placeVal) ? confirmedGeo : null;
+
+    if (!geo) {
+      const candidates = await fetchPlaceCandidates(placeVal);
+      const relevant = pickRelevantCandidates(candidates, placeVal);
+      if (relevant.length > 1) {
+        renderPlaceCandidates(relevant, placeVal);
+        if (btn) { btn.textContent = originalLabel || '✦ ПРОДОЛЖИТЬ'; btn.disabled = false; }
+        return false; // ждём, пока пользователь выберет город
+      }
+      geo = relevant[0];
+      confirmedGeo = geo;
+      confirmedGeoQuery = placeVal;
+    }
+
+    currentData = buildNatalChartWithGeo(geo, birthInputs);
     render();
   } catch (err) {
     alert('Не удалось рассчитать карту: ' + err.message);
   } finally {
-    if (btn) { btn.textContent = originalLabel || '✦ РАССЧИТАТЬ КАРТУ'; btn.disabled = false; }
+    if (btn) { btn.textContent = originalLabel || '✦ ПРОДОЛЖИТЬ'; btn.disabled = false; }
   }
   return false;
 }
