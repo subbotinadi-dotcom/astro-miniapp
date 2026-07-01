@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -4322,15 +4323,42 @@ if (link.parentNode) link.parentNode.removeChild(link);
 }, 6000);
 }
 
-// Отправляем событие в BotHelp/Telegram WebApp, чтобы в сценарии можно было поставить метку после успешной отправки файла.
-window.markBotHelpFileSent = window.markBotHelpFileSent || function(tg, filename) {
+// Фиксируем факт успешной отправки файла.
+// Эта функция вызывается только после ответа Telegram/сервера result.ok === true.
+window.markBotHelpFileSent = window.markBotHelpFileSent || function(tg, filename, chatId) {
+  var payload = {
+    action: 'file_sent_to_bot',
+    tag: 'file_sent_to_bot',
+    status: 'sent',
+    telegram_id: chatId || '',
+    filename: filename || '',
+    date: new Date().toISOString()
+  };
+
+  // 1) Пытаемся отправить событие в Telegram WebApp/BotHelp, если платформа его принимает.
   try {
     if (tg && typeof tg.sendData === 'function') {
-      tg.sendData(JSON.stringify({
-        action: 'file_sent_to_bot',
-        tag: 'file_sent_to_bot',
-        filename: filename || ''
-      }));
+      tg.sendData(JSON.stringify(payload));
+    }
+  } catch (e) {}
+
+  // 2) Пишем подтверждение в Google Таблицу.
+  // Если файл не отправился, эта функция не вызывается — строки в таблице не будет.
+  try {
+    var googleScriptUrl = 'https://script.google.com/macros/s/AKfycbyHn2ELRQGpd9qjjAlIF-cdcAGYsot8cZMwy2vciQUOReWgN-Zk-oJFn_EiVsQmUseaeA/exec';
+    var body = JSON.stringify(payload);
+
+    if (navigator.sendBeacon) {
+      var blob = new Blob([body], { type: 'text/plain;charset=UTF-8' });
+      navigator.sendBeacon(googleScriptUrl, blob);
+    } else {
+      fetch(googleScriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        keepalive: true,
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: body
+      }).catch(function(){});
     }
   } catch (e) {}
 };
@@ -4363,7 +4391,7 @@ const resp = await fetch('https://astrodarya.pythonanywhere.com/send_pdf', {
 });
 const result = await resp.json();
 if (result.ok) {
-  window.markBotHelpFileSent(tg, 'astro_report.doc');
+  window.markBotHelpFileSent(tg, 'astro_report.doc', chatId);
   if (loadingTxt) { loadingTxt.textContent = 'Файл отправлен в Telegram!'; }
   setTimeout(() => { if (overlay) overlay.classList.remove('active'); }, 2000);
 } else {
@@ -6714,7 +6742,7 @@ window.startExportDocx = async function(event) {
       });
       var result = await resp.json();
       if (result.ok) {
-        window.markBotHelpFileSent(tg, filename);
+        window.markBotHelpFileSent(tg, filename, chatId);
         if (loadingTxt) loadingTxt.textContent = 'Файл отправлен в Telegram!';
         setTimeout(function() { if (overlay) overlay.classList.remove('active'); }, 2000);
       } else {
@@ -7132,7 +7160,7 @@ window.buildRealDocxBlobFromHtml = buildRealDocxBlobFromHtml;
 
       if (result.ok) {
         // Успех — отправляем событие в BotHelp и закрываем приложение
-        window.markBotHelpFileSent(tg, filename);
+        window.markBotHelpFileSent(tg, filename, chatId);
         setTimeout(function() { if (tg) tg.close(); }, 300);
       } else {
         throw new Error(result.description || 'Ошибка отправки в Telegram');
