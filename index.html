@@ -2617,6 +2617,7 @@ button#exportDocxBtn.export-btn * {
 <div id="indicatorsSection"></div>
 <div id="foodDataErr" style="color:var(--peach);font-size:0.9rem;text-align:center;margin-top:1rem"></div>
 <div class="bottom-btns" style="margin-top:1.5rem;">
+<button class="export-btn reset-btn" id="backToInputBtn" onclick="backToInputFromResult(event)" type="button">← НАЗАД</button>
 <button class="export-btn" id="finalResultBtn" onclick="showFoodPage(event)" type="button">✦ ПОЛУЧИТЬ РЕЗУЛЬТАТ</button>
 </div>
 <div id="foodPage" style="display:none; margin-top:3rem;">
@@ -3770,6 +3771,29 @@ setTimeout(function(){ startExportDocx(); }, 0);
 }
 
 // ── Сброс ─────────────────────────────────────────────────────────────────────
+function backToInputFromResult(event) {
+if (event) { event.preventDefault(); event.stopPropagation(); }
+const resultEl = document.getElementById('result');
+const uploadZoneEl = document.getElementById('uploadZone');
+const foodPage = document.getElementById('foodPage');
+const foodDataBlock = document.getElementById('foodDataBlock');
+
+if (foodPage) foodPage.style.display = 'none';
+if (foodDataBlock) foodDataBlock.style.display = 'none';
+if (resultEl) {
+  resultEl.classList.remove('step3-active');
+  resultEl.style.display = 'none';
+}
+document.body.classList.remove('result-started');
+document.body.classList.remove('food-calculated');
+if (uploadZoneEl) {
+  uploadZoneEl.removeAttribute('hidden');
+  uploadZoneEl.removeAttribute('aria-hidden');
+  uploadZoneEl.style.display = 'flex';
+}
+window.scrollTo(0, 0);
+}
+
 function resetPage() {
 currentData = null; selectedFile = null; selectedGender = '';
 const fileInput = document.getElementById('fileInput');
